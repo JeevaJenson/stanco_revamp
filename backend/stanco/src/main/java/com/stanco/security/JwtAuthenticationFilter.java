@@ -5,26 +5,29 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import org.springframework.security.core.userdetails.UserDetails;
+
 import org.springframework.stereotype.Component;
+
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter
         extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
-    public JwtAuthenticationFilter(
-            JwtService jwtService) {
-
-        this.jwtService = jwtService;
-    }
+    private final CustomUserDetailsService
+            customUserDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -39,7 +42,11 @@ public class JwtAuthenticationFilter
         if (authHeader == null ||
                 !authHeader.startsWith("Bearer ")) {
 
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(
+                    request,
+                    response
+            );
+
             return;
         }
 
@@ -53,24 +60,28 @@ public class JwtAuthenticationFilter
                 String empID =
                         jwtService.extractEmpID(token);
 
-                String role =
-                        jwtService.extractRole(token);
+                UserDetails userDetails =
+                        customUserDetailsService
+                                .loadUserByUsername(
+                                        empID
+                                );
 
-                SimpleGrantedAuthority authority =
-                        new SimpleGrantedAuthority(
-                                "ROLE_" + role
-                        );
+                if (userDetails.isEnabled()) {
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                empID,
-                                null,
-                                List.of(authority)
-                        );
+                    UsernamePasswordAuthenticationToken
+                            authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
 
-                SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(authentication);
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(
+                                    authentication
+                            );
+                }
             }
 
         } catch (Exception e) {
@@ -79,6 +90,9 @@ public class JwtAuthenticationFilter
                     .clearContext();
         }
 
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(
+                request,
+                response
+        );
     }
 }

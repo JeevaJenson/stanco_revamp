@@ -3,16 +3,29 @@ package com.stanco.service;
 import com.stanco.dto.AuthResponse;
 import com.stanco.dto.LoginRequest;
 import com.stanco.dto.RegisterRequest;
+
 import com.stanco.entity.User;
+
 import com.stanco.repository.UserRepository;
+
 import com.stanco.security.JwtService;
 
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.authentication.AuthenticationManager;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
+import org.springframework.security.core.Authentication;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -21,41 +34,49 @@ public class AuthService {
 
     private final JwtService jwtService;
 
-    public AuthService(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
-            JwtService jwtService) {
+    private final AuthenticationManager authenticationManager;
 
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-    }
 
-    public AuthResponse register(RegisterRequest request) {
+  
 
-        if (userRepository.existsByEmpID(request.getEmpID())) {
+    public AuthResponse register(
+            RegisterRequest request) {
+
+        if (userRepository.existsByEmpID(
+                request.getEmpID())) {
 
             throw new RuntimeException(
                     "Employee ID already exists"
             );
         }
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(
+                request.getEmail())) {
 
             throw new RuntimeException(
                     "Email already exists"
             );
         }
 
+
         User user = new User();
 
-        user.setEmpID(request.getEmpID());
+        user.setEmpID(
+                request.getEmpID()
+        );
 
-        user.setName(request.getName());
+        user.setName(
+                request.getName()
+        );
 
-        user.setEmail(request.getEmail());
+        user.setEmail(
+                request.getEmail()
+        );
 
-        user.setMobileNo(request.getMobileNo());
+        user.setMobileNo(
+                request.getMobileNo()
+        );
+
 
         user.setPassword(
                 passwordEncoder.encode(
@@ -63,11 +84,18 @@ public class AuthService {
                 )
         );
 
-        user.setDesignation("Employee");
 
-        user.setRoleType("employee");
+        user.setDesignation(
+                "Recruiter"
+        );
 
-        user.setProfileStatus("Active");
+        user.setRoleType(
+                "recruiter"
+        );
+
+        user.setProfileStatus(
+                "Active"
+        );
 
         user.setTeam("");
 
@@ -81,8 +109,10 @@ public class AuthService {
                 LocalDateTime.now()
         );
 
+
         User savedUser =
                 userRepository.save(user);
+
 
         String token =
                 jwtService.generateToken(
@@ -91,55 +121,44 @@ public class AuthService {
                         savedUser.getRoleType()
                 );
 
+
         return new AuthResponse(
-
                 "Registration successful",
-
                 token,
-
                 savedUser.getId(),
-
                 savedUser.getEmpID(),
-
                 savedUser.getName(),
-
                 savedUser.getRoleType()
         );
     }
 
-    public AuthResponse login(LoginRequest request) {
+
+    public AuthResponse login(
+            LoginRequest request) {
+
+        Authentication authentication =
+                authenticationManager.authenticate(
+
+                        new UsernamePasswordAuthenticationToken(
+                                request.getEmpID(),
+                                request.getPassword()
+                        )
+                );
+
+
+        String empID =
+                authentication.getName();
+
 
         User user =
                 userRepository
-                        .findByEmpID(
-                                request.getEmpID()
-                        )
+                        .findByEmpID(empID)
                         .orElseThrow(() ->
                                 new RuntimeException(
-                                        "Invalid Employee ID or Password"
+                                        "User not found"
                                 )
                         );
 
-        boolean passwordMatches =
-                passwordEncoder.matches(
-                        request.getPassword(),
-                        user.getPassword()
-                );
-
-        if (!passwordMatches) {
-
-            throw new RuntimeException(
-                    "Invalid Employee ID or Password"
-            );
-        }
-
-        if (!"Active".equalsIgnoreCase(
-                user.getProfileStatus())) {
-
-            throw new RuntimeException(
-                    "User account is inactive"
-            );
-        }
 
         String token =
                 jwtService.generateToken(
@@ -148,18 +167,13 @@ public class AuthService {
                         user.getRoleType()
                 );
 
+
         return new AuthResponse(
-
                 "Login successful",
-
                 token,
-
                 user.getId(),
-
                 user.getEmpID(),
-
                 user.getName(),
-
                 user.getRoleType()
         );
     }

@@ -1,11 +1,15 @@
 package com.stanco.entity;
 
 import jakarta.persistence.*;
+
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
@@ -23,13 +27,19 @@ public class User {
     @Column(nullable = false)
     private String designation;
 
+    @Column(name = "business")
     private String business;
 
+    @Column(name = "department")
     private String department;
 
-    @Column(name = "lob_division")
+    @Column(
+        name = "lob_division",
+        columnDefinition = "LONGTEXT"
+    )
     private String lobDivision;
 
+    @Column(name = "supervisor")
     private String supervisor;
 
     @Column(nullable = false)
@@ -51,10 +61,10 @@ public class User {
     private String rememberToken;
 
     @Column(name = "created_at")
-    private java.time.LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
-    private java.time.LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
 
     @Column(nullable = false)
     private String team;

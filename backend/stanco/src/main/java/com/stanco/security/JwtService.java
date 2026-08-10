@@ -8,18 +8,25 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+
 import java.util.Date;
 
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY = "c3RhbmNvLXNlY3JldC1rZXktZm9yLWp3dC1hdXRoZW50aWNhdGlvbg==";
+    private static final String SECRET_KEY =
+            "c3RhbmNvLXNlY3JldC1rZXktZm9yLWp3dC1hdXRoZW50aWNjYXRpb24=";
 
     private final SecretKey key;
 
     public JwtService() {
-        this.key = Keys.hmacShaKeyFor(
-                Decoders.BASE64.decode(SECRET_KEY));
+
+        this.key =
+                Keys.hmacShaKeyFor(
+                        Decoders.BASE64.decode(
+                                SECRET_KEY
+                        )
+                );
     }
 
     public String generateToken(
@@ -29,28 +36,47 @@ public class JwtService {
 
         return Jwts.builder()
                 .subject(empID)
-                .claim("name", name)
-                .claim("role", roleType)
-                .issuedAt(new Date())
+
+                .claim(
+                        "name",
+                        name
+                )
+
+                .claim(
+                        "role",
+                        roleType
+                )
+
+                .issuedAt(
+                        new Date()
+                )
+
                 .expiration(
                         new Date(
                                 System.currentTimeMillis()
-                                        + 1000 * 60 * 60))
+                                        + 1000L * 60 * 60
+                        )
+                )
+
                 .signWith(key)
+
                 .compact();
     }
 
-    public String extractEmpID(String token) {
+    public String extractEmpID(
+            String token) {
 
         return extractAllClaims(token)
                 .getSubject();
     }
 
-    public boolean isTokenValid(String token) {
+    public boolean isTokenValid(
+            String token) {
 
         try {
 
-            Claims claims = extractAllClaims(token);
+            Claims claims =
+                    extractAllClaims(token);
 
             return !claims
                     .getExpiration()
@@ -62,13 +88,8 @@ public class JwtService {
         }
     }
 
-    public String extractRole(String token) {
-
-        return extractAllClaims(token)
-                .get("role", String.class);
-    }
-
-    private Claims extractAllClaims(String token) {
+    private Claims extractAllClaims(
+            String token) {
 
         return Jwts.parser()
                 .verifyWith(key)
