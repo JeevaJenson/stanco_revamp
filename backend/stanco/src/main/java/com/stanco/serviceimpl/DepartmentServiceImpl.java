@@ -2,8 +2,13 @@ package com.stanco.serviceimpl;
 
 import com.stanco.dto.request.DepartmentRequest;
 import com.stanco.dto.response.DepartmentResponse;
+
 import com.stanco.entity.Department;
+
+import com.stanco.enums.Status;
+
 import com.stanco.repository.DepartmentRepository;
+
 import com.stanco.service.DepartmentService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +24,7 @@ public class DepartmentServiceImpl
         implements DepartmentService {
 
     private final DepartmentRepository repository;
+
 
     @Override
     public DepartmentResponse create(
@@ -41,9 +47,8 @@ public class DepartmentServiceImpl
 
         department.setStatus(
                 request.getStatus() != null
-                        ? Department.Status.valueOf(
-                                request.getStatus())
-                        : Department.Status.active);
+                        ? request.getStatus()
+                        : Status.active);
 
         department.setCreatedBy(
                 request.getCreatedBy());
@@ -54,19 +59,24 @@ public class DepartmentServiceImpl
         department.setUpdatedAt(
                 LocalDateTime.now());
 
-        Department saved = repository.save(department);
+        Department saved = repository.save(
+                department);
 
-        return mapToResponse(saved);
+        return mapToResponse(
+                saved);
     }
+
 
     @Override
     public List<DepartmentResponse> getAll() {
 
         return repository.findAll()
                 .stream()
+                .filter(department -> department.getStatus() == Status.active)
                 .map(this::mapToResponse)
                 .toList();
     }
+
 
     @Override
     public DepartmentResponse getById(
@@ -77,20 +87,25 @@ public class DepartmentServiceImpl
                         "Department not found: "
                                 + id));
 
-        return mapToResponse(department);
+        return mapToResponse(
+                department);
     }
+
 
     @Override
     public DepartmentResponse getByDepId(
             String depId) {
 
-        Department department = repository.findByDepId(depId)
+        Department department = repository.findByDepId(
+                depId)
                 .orElseThrow(() -> new RuntimeException(
                         "Department not found: "
                                 + depId));
 
-        return mapToResponse(department);
+        return mapToResponse(
+                department);
     }
+
 
     @Override
     public DepartmentResponse update(
@@ -111,8 +126,7 @@ public class DepartmentServiceImpl
         if (request.getStatus() != null) {
 
             department.setStatus(
-                    Department.Status.valueOf(
-                            request.getStatus()));
+                    request.getStatus());
         }
 
         department.setUpdatedBy(
@@ -121,10 +135,14 @@ public class DepartmentServiceImpl
         department.setUpdatedAt(
                 LocalDateTime.now());
 
-        Department updated = repository.save(department);
+        Department updated = repository.save(
+                department);
 
-        return mapToResponse(updated);
+        return mapToResponse(
+                updated);
     }
+
+
 
     @Override
     public void delete(Long id) {
@@ -135,7 +153,7 @@ public class DepartmentServiceImpl
                                 + id));
 
         department.setStatus(
-                Department.Status.inactive);
+                Status.inactive);
 
         department.setDeletedAt(
                 LocalDateTime.now());
@@ -143,8 +161,10 @@ public class DepartmentServiceImpl
         department.setUpdatedAt(
                 LocalDateTime.now());
 
-        repository.save(department);
+        repository.save(
+                department);
     }
+
 
     private DepartmentResponse mapToResponse(
             Department department) {
@@ -152,13 +172,21 @@ public class DepartmentServiceImpl
         return new DepartmentResponse(
 
                 department.getId(),
+
                 department.getDepId(),
+
                 department.getName(),
-                department.getStatus().name(),
+
+                department.getStatus(),
+
                 department.getCreatedBy(),
+
                 department.getUpdatedBy(),
+
                 department.getCreatedAt(),
+
                 department.getUpdatedAt(),
+
                 department.getDeletedAt());
     }
 }

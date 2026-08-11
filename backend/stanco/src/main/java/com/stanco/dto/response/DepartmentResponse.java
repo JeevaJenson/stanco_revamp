@@ -1,5 +1,7 @@
 package com.stanco.dto.response;
 
+import com.stanco.enums.Status;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -15,7 +17,7 @@ public class DepartmentResponse {
 
     private String name;
 
-    private String status;
+    private Status status;
 
     private String createdBy;
 

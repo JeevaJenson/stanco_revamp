@@ -1,21 +1,18 @@
 package com.stanco.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
@@ -24,7 +21,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "empid", nullable = false)
+    @Column(name = "empID", nullable = false)
     private String empID;
 
     @Column(name = "name", nullable = false)
@@ -39,7 +36,10 @@ public class User {
     @Column(name = "department")
     private String department;
 
-    @Column(name = "lob_division", columnDefinition = "LONGTEXT")
+    @Column(
+            name = "lob_division",
+            columnDefinition = "LONGTEXT"
+    )
     private String lobDivision;
 
     @Column(name = "supervisor")

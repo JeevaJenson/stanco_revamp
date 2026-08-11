@@ -22,7 +22,8 @@ public class RecruitmentRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "recReqID")
+
+    @Column(name = "`recReqID`", nullable = false)
     private String recReqID;
 
     @Column(name = "rfh_no")
@@ -100,12 +101,15 @@ public class RecruitmentRequest {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "delete_status")
+    @Column(name = "delete_status", nullable = false)
     private Integer deleteStatus;
 
-    @Column(name = "sub_position_title")
+    @Column(
+            name = "sub_position_title",
+            columnDefinition = "TEXT"
+    )
     private String subPositionTitle;
 
-    @Column(name = "closed_by")
+    @Column(name = "closed_by", nullable = false)
     private String closedBy;
 }

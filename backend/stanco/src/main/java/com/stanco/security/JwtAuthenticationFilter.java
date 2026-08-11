@@ -50,45 +50,40 @@ public class JwtAuthenticationFilter
             return;
         }
 
-        String token =
-                authHeader.substring(7);
+      String token =
+        authHeader.substring(7);
 
-        try {
+try {
 
-            if (jwtService.isTokenValid(token)) {
+    if (jwtService.isTokenValid(token)) {
 
-                String empID =
-                        jwtService.extractEmpID(token);
+        String empID =
+                jwtService.extractEmpID(token);
 
-                UserDetails userDetails =
-                        customUserDetailsService
-                                .loadUserByUsername(
-                                        empID
-                                );
+        UserDetails userDetails =
+                customUserDetailsService
+                        .loadUserByUsername(empID);
 
-                if (userDetails.isEnabled()) {
+        if (userDetails.isEnabled()) {
 
-                    UsernamePasswordAuthenticationToken
-                            authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
-
-                    SecurityContextHolder
-                            .getContext()
-                            .setAuthentication(
-                                    authentication
-                            );
-                }
-            }
-
-        } catch (Exception e) {
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
 
             SecurityContextHolder
-                    .clearContext();
+                    .getContext()
+                    .setAuthentication(authentication);
         }
+    }
+
+} catch (Exception e) {
+
+    SecurityContextHolder
+            .clearContext();
+}
 
         filterChain.doFilter(
                 request,
