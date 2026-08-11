@@ -1,0 +1,156 @@
+.dm-sidebar {
+  width: 250px;
+  height: 100vh;
+  background: #ffffff;
+  border-right: 1px solid #e1e5eb;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.logo-section {
+  padding: 25px 20px 15px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.logo-section h2 {
+  margin: 0;
+  font-size: 25px;
+  color: #777;
+}
+
+.logo-section p {
+  margin: 2px 0 0;
+  font-size: 10px;
+  color: #999;
+}
+
+.admin-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+}
+
+.admin-icon {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: #9acd32;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #315b20;
+}
+
+.admin-section h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.admin-section p {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: #999;
+}
+
+.menu {
+  padding: 10px 12px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 43px;
+  padding: 0 12px;
+  margin-bottom: 3px;
+  border-radius: 5px;
+  font-size: 13px;
+  color: #777;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.menu-item span {
+  flex: 1;
+}
+
+.menu-item:hover {
+  background: #f1f5fb;
+}
+
+.menu-item.active {
+  background: #1687e8;
+  color: white;
+}
+
+.menu-item b {
+  background: #687789;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+}
+
+.menu-sub-item {
+  padding: 4px 15px 10px 48px;
+  font-size: 11px;
+  line-height: 18px;
+  color: #888;
+}
+.prohire-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 22px 15px 5px;
+}
+
+.prohire-icon {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.green-shape {
+  position: absolute;
+  width: 27px;
+  height: 18px;
+  background: #8aa83d;
+  border-radius: 70% 30% 70% 30%;
+  transform: rotate(-35deg);
+  left: 2px;
+  top: 7px;
+}
+
+.blue-shape {
+  position: absolute;
+  width: 32px;
+  height: 17px;
+  border: 6px solid #3278a8;
+  border-top: none;
+  border-radius: 0 0 25px 25px;
+  transform: rotate(-12deg);
+  left: 7px;
+  top: 21px;
+}
+
+.prohire-text {
+  text-align: center;
+}
+
+.prohire-name {
+  font-size: 28px;
+  font-weight: 500;
+  color: #8b8b65;
+  line-height: 30px;
+}
+
+.prohire-tagline {
+  font-size: 9px;
+  color: #7894b5;
+  margin-top: 3px;
+}
