@@ -1,4 +1,4 @@
-package com.stanco.dto;
+package com.stanco.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 
@@ -7,9 +7,9 @@ import lombok.Data;
 @Data
 public class LoginRequest {
 
-    @NotBlank(message = "Employee ID is required")
+    @NotBlank
     private String empID;
 
-    @NotBlank(message = "Password is required")
+    @NotBlank
     private String password;
 }

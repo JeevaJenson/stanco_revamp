@@ -1,4 +1,4 @@
-package com.stanco.dto;
+package com.stanco.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
