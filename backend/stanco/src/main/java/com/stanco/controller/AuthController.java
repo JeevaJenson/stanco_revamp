@@ -1,8 +1,9 @@
 package com.stanco.controller;
 
-import com.stanco.dto.AuthResponse;
-import com.stanco.dto.LoginRequest;
-import com.stanco.dto.RegisterRequest;
+import com.stanco.dto.request.LoginRequest;
+import com.stanco.dto.request.RegisterRequest;
+
+import com.stanco.dto.response.AuthResponse;
 
 import com.stanco.service.AuthService;
 

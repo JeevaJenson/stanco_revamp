@@ -1,11 +1,11 @@
 package com.stanco.controller;
 
-import com.stanco.dto.CreateUserRequest;
-import com.stanco.dto.UserResponse;
-
+import com.stanco.dto.request.CreateUserRequest;
+import com.stanco.dto.response.UserResponse;
 import com.stanco.service.UserService;
 
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -21,60 +21,46 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+        private final UserService userService;
 
+        @GetMapping
+        public ResponseEntity<List<UserResponse>> getAllUsers() {
 
-    @GetMapping
-    public ResponseEntity<List<UserResponse>>
-    getAllUsers() {
+                return ResponseEntity.ok(
+                                userService.getAllUsers());
+        }
 
-        return ResponseEntity.ok(
-                userService.getAllUsers()
-        );
-    }
+        @GetMapping("/me")
+        public ResponseEntity<UserResponse> getMyDetails(
+                        Authentication authentication) {
 
+                String empID = authentication.getName();
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponse>
-    getUserById(
-            @PathVariable Long id) {
+                return ResponseEntity.ok(
+                                userService.getMyDetails(empID));
+        }
 
-        return ResponseEntity.ok(
-                userService.getUserById(id)
-        );
-    }
+        @GetMapping("/emp/{empID}")
+        public ResponseEntity<UserResponse> getUserByEmpID(
+                        @PathVariable String empID) {
 
+                return ResponseEntity.ok(
+                                userService.getUserByEmpID(empID));
+        }
 
-    @GetMapping("/emp/{empID}")
-    public ResponseEntity<UserResponse>
-    getUserByEmpID(
-            @PathVariable String empID) {
+        @GetMapping("/{id}")
+        public ResponseEntity<UserResponse> getUserById(
+                        @PathVariable Long id) {
 
-        return ResponseEntity.ok(
-                userService.getUserByEmpID(empID)
-        );
-    }
+                return ResponseEntity.ok(
+                                userService.getUserById(id));
+        }
 
-    @PostMapping
-public ResponseEntity<UserResponse> createUser(
-        @Valid @RequestBody CreateUserRequest request) {
+        @PostMapping
+        public ResponseEntity<UserResponse> createUser(
+                        @Valid @RequestBody CreateUserRequest request) {
 
-    return ResponseEntity.ok(
-            userService.createUser(request)
-    );
-}
-
-
-    @GetMapping("/me")
-    public ResponseEntity<UserResponse>
-    getMyDetails(
-            Authentication authentication) {
-
-        String empID =
-                authentication.getName();
-
-        return ResponseEntity.ok(
-                userService.getMyDetails(empID)
-        );
-    }
+                return ResponseEntity.ok(
+                                userService.createUser(request));
+        }
 }

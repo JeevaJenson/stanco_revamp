@@ -1,15 +1,21 @@
 package com.stanco.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
@@ -18,13 +24,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "empID", nullable = false)
+    @Column(name = "empid", nullable = false)
     private String empID;
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "designation", nullable = false)
     private String designation;
 
     @Column(name = "business")
@@ -33,16 +39,13 @@ public class User {
     @Column(name = "department")
     private String department;
 
-    @Column(
-        name = "lob_division",
-        columnDefinition = "LONGTEXT"
-    )
+    @Column(name = "lob_division", columnDefinition = "LONGTEXT")
     private String lobDivision;
 
     @Column(name = "supervisor")
     private String supervisor;
 
-    @Column(nullable = false)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "mobile_no", nullable = false)
@@ -54,7 +57,7 @@ public class User {
     @Column(name = "profile_status", nullable = false)
     private String profileStatus;
 
-    @Column(nullable = false)
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Column(name = "remember_token")
@@ -66,7 +69,7 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(nullable = false)
+    @Column(name = "team", nullable = false)
     private String team;
 
     @Column(name = "color_code", nullable = false)
