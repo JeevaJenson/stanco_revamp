@@ -1,13 +1,9 @@
-package com.stanco.dto;
+package com.stanco.dto.request;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
-public class UserResponse {
-
-    private Long id;
+public class CreateUserRequest {
 
     private String empID;
 
@@ -30,6 +26,8 @@ public class UserResponse {
     private String roleType;
 
     private String profileStatus;
+
+    private String password;
 
     private String team;
 
