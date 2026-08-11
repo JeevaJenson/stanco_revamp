@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FaUser, FaLock } from "react-icons/fa";
-import "./App.css";
+import "./Login.css";
 
-function App() {
+function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -16,16 +16,12 @@ function App() {
 
     console.log("Username:", username);
     console.log("Password:", password);
-
-    // API call can be added here
   };
 
   return (
     <div className="login-page">
-
       <div className="login-container">
 
-        {/* Logo */}
         <div className="logo-section">
           <div className="logo-text">
             <span className="pro">Pro</span>
@@ -37,10 +33,8 @@ function App() {
           </div>
         </div>
 
-        {/* Login Form */}
         <form onSubmit={handleLogin}>
 
-          {/* Username */}
           <div className="input-box">
             <FaUser className="input-icon" />
 
@@ -52,7 +46,6 @@ function App() {
             />
           </div>
 
-          {/* Password */}
           <div className="input-box">
             <FaLock className="input-icon" />
 
@@ -64,7 +57,6 @@ function App() {
             />
           </div>
 
-          {/* Login Button */}
           <button type="submit" className="login-button">
             Log in
           </button>
@@ -72,10 +64,8 @@ function App() {
         </form>
 
       </div>
-
     </div>
   );
 }
 
-export default App;
-
+export default Login;
