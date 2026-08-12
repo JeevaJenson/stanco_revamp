@@ -1,5 +1,7 @@
 package com.stanco.dto.response;
 
+import com.stanco.enums.Status;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -29,7 +31,7 @@ public class UserResponse {
 
     private String roleType;
 
-    private String profileStatus;
+    private Status profileStatus;
 
     private String team;
 

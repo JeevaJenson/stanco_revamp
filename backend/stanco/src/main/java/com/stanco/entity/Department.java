@@ -1,11 +1,12 @@
 package com.stanco.entity;
 
 import com.stanco.enums.Status;
+import com.stanco.enums.StatusConverter;
+
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,9 +35,9 @@ public class Department {
     @Column(nullable = false)
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status = Status.active;
+   @Convert(converter = StatusConverter.class)
+@Column(nullable = false, length = 2)
+private Status status = Status.active;
 
     @Column(name = "created_by", nullable = false)
     private String createdBy;

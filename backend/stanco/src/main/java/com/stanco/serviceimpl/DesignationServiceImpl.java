@@ -21,245 +21,192 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class DesignationServiceImpl
-        implements DesignationService {
+                implements DesignationService {
+
+        private final DesignationRepository repository;
+
+        @Override
+        public DesignationResponse create(
+                        DesignationRequest request) {
+
+                if (repository.existsByDesId(
+                                request.getDesId())) {
+
+                        throw new RuntimeException(
+                                        "Designation ID already exists: "
+                                                        + request.getDesId());
+                }
+
+                Designation designation = new Designation();
+
+                designation.setDesId(
+                                request.getDesId());
+
+                designation.setName(
+                                request.getName());
 
 
-    private final DesignationRepository repository;
 
+                designation.setStatus(
+                                request.getStatus() != null
+                                                ? request.getStatus()
+                                                : Status.active);
 
-    @Override
-    public DesignationResponse create(
-            DesignationRequest request) {
+                designation.setCreatedBy(
+                                request.getCreatedBy());
 
-        if (repository.existsByDesId(
-                request.getDesId())) {
+                designation.setCreatedAt(
+                                LocalDateTime.now());
 
-            throw new RuntimeException(
-                    "Designation ID already exists"
-            );
+                designation.setUpdatedAt(
+                                LocalDateTime.now());
+
+                Designation saved = repository.save(
+                                designation);
+
+                return mapToResponse(
+                                saved);
         }
 
 
-        Designation designation =
-                new Designation();
 
+        @Override
+        public List<DesignationResponse> getAll() {
 
-        designation.setDesId(
-                request.getDesId()
-        );
-
-
-        designation.setName(
-                request.getName()
-        );
-
-
-        designation.setStatus(
-                request.getStatus() != null
-                        ? request.getStatus()
-                        : Status.active
-        );
-
-
-        designation.setCreatedBy(
-                request.getCreatedBy()
-        );
-
-
-        designation.setCreatedAt(
-                LocalDateTime.now()
-        );
-
-
-        designation.setUpdatedAt(
-                LocalDateTime.now()
-        );
-
-
-        Designation saved =
-                repository.save(
-                        designation
-                );
-
-
-        return mapToResponse(
-                saved
-        );
-    }
-
-
-
-    @Override
-    public List<DesignationResponse> getAll() {
-
-        return repository.findAll()
-                .stream()
-                .filter(designation ->
-                        designation.getStatus()
-                                == Status.active
-                )
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-
-
-    @Override
-    public DesignationResponse getById(
-            Long id) {
-
-        Designation designation =
-                repository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Designation not found: "
-                                                + id
-                                )
-                        );
-
-
-        return mapToResponse(
-                designation
-        );
-    }
-
-
-    @Override
-    public DesignationResponse getByDesId(
-            String desId) {
-
-        Designation designation =
-                repository.findByDesId(
-                                desId
-                        )
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Designation not found: "
-                                                + desId
-                                )
-                        );
-
-
-        return mapToResponse(
-                designation
-        );
-    }
-
-
-    @Override
-    public DesignationResponse update(
-            Long id,
-            DesignationRequest request) {
-
-        Designation designation =
-                repository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Designation not found: "
-                                                + id
-                                )
-                        );
-
-
-        designation.setDesId(
-                request.getDesId()
-        );
-
-
-        designation.setName(
-                request.getName()
-        );
-
-
-        if (request.getStatus() != null) {
-
-            designation.setStatus(
-                    request.getStatus()
-            );
+                return repository
+                                .findByStatus(Status.active)
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
         }
 
 
-        designation.setUpdatedBy(
-                request.getUpdatedBy()
-        );
+        @Override
+        public DesignationResponse getById(
+                        Long id) {
+
+                Designation designation = repository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Designation not found: "
+                                                                + id));
+
+                return mapToResponse(
+                                designation);
+        }
 
 
-        designation.setUpdatedAt(
-                LocalDateTime.now()
-        );
+
+        @Override
+        public DesignationResponse getByDesId(
+                        String desId) {
+
+                Designation designation = repository.findByDesId(desId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Designation not found: "
+                                                                + desId));
+
+                return mapToResponse(
+                                designation);
+        }
 
 
-        Designation updated =
+
+        @Override
+        public DesignationResponse update(
+                        Long id,
+                        DesignationRequest request) {
+
+                Designation designation = repository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Designation not found: "
+                                                                + id));
+
+                designation.setDesId(
+                                request.getDesId());
+
+                designation.setName(
+                                request.getName());
+
+        
+                if (request.getStatus() != null) {
+
+                        designation.setStatus(
+                                        request.getStatus());
+                }
+
+                designation.setUpdatedBy(
+                                request.getUpdatedBy());
+
+                designation.setUpdatedAt(
+                                LocalDateTime.now());
+
+                if (request.getStatus() == Status.active) {
+
+                        designation.setDeletedAt(null);
+                }
+
+        
+
+                if (request.getStatus() == Status.inactive) {
+
+                        designation.setDeletedAt(
+                                        LocalDateTime.now());
+                }
+
+                Designation updated = repository.save(
+                                designation);
+
+                return mapToResponse(
+                                updated);
+        }
+
+
+        @Override
+        public void delete(
+                        Long id) {
+
+                Designation designation = repository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Designation not found: "
+                                                                + id));
+
+
+                designation.setStatus(
+                                Status.inactive);
+
+                designation.setDeletedAt(
+                                LocalDateTime.now());
+
+                designation.setUpdatedAt(
+                                LocalDateTime.now());
+
                 repository.save(
-                        designation
-                );
-
-
-        return mapToResponse(
-                updated
-        );
-    }
+                                designation);
+        }
 
 
 
-    @Override
-    public void delete(Long id) {
+        private DesignationResponse mapToResponse(
+                        Designation designation) {
 
-        Designation designation =
-                repository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Designation not found: "
-                                                + id
-                                )
-                        );
+                return new DesignationResponse(
 
+                                designation.getId(),
 
-        designation.setStatus(
-                Status.inactive
-        );
+                                designation.getDesId(),
 
+                                designation.getName(),
 
-        designation.setDeletedAt(
-                LocalDateTime.now()
-        );
+                                designation.getStatus(),
 
+                                designation.getCreatedBy(),
 
-        designation.setUpdatedAt(
-                LocalDateTime.now()
-        );
+                                designation.getUpdatedBy(),
 
+                                designation.getCreatedAt(),
 
-        repository.save(
-                designation
-        );
-    }
+                                designation.getUpdatedAt(),
 
-
-
-
-    private DesignationResponse mapToResponse(
-            Designation designation) {
-
-        return new DesignationResponse(
-
-                designation.getId(),
-
-                designation.getDesId(),
-
-                designation.getName(),
-
-                designation.getStatus(),
-
-                designation.getCreatedBy(),
-
-                designation.getUpdatedBy(),
-
-                designation.getCreatedAt(),
-
-                designation.getUpdatedAt(),
-
-                designation.getDeletedAt()
-        );
-    }
+                                designation.getDeletedAt());
+        }
 }

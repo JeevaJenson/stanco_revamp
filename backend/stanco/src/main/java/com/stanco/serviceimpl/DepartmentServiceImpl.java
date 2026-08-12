@@ -34,45 +34,62 @@ public class DepartmentServiceImpl
                 request.getDepId())) {
 
             throw new RuntimeException(
-                    "Department ID already exists");
+                    "Department ID already exists: "
+                            + request.getDepId()
+            );
         }
 
-        Department department = new Department();
+
+        Department department =
+                new Department();
+
 
         department.setDepId(
-                request.getDepId());
+                request.getDepId()
+        );
+
 
         department.setName(
-                request.getName());
+                request.getName()
+        );
 
         department.setStatus(
                 request.getStatus() != null
                         ? request.getStatus()
-                        : Status.active);
+                        : Status.active
+        );
+
 
         department.setCreatedBy(
-                request.getCreatedBy());
+                request.getCreatedBy()
+        );
+
 
         department.setCreatedAt(
-                LocalDateTime.now());
+                LocalDateTime.now()
+        );
+
 
         department.setUpdatedAt(
-                LocalDateTime.now());
+                LocalDateTime.now()
+        );
 
-        Department saved = repository.save(
-                department);
 
-        return mapToResponse(
-                saved);
+        Department saved =
+                repository.save(department);
+
+
+        return mapToResponse(saved);
     }
 
 
     @Override
     public List<DepartmentResponse> getAll() {
 
-        return repository.findAll()
+        return repository.findByStatus(
+                        Status.active
+                )
                 .stream()
-                .filter(department -> department.getStatus() == Status.active)
                 .map(this::mapToResponse)
                 .toList();
     }
@@ -82,28 +99,40 @@ public class DepartmentServiceImpl
     public DepartmentResponse getById(
             Long id) {
 
-        Department department = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Department not found: "
-                                + id));
+        Department department =
+                repository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Department not found: "
+                                                + id
+                                )
+                        );
+
 
         return mapToResponse(
-                department);
+                department
+        );
     }
+
 
 
     @Override
     public DepartmentResponse getByDepId(
             String depId) {
 
-        Department department = repository.findByDepId(
-                depId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Department not found: "
-                                + depId));
+        Department department =
+                repository.findByDepId(depId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Department not found: "
+                                                + depId
+                                )
+                        );
+
 
         return mapToResponse(
-                department);
+                department
+        );
     }
 
 
@@ -112,57 +141,99 @@ public class DepartmentServiceImpl
             Long id,
             DepartmentRequest request) {
 
-        Department department = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Department not found: "
-                                + id));
+        Department department =
+                repository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Department not found: "
+                                                + id
+                                )
+                        );
+
 
         department.setDepId(
-                request.getDepId());
+                request.getDepId()
+        );
+
 
         department.setName(
-                request.getName());
+                request.getName()
+        );
+
 
         if (request.getStatus() != null) {
 
             department.setStatus(
-                    request.getStatus());
+                    request.getStatus()
+            );
         }
 
+
         department.setUpdatedBy(
-                request.getUpdatedBy());
+                request.getUpdatedBy()
+        );
+
 
         department.setUpdatedAt(
-                LocalDateTime.now());
+                LocalDateTime.now()
+        );
 
-        Department updated = repository.save(
-                department);
+
+        if (request.getStatus() == Status.active) {
+
+            department.setDeletedAt(null);
+        }
+
+
+
+        if (request.getStatus() == Status.inactive) {
+
+            department.setDeletedAt(
+                    LocalDateTime.now()
+            );
+        }
+
+
+        Department updated =
+                repository.save(department);
+
 
         return mapToResponse(
-                updated);
+                updated
+        );
     }
 
 
 
     @Override
-    public void delete(Long id) {
+    public void delete(
+            Long id) {
 
-        Department department = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Department not found: "
-                                + id));
+        Department department =
+                repository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Department not found: "
+                                                + id
+                                )
+                        );
 
         department.setStatus(
-                Status.inactive);
+                Status.inactive
+        );
+
 
         department.setDeletedAt(
-                LocalDateTime.now());
+                LocalDateTime.now()
+        );
+
 
         department.setUpdatedAt(
-                LocalDateTime.now());
+                LocalDateTime.now()
+        );
 
-        repository.save(
-                department);
+
+        repository.save(department);
     }
 
 
@@ -187,6 +258,7 @@ public class DepartmentServiceImpl
 
                 department.getUpdatedAt(),
 
-                department.getDeletedAt());
+                department.getDeletedAt()
+        );
     }
 }
