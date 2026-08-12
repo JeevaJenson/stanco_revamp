@@ -8,7 +8,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
 import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.security.core.userdetails.UserDetails;
 
 import org.springframework.stereotype.Component;
@@ -40,7 +42,6 @@ public class JwtAuthenticationFilter
                 request.getHeader("Authorization");
 
 
-
         if (authHeader == null ||
                 !authHeader.startsWith("Bearer ")) {
 
@@ -59,7 +60,6 @@ public class JwtAuthenticationFilter
 
         try {
 
-        
 
             if (jwtService.isTokenValid(token)) {
 
@@ -68,11 +68,14 @@ public class JwtAuthenticationFilter
                         jwtService.extractEmpID(token);
 
 
+        
                 UserDetails userDetails =
                         customUserDetailsService
                                 .loadUserByUsername(
                                         empID
                                 );
+
+
 
 
                 if (userDetails.isEnabled()) {

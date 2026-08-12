@@ -27,116 +27,173 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-        private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter
+            jwtAuthenticationFilter;
 
-        private final CustomUserDetailsService customUserDetailsService;
+    private final CustomUserDetailsService
+            customUserDetailsService;
 
-        @Bean
-        public PasswordEncoder passwordEncoder() {
 
-                return new BCryptPasswordEncoder();
-        }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
 
-        @Bean
-        public DaoAuthenticationProvider authenticationProvider() {
+        return new BCryptPasswordEncoder();
+    }
 
-                DaoAuthenticationProvider provider = new DaoAuthenticationProvider(
-                                customUserDetailsService);
 
-                provider.setPasswordEncoder(
-                                passwordEncoder());
+    @Bean
+    public DaoAuthenticationProvider
+    authenticationProvider() {
 
-                return provider;
-        }
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider(
+                        customUserDetailsService
+                );
 
-        @Bean
-        public AuthenticationManager authenticationManager(
-                        AuthenticationConfiguration configuration)
-                        throws Exception {
+        provider.setPasswordEncoder(
+                passwordEncoder()
+        );
 
-                return configuration
-                                .getAuthenticationManager();
-        }
+        return provider;
+    }
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(
-                        HttpSecurity http)
-                        throws Exception {
 
-                http
+    @Bean
+    public AuthenticationManager
+    authenticationManager(
+            AuthenticationConfiguration configuration)
+            throws Exception {
 
-                                .csrf(csrf -> csrf.disable())
+        return configuration
+                .getAuthenticationManager();
+    }
 
-                                .sessionManagement(session -> session.sessionCreationPolicy(
-                                                SessionCreationPolicy.STATELESS))
 
-                             
+    @Bean
+    public SecurityFilterChain
+    securityFilterChain(
+            HttpSecurity http)
+            throws Exception {
 
-                                .authenticationProvider(
-                                                authenticationProvider())
+        http
 
-                                .authorizeHttpRequests(auth -> auth
+                .csrf(csrf ->
+                        csrf.disable()
+                )
 
-                                                .requestMatchers(
-                                                                "/api/auth/**")
-                                                .permitAll()
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
 
-                                                .requestMatchers(
-                                                                "/api/users/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin",
-                                                                "delivery_lead")
+                .authenticationProvider(
+                        authenticationProvider()
+                )
 
-                                                .requestMatchers(
-                                                                "/api/departments/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin")
+                .authorizeHttpRequests(auth -> auth
 
-                                                .requestMatchers(
-                                                                "/api/designations/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin")
 
-                                                .requestMatchers(
-                                                                "/api/business-masters/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin")
+                        
+                        .requestMatchers(
+                                "/api/auth/**"
+                        )
+                        .permitAll()
 
-                                                .requestMatchers(
-                                                                "/api/rfh/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin",
-                                                                "delivery_lead",
-                                                                "recruiter")
 
-                                                .requestMatchers(
-                                                                "/api/rfh-revenue-details/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin",
-                                                                "delivery_lead",
-                                                                "recruiter")
+                        
 
-                                                .requestMatchers(
-                                                                "/api/candidates/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin",
-                                                                "delivery_lead",
-                                                                "recruiter")
+                        .requestMatchers(
+                                "/api/users/**"
+                        )
+                        .hasAnyRole(
+                                "super_admin",
+                                "admin",
+                                "delivery_lead"
+                        )
 
-                                                .anyRequest()
-                                                .authenticated())
 
-                                .addFilterBefore(
-                                                jwtAuthenticationFilter,
-                                                UsernamePasswordAuthenticationFilter.class);
+                       
 
-                return http.build();
-        }
+                        .requestMatchers(
+                                "/api/departments/**"
+                        )
+                        .hasAnyRole(
+                                "super_admin",
+                                "admin"
+                        )
+
+
+                        
+                        .requestMatchers(
+                                "/api/designations/**"
+                        )
+                        .hasAnyRole(
+                                "super_admin",
+                                "admin"
+                        )
+
+
+                       
+                        .requestMatchers(
+                                "/api/business-masters/**"
+                        )
+                        .hasAnyRole(
+                                "super_admin",
+                                "admin"
+                        )
+
+
+                
+
+                        .requestMatchers(
+                                "/api/rfh/**"
+                        )
+                        .hasAnyRole(
+                                "super_admin",
+                                "admin",
+                                "delivery_lead",
+                                "recruiter"
+                        )
+
+
+                
+
+                        .requestMatchers(
+                                "/api/rfh-revenue-details/**"
+                        )
+                        .hasAnyRole(
+                                "super_admin",
+                                "admin",
+                                "delivery_lead",
+                                "recruiter"
+                        )
+
+
+                
+                        .requestMatchers(
+                                "/api/candidates/**"
+                        )
+                        .hasAnyRole(
+                                "super_admin",
+                                "admin",
+                                "delivery_lead",
+                                "recruiter"
+                        )
+
+
+                       
+
+                        .anyRequest()
+                        .authenticated()
+                )
+
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
+
+
+        return http.build();
+    }
 }

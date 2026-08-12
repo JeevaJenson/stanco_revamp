@@ -71,7 +71,6 @@ public class CandidateDetailsController {
     }
 
 
-
     @GetMapping("/cd/{cdID}")
     public ResponseEntity<CandidateDetailsResponse>
     getByCdID(
