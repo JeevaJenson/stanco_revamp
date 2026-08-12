@@ -2,14 +2,20 @@ package com.stanco.serviceimpl;
 
 import com.stanco.dto.request.CreateUserRequest;
 import com.stanco.dto.response.UserResponse;
+
 import com.stanco.entity.User;
+
 import com.stanco.enums.RoleType;
+import com.stanco.enums.Status;
+
 import com.stanco.repository.UserRepository;
+
 import com.stanco.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,7 +23,8 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl
+                implements UserService {
 
         private final UserRepository userRepository;
 
@@ -110,7 +117,7 @@ public class UserServiceImpl implements UserService {
                 user.setProfileStatus(
                                 request.getProfileStatus() != null
                                                 ? request.getProfileStatus()
-                                                : "Active");
+                                                : Status.active);
 
                 user.setPassword(
                                 passwordEncoder.encode(

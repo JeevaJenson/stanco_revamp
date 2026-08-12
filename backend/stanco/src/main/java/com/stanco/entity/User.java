@@ -1,5 +1,9 @@
 package com.stanco.entity;
 
+import com.stanco.enums.Status;
+import com.stanco.enums.StatusConverter;
+import jakarta.persistence.Convert;
+
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
@@ -21,20 +25,36 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "empID", nullable = false)
+
+    @Column(
+            name = "empID",
+            nullable = false,
+            unique = true
+    )
     private String empID;
 
-    @Column(name = "name", nullable = false)
+
+    @Column(
+            name = "name",
+            nullable = false
+    )
     private String name;
 
-    @Column(name = "designation", nullable = false)
+
+    @Column(
+            name = "designation",
+            nullable = false
+    )
     private String designation;
+
 
     @Column(name = "business")
     private String business;
 
+
     @Column(name = "department")
     private String department;
+
 
     @Column(
             name = "lob_division",
@@ -42,36 +62,71 @@ public class User {
     )
     private String lobDivision;
 
+
     @Column(name = "supervisor")
     private String supervisor;
 
-    @Column(name = "email", nullable = false)
+
+    @Column(
+            name = "email",
+            nullable = false
+    )
     private String email;
 
-    @Column(name = "mobile_no", nullable = false)
+
+    @Column(
+            name = "mobile_no",
+            nullable = false
+    )
     private String mobileNo;
 
-    @Column(name = "role_type", nullable = false)
+
+    @Column(
+            name = "role_type",
+            nullable = false
+    )
     private String roleType;
 
-    @Column(name = "profile_status", nullable = false)
-    private String profileStatus;
+    @Convert(
+            converter = StatusConverter.class
+    )
+    @Column(
+            name = "profile_status",
+            nullable = false,
+            length = 2
+    )
+    private Status profileStatus = Status.active;
 
-    @Column(name = "password", nullable = false)
+
+    @Column(
+            name = "password",
+            nullable = false
+    )
     private String password;
+
 
     @Column(name = "remember_token")
     private String rememberToken;
 
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "team", nullable = false)
+
+    @Column(
+            name = "team",
+            nullable = false
+    )
     private String team;
 
-    @Column(name = "color_code", nullable = false)
+
+    @Column(
+            name = "color_code",
+            nullable = false
+    )
     private String colorCode;
 }

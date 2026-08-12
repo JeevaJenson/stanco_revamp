@@ -13,14 +13,20 @@ public interface DepartmentService {
 
     List<DepartmentResponse> getAll();
 
-    DepartmentResponse getById(Long id);
+    DepartmentResponse getById(
+            Long id
+    );
 
-    DepartmentResponse getByDepId(String depId);
+    DepartmentResponse getByDepId(
+            String depId
+    );
 
     DepartmentResponse update(
             Long id,
             DepartmentRequest request
     );
 
-    void delete(Long id);
+    void delete(
+            Long id
+    );
 }

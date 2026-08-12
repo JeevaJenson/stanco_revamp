@@ -11,20 +11,27 @@ public interface DesignationService {
             DesignationRequest request
     );
 
+
     List<DesignationResponse> getAll();
+
 
     DesignationResponse getById(
             Long id
     );
 
+
     DesignationResponse getByDesId(
             String desId
     );
+
 
     DesignationResponse update(
             Long id,
             DesignationRequest request
     );
 
-    void delete(Long id);
+
+    void delete(
+            Long id
+    );
 }

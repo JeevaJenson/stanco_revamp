@@ -3,6 +3,8 @@ package com.stanco.controller;
 import com.stanco.dto.request.CandidateDetailsRequest;
 import com.stanco.dto.response.CandidateDetailsResponse;
 
+import com.stanco.enums.CandidateStatus;
+
 import com.stanco.service.CandidateDetailsService;
 
 import jakarta.validation.Valid;
@@ -24,6 +26,7 @@ public class CandidateDetailsController {
 
     private final CandidateDetailsService service;
 
+
     @PostMapping
     public ResponseEntity<CandidateDetailsResponse> create(
 
@@ -33,8 +36,10 @@ public class CandidateDetailsController {
 
             Authentication authentication) {
 
+
         String empID =
                 authentication.getName();
+
 
         return ResponseEntity.ok(
                 service.create(
@@ -46,16 +51,13 @@ public class CandidateDetailsController {
 
 
     @GetMapping
-    public ResponseEntity<
-            List<CandidateDetailsResponse>>
+    public ResponseEntity<List<CandidateDetailsResponse>>
     getAll() {
 
         return ResponseEntity.ok(
                 service.getAll()
         );
     }
-
-
 
 
     @GetMapping("/{id}")
@@ -68,10 +70,6 @@ public class CandidateDetailsController {
         );
     }
 
-
-    // ==========================================
-    // GET BY CD ID
-    // ==========================================
 
     @GetMapping("/cd/{cdID}")
     public ResponseEntity<CandidateDetailsResponse>
@@ -86,8 +84,7 @@ public class CandidateDetailsController {
 
 
     @GetMapping("/rfh/{rfhNo}")
-    public ResponseEntity<
-            List<CandidateDetailsResponse>>
+    public ResponseEntity<List<CandidateDetailsResponse>>
     getByRfhNo(
             @PathVariable String rfhNo) {
 
@@ -97,22 +94,17 @@ public class CandidateDetailsController {
     }
 
 
-    // ==========================================
-    // GET BY STATUS
-    // ==========================================
+
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<
-            List<CandidateDetailsResponse>>
+    public ResponseEntity<List<CandidateDetailsResponse>>
     getByStatus(
-            @PathVariable String status) {
+            @PathVariable CandidateStatus status) {
 
         return ResponseEntity.ok(
                 service.getByStatus(status)
         );
     }
-
-
 
     @PutMapping("/{id}")
     public ResponseEntity<CandidateDetailsResponse>
@@ -131,6 +123,9 @@ public class CandidateDetailsController {
                 )
         );
     }
+
+
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String>
