@@ -1,15 +1,25 @@
 package com.stanco.entity;
 
-import jakarta.persistence.*;
+import com.stanco.enums.Status;
 
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "departments")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Department {
@@ -42,9 +52,4 @@ public class Department {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
-
-    public enum Status {
-        active,
-        inactive
-    }
 }

@@ -2,6 +2,7 @@ package com.stanco.controller;
 
 import com.stanco.dto.request.CreateUserRequest;
 import com.stanco.dto.response.UserResponse;
+
 import com.stanco.service.UserService;
 
 import jakarta.validation.Valid;
@@ -21,46 +22,81 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-        private final UserService userService;
 
-        @GetMapping
-        public ResponseEntity<List<UserResponse>> getAllUsers() {
+    private final UserService userService;
 
-                return ResponseEntity.ok(
-                                userService.getAllUsers());
-        }
 
-        @GetMapping("/me")
-        public ResponseEntity<UserResponse> getMyDetails(
-                        Authentication authentication) {
 
-                String empID = authentication.getName();
+   @PostMapping
+public ResponseEntity<UserResponse> createUser(
+        @Valid
+        @RequestBody
+        CreateUserRequest request,
 
-                return ResponseEntity.ok(
-                                userService.getMyDetails(empID));
-        }
+        Authentication authentication) {
 
-        @GetMapping("/emp/{empID}")
-        public ResponseEntity<UserResponse> getUserByEmpID(
-                        @PathVariable String empID) {
+    String creatorEmpID =
+            authentication.getName();
 
-                return ResponseEntity.ok(
-                                userService.getUserByEmpID(empID));
-        }
+    return ResponseEntity.ok(
+            userService.createUser(
+                    request,
+                    creatorEmpID
+            )
+    );
+}
+  
 
-        @GetMapping("/{id}")
-        public ResponseEntity<UserResponse> getUserById(
-                        @PathVariable Long id) {
+    @GetMapping
+    public ResponseEntity<List<UserResponse>>
+    getAllUsers() {
 
-                return ResponseEntity.ok(
-                                userService.getUserById(id));
-        }
+        return ResponseEntity.ok(
+                userService.getAllUsers()
+        );
+    }
 
-        @PostMapping
-        public ResponseEntity<UserResponse> createUser(
-                        @Valid @RequestBody CreateUserRequest request) {
 
-                return ResponseEntity.ok(
-                                userService.createUser(request));
-        }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse>
+    getMyDetails(
+            Authentication authentication) {
+
+        String empID =
+                authentication.getName();
+
+        return ResponseEntity.ok(
+                userService.getMyDetails(
+                        empID
+                )
+        );
+    }
+
+
+    @GetMapping("/emp/{empID}")
+    public ResponseEntity<UserResponse>
+    getUserByEmpID(
+            @PathVariable String empID) {
+
+        return ResponseEntity.ok(
+                userService.getUserByEmpID(
+                        empID
+                )
+        );
+    }
+
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse>
+    getUserById(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(
+                userService.getUserById(
+                        id
+                )
+        );
+    }
 }
