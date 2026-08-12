@@ -8,20 +8,15 @@ import java.util.List;
 public interface UserService {
 
     UserResponse createUser(
-            CreateUserRequest request
+            CreateUserRequest request,
+            String creatorEmpID
     );
 
     List<UserResponse> getAllUsers();
 
-    UserResponse getUserById(
-            Long id
-    );
+    UserResponse getUserById(Long id);
 
-    UserResponse getUserByEmpID(
-            String empID
-    );
+    UserResponse getUserByEmpID(String empID);
 
-    UserResponse getMyDetails(
-            String empID
-    );
+    UserResponse getMyDetails(String empID);
 }

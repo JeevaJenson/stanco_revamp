@@ -1,5 +1,7 @@
 package com.stanco.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
+
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -7,6 +9,7 @@ import java.time.LocalDate;
 @Data
 public class RecruitmentRequestRequest {
 
+    @NotBlank
     private String recReqID;
 
     private String rfhNo;
@@ -50,12 +53,6 @@ public class RecruitmentRequestRequest {
     private String heplRecruitmentRefNumber;
 
     private String actionForTheDayStatus;
-
-    private String createdBy;
-
-    private String modifiedBy;
-
-    private Integer deleteStatus;
 
     private String subPositionTitle;
 

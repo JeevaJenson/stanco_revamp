@@ -1,5 +1,6 @@
 package com.stanco.config;
 
+import com.stanco.security.CustomUserDetailsService;
 import com.stanco.security.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -8,82 +9,126 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import org.springframework.security.authentication.AuthenticationManager;
-
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-
 import org.springframework.security.config.http.SessionCreationPolicy;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import org.springframework.security.web.SecurityFilterChain;
-
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
+        private final CustomUserDetailsService customUserDetailsService;
 
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
 
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration)
-            throws Exception {
+                return new BCryptPasswordEncoder();
+        }
 
-        return configuration
-                .getAuthenticationManager();
-    }
+        @Bean
+        public DaoAuthenticationProvider authenticationProvider() {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http)
-            throws Exception {
+                DaoAuthenticationProvider provider = new DaoAuthenticationProvider(
+                                customUserDetailsService);
 
-        http
+                provider.setPasswordEncoder(
+                                passwordEncoder());
 
-                .csrf(csrf -> csrf.disable())
+                return provider;
+        }
 
-                .sessionManagement(session -> session.sessionCreationPolicy(
-                        SessionCreationPolicy.STATELESS))
+        @Bean
+        public AuthenticationManager authenticationManager(
+                        AuthenticationConfiguration configuration)
+                        throws Exception {
 
-                .authorizeHttpRequests(auth -> auth
+                return configuration.getAuthenticationManager();
+        }
 
-                        .requestMatchers(
-                                "/api/auth/**")
-                        .permitAll()
+        @Bean
+        public SecurityFilterChain securityFilterChain(
+                        HttpSecurity http)
+                        throws Exception {
 
-                        .requestMatchers(
-                                "/api/users")
-                        .hasRole("super_admin")
+                http
 
-                        .requestMatchers(
-                                "/api/users/*")
-                        .hasRole("super_admin")
+                                .csrf(csrf -> csrf.disable())
 
-                        .requestMatchers(
-                                "/api/users/me")
-                        .authenticated()
+                                .sessionManagement(session -> session.sessionCreationPolicy(
+                                                SessionCreationPolicy.STATELESS))
 
-                        .requestMatchers(
-                                "/api/admin/**")
-                        .hasRole("super_admin")
+                                .authenticationProvider(
+                                                authenticationProvider())
 
-                        .anyRequest()
-                        .authenticated())
+                                .authorizeHttpRequests(auth -> auth
 
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                                                .requestMatchers(
+                                                                "/api/auth/**")
+                                                .permitAll()
 
-        return http.build();
-    }
+                                                .requestMatchers(
+                                                                "/api/users/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin",
+                                                                "delivery_lead")
+
+                                                .requestMatchers(
+                                                                "/api/departments/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin")
+
+                                                .requestMatchers(
+                                                                "/api/designations/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin")
+
+                                                .requestMatchers(
+                                                                "/api/business-masters/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin")
+
+                                                .requestMatchers(
+                                                                "/api/rfh/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin",
+                                                                "delivery_lead",
+                                                                "recruiter")
+
+                                                .requestMatchers(
+                                                                "/api/rfh-revenue-details/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin",
+                                                                "delivery_lead",
+                                                                "recruiter")
+
+                                                                .requestMatchers("/api/candidates/**")
+.hasAnyRole(
+        "super_admin",
+        "admin",
+        "hiring_manager",
+        "recruiter"
+)
+
+                                                .anyRequest()
+                                                .authenticated())
+
+                                .addFilterBefore(
+                                                jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class);
+
+                return http.build();
+        }
 }

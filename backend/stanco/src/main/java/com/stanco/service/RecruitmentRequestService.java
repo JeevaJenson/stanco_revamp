@@ -8,7 +8,8 @@ import java.util.List;
 public interface RecruitmentRequestService {
 
     RecruitmentRequestResponse create(
-            RecruitmentRequestRequest request
+            RecruitmentRequestRequest request,
+            String createdBy
     );
 
     List<RecruitmentRequestResponse> getAll();
@@ -21,10 +22,18 @@ public interface RecruitmentRequestService {
             String recReqID
     );
 
-    RecruitmentRequestResponse update(
-            Long id,
-            RecruitmentRequestRequest request
+    List<RecruitmentRequestResponse> getMyRequests(
+            String empID
     );
 
-    void delete(Long id);
+    RecruitmentRequestResponse update(
+            Long id,
+            RecruitmentRequestRequest request,
+            String modifiedBy
+    );
+
+    void delete(
+            Long id,
+            String modifiedBy
+    );
 }

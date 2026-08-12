@@ -17,7 +17,9 @@ public class JwtService {
     private static final String SECRET_KEY =
             "c3RhbmNvLXNlY3JldC1rZXktZm9yLWp3dC1hdXRoZW50aWNjYXRpb24=";
 
+
     private final SecretKey key;
+
 
     public JwtService() {
 
@@ -29,12 +31,14 @@ public class JwtService {
                 );
     }
 
+
     public String generateToken(
             String empID,
             String name,
             String roleType) {
 
         return Jwts.builder()
+
                 .subject(empID)
 
                 .claim(
@@ -63,12 +67,32 @@ public class JwtService {
                 .compact();
     }
 
+
+
     public String extractEmpID(
             String token) {
 
         return extractAllClaims(token)
                 .getSubject();
     }
+
+
+    public String extractRole(
+            String token) {
+
+        return extractAllClaims(token)
+                .get("role", String.class);
+    }
+
+
+    public String extractName(
+            String token) {
+
+        return extractAllClaims(token)
+                .get("name", String.class);
+    }
+
+
 
     public boolean isTokenValid(
             String token) {
@@ -78,9 +102,9 @@ public class JwtService {
             Claims claims =
                     extractAllClaims(token);
 
-            return !claims
-                    .getExpiration()
-                    .before(new Date());
+
+            return claims.getExpiration()
+                    .after(new Date());
 
         } catch (Exception e) {
 
@@ -88,13 +112,18 @@ public class JwtService {
         }
     }
 
+
     private Claims extractAllClaims(
             String token) {
 
         return Jwts.parser()
+
                 .verifyWith(key)
+
                 .build()
+
                 .parseSignedClaims(token)
+
                 .getPayload();
     }
 }

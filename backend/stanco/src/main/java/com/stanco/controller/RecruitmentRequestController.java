@@ -5,9 +5,13 @@ import com.stanco.dto.response.RecruitmentRequestResponse;
 
 import com.stanco.service.RecruitmentRequestService;
 
+import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+
+import org.springframework.security.core.Authentication;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -20,55 +24,134 @@ public class RecruitmentRequestController {
 
     private final RecruitmentRequestService service;
 
+
+
+
     @PostMapping
     public ResponseEntity<RecruitmentRequestResponse> create(
-            @RequestBody RecruitmentRequestRequest request) {
+
+            @Valid
+            @RequestBody
+            RecruitmentRequestRequest request,
+
+            Authentication authentication) {
+
+
+        String empID =
+                authentication.getName();
+
 
         return ResponseEntity.ok(
-                service.create(request));
+                service.create(
+                        request,
+                        empID
+                )
+        );
     }
+
 
     @GetMapping
-    public ResponseEntity<List<RecruitmentRequestResponse>> getAll() {
+    public ResponseEntity<
+            List<RecruitmentRequestResponse>>
+    getAll() {
 
         return ResponseEntity.ok(
-                service.getAll());
+                service.getAll()
+        );
     }
 
+
+
     @GetMapping("/{id}")
-    public ResponseEntity<RecruitmentRequestResponse> getById(
+    public ResponseEntity<RecruitmentRequestResponse>
+    getById(
             @PathVariable Long id) {
 
         return ResponseEntity.ok(
-                service.getById(id));
+                service.getById(id)
+        );
     }
 
+
+
     @GetMapping("/request/{recReqID}")
-    public ResponseEntity<RecruitmentRequestResponse> getByRecReqID(
+    public ResponseEntity<RecruitmentRequestResponse>
+    getByRecReqID(
             @PathVariable String recReqID) {
 
         return ResponseEntity.ok(
-                service.getByRecReqID(recReqID));
+                service.getByRecReqID(
+                        recReqID
+                )
+        );
     }
 
+
+
+    @GetMapping("/my")
+    public ResponseEntity<
+            List<RecruitmentRequestResponse>>
+    getMyRequests(
+            Authentication authentication) {
+
+        String empID =
+                authentication.getName();
+
+
+        return ResponseEntity.ok(
+                service.getMyRequests(empID)
+        );
+    }
+
+
+
     @PutMapping("/{id}")
-    public ResponseEntity<RecruitmentRequestResponse> update(
+    public ResponseEntity<RecruitmentRequestResponse>
+    update(
+
             @PathVariable Long id,
-            @RequestBody RecruitmentRequestRequest request) {
+
+            @Valid
+            @RequestBody
+            RecruitmentRequestRequest request,
+
+            Authentication authentication) {
+
+
+        String empID =
+                authentication.getName();
+
 
         return ResponseEntity.ok(
                 service.update(
                         id,
-                        request));
+                        request,
+                        empID
+                )
+        );
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(
-            @PathVariable Long id) {
 
-        service.delete(id);
+            @PathVariable Long id,
+
+            Authentication authentication) {
+
+
+        String empID =
+                authentication.getName();
+
+
+        service.delete(
+                id,
+                empID
+        );
+
 
         return ResponseEntity.ok(
-                "Recruitment request deleted successfully");
+                "Recruitment Request deleted successfully"
+        );
     }
 }
