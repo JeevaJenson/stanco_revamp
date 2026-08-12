@@ -1,6 +1,7 @@
 package com.stanco.security;
 
 import com.stanco.entity.User;
+import com.stanco.enums.Status;
 import com.stanco.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -9,7 +10,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import org.springframework.stereotype.Service;
@@ -19,41 +19,38 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService
-        implements UserDetailsService {
+                implements UserDetailsService {
 
+        private final UserRepository userRepository;
 
-    private final UserRepository userRepository;
+        @Override
+        public UserDetails loadUserByUsername(
+                        String empID)
+                        throws UsernameNotFoundException {
 
+                User user = userRepository
+                                .findByEmpID(empID)
+                                .orElseThrow(() -> new UsernameNotFoundException(
+                                                "User not found: "
+                                                                + empID));
 
-    @Override
-    public UserDetails loadUserByUsername(
-            String empID)
-            throws UsernameNotFoundException {
+                boolean enabled = user.getProfileStatus() == Status.active;
 
+                return new org.springframework.security.core.userdetails.User(
 
-        User user =
-                userRepository
-                        .findByEmpID(empID)
-                        .orElseThrow(() ->
-                                new UsernameNotFoundException(
-                                        "User not found: "
-                                                + empID
-                                )
-                        );
+                                user.getEmpID(),
 
+                                user.getPassword(),
 
-        return new org.springframework.security.core.userdetails.User(
+                                enabled,
 
-                user.getEmpID(),
+                                true,
+                                true,
+                                true,
 
-                user.getPassword(),
-
-                List.of(
-                        new SimpleGrantedAuthority(
-                                "ROLE_"
-                                        + user.getRoleType()
-                        )
-                )
-        );
-    }
+                                List.of(
+                                                new SimpleGrantedAuthority(
+                                                                "ROLE_"
+                                                                                + user.getRoleType())));
+        }
 }

@@ -2,11 +2,9 @@ package com.stanco.serviceimpl;
 
 import com.stanco.dto.request.CandidateDetailsRequest;
 import com.stanco.dto.response.CandidateDetailsResponse;
-
 import com.stanco.entity.CandidateDetails;
-
+import com.stanco.enums.CandidateStatus;
 import com.stanco.repository.CandidateDetailsRepository;
-
 import com.stanco.service.CandidateDetailsService;
 
 import lombok.RequiredArgsConstructor;
@@ -46,6 +44,14 @@ public class CandidateDetailsServiceImpl
                 request,
                 candidate
         );
+
+        if (request.getStatus() == null) {
+
+            candidate.setStatus(
+                    CandidateStatus
+                            .PROFILE_SUBMITTED_TO_HIRING_MANAGER
+            );
+        }
 
         candidate.setCreatedBy(
                 createdBy
@@ -92,6 +98,7 @@ public class CandidateDetailsServiceImpl
         return mapToResponse(candidate);
     }
 
+
     @Override
     public CandidateDetailsResponse getByCdID(
             String cdID) {
@@ -122,7 +129,7 @@ public class CandidateDetailsServiceImpl
 
     @Override
     public List<CandidateDetailsResponse> getByStatus(
-            String status) {
+            CandidateStatus status) {
 
         return repository.findByStatus(status)
                 .stream()
@@ -149,6 +156,13 @@ public class CandidateDetailsServiceImpl
                 request,
                 candidate
         );
+
+        if (request.getStatus() != null) {
+
+            candidate.setStatus(
+                    request.getStatus()
+            );
+        }
 
         candidate.setUpdatedAt(
                 LocalDateTime.now()

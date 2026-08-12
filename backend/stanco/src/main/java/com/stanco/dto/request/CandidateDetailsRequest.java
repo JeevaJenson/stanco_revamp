@@ -1,5 +1,7 @@
 package com.stanco.dto.request;
 
+import com.stanco.enums.CandidateStatus;
+
 import jakarta.validation.constraints.NotBlank;
 
 import lombok.Data;
@@ -16,8 +18,7 @@ public class CandidateDetailsRequest {
     @NotBlank
     private String rfhNo;
 
-    @NotBlank
-    private String status;
+    private CandidateStatus status;
 
     private String heplRecruitmentRefNumber;
 

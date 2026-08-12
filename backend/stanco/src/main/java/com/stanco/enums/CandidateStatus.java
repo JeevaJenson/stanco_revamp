@@ -1,0 +1,32 @@
+package com.stanco.enums;
+
+public enum CandidateStatus {
+
+    PROFILE_SUBMITTED_TO_HIRING_MANAGER,
+
+    SHORTLISTED,
+
+    REJECTED,
+
+    L1_INTERVIEW,
+
+    L2_INTERVIEW,
+
+    L3_INTERVIEW,
+
+    HR_DISCUSSION,
+
+    SELECTED,
+
+    OFFER_RELEASED,
+
+    OFFER_ACCEPTED,
+
+    OFFER_REJECTED,
+
+    ONBOARDING,
+
+    JOINED,
+
+    DROPPED
+}

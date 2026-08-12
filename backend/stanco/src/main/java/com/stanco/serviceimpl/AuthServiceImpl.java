@@ -2,9 +2,17 @@ package com.stanco.serviceimpl;
 
 import com.stanco.dto.request.LoginRequest;
 import com.stanco.dto.response.AuthResponse;
+
 import com.stanco.entity.User;
+
+import com.stanco.enums.Status;
+
+import com.stanco.exception.InactiveUserException;
+
 import com.stanco.repository.UserRepository;
+
 import com.stanco.security.JwtService;
+
 import com.stanco.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
@@ -18,7 +26,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AuthServiceImpl implements AuthService {
+public class AuthServiceImpl
+        implements AuthService {
 
     private final UserRepository userRepository;
 
@@ -30,6 +39,27 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(
             LoginRequest request) {
+
+        User user =
+                userRepository
+                        .findByEmpID(
+                                request.getEmpID()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "User not found"
+                                )
+                        );
+
+
+        if (user.getProfileStatus()
+                == Status.inactive) {
+
+            throw new InactiveUserException(
+                    "User is inactive"
+            );
+        }
+
 
         Authentication authentication =
                 authenticationManager.authenticate(
@@ -45,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
                 authentication.getName();
 
 
-        User user =
+        User authenticatedUser =
                 userRepository
                         .findByEmpID(empID)
                         .orElseThrow(() ->
@@ -54,14 +84,12 @@ public class AuthServiceImpl implements AuthService {
                                 )
                         );
 
-
         String token =
                 jwtService.generateToken(
-                        user.getEmpID(),
-                        user.getName(),
-                        user.getRoleType()
+                        authenticatedUser.getEmpID(),
+                        authenticatedUser.getName(),
+                        authenticatedUser.getRoleType()
                 );
-
 
         return new AuthResponse(
 
@@ -69,13 +97,13 @@ public class AuthServiceImpl implements AuthService {
 
                 token,
 
-                user.getId(),
+                authenticatedUser.getId(),
 
-                user.getEmpID(),
+                authenticatedUser.getEmpID(),
 
-                user.getName(),
+                authenticatedUser.getName(),
 
-                user.getRoleType()
+                authenticatedUser.getRoleType()
         );
     }
 }

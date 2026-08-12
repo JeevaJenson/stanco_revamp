@@ -8,9 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import org.springframework.security.core.userdetails.UserDetails;
 
 import org.springframework.stereotype.Component;
@@ -29,6 +27,7 @@ public class JwtAuthenticationFilter
     private final CustomUserDetailsService
             customUserDetailsService;
 
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -36,8 +35,11 @@ public class JwtAuthenticationFilter
             FilterChain filterChain)
             throws ServletException, IOException {
 
+
         String authHeader =
                 request.getHeader("Authorization");
+
+
 
         if (authHeader == null ||
                 !authHeader.startsWith("Bearer ")) {
@@ -50,40 +52,55 @@ public class JwtAuthenticationFilter
             return;
         }
 
-      String token =
-        authHeader.substring(7);
 
-try {
+        String token =
+                authHeader.substring(7);
 
-    if (jwtService.isTokenValid(token)) {
 
-        String empID =
-                jwtService.extractEmpID(token);
+        try {
 
-        UserDetails userDetails =
-                customUserDetailsService
-                        .loadUserByUsername(empID);
+        
 
-        if (userDetails.isEnabled()) {
+            if (jwtService.isTokenValid(token)) {
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
+
+                String empID =
+                        jwtService.extractEmpID(token);
+
+
+                UserDetails userDetails =
+                        customUserDetailsService
+                                .loadUserByUsername(
+                                        empID
+                                );
+
+
+                if (userDetails.isEnabled()) {
+
+
+                    UsernamePasswordAuthenticationToken
+                            authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+
+
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(
+                                    authentication
+                            );
+                }
+            }
+
+        } catch (Exception e) {
 
             SecurityContextHolder
-                    .getContext()
-                    .setAuthentication(authentication);
+                    .clearContext();
         }
-    }
 
-} catch (Exception e) {
-
-    SecurityContextHolder
-            .clearContext();
-}
 
         filterChain.doFilter(
                 request,

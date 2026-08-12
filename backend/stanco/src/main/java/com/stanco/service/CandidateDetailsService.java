@@ -2,6 +2,7 @@ package com.stanco.service;
 
 import com.stanco.dto.request.CandidateDetailsRequest;
 import com.stanco.dto.response.CandidateDetailsResponse;
+import com.stanco.enums.CandidateStatus;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public interface CandidateDetailsService {
     );
 
     List<CandidateDetailsResponse> getByStatus(
-            String status
+            CandidateStatus status
     );
 
     CandidateDetailsResponse update(

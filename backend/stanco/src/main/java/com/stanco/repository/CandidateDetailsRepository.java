@@ -1,6 +1,7 @@
 package com.stanco.repository;
 
 import com.stanco.entity.CandidateDetails;
+import com.stanco.enums.CandidateStatus;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -19,11 +20,7 @@ public interface CandidateDetailsRepository
     );
 
     List<CandidateDetails> findByStatus(
-            String status
-    );
-
-    List<CandidateDetails> findByCandidateStatus(
-            Integer candidateStatus
+            CandidateStatus status
     );
 
     List<CandidateDetails> findByCandidateEmail(
