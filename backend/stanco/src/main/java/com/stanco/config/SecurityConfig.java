@@ -114,6 +114,14 @@ public class SecurityConfig {
                                                                 "delivery_lead",
                                                                 "recruiter")
 
+                                                                .requestMatchers("/api/candidates/**")
+.hasAnyRole(
+        "super_admin",
+        "admin",
+        "hiring_manager",
+        "recruiter"
+)
+
                                                 .anyRequest()
                                                 .authenticated())
 
