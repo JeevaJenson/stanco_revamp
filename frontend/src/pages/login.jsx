@@ -3,7 +3,7 @@ import { FaUser, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import loginHeroImg from "../assets/login-hero.png";
-import "./login.css";
+import "../style/login.css";
 
 function Login() {
   const [employeeID, setEmployeeID] = useState("");
@@ -42,8 +42,8 @@ function Login() {
     try {
       const response = await api.post("/auth/login", {
         empID: employeeID.trim(),
-        employeeId: employeeID.trim(),
         password: password,
+        rememberMe: rememberMe
       });
 
       console.log("Login response:", response.data);
@@ -53,10 +53,14 @@ function Login() {
         localStorage.setItem("user", JSON.stringify(response.data));
       }
 
-      showToast("success", "Login successful! Redirecting...");
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 700);
+      {
+
+        showToast("success", "Login successful! Redirecting...");
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1000);
+      }
+
 
     } catch (error) {
       console.error("Error occurred while logging in:", error);

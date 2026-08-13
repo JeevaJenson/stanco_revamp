@@ -12,8 +12,8 @@ import {
   FaRedo
 } from "react-icons/fa";
 import api from "../services/api";
-import DMSidebar from "../DMSidebar";
-import "./RFHForm.css";
+import DMSidebar from "./DMSidebar";
+import "../style/RFHForm.css";
 
 function RFHForm() {
   const navigate = useNavigate();
@@ -674,9 +674,8 @@ function RFHForm() {
                 </label>
                 <div className="revenue-pill-grid">
                   <div
-                    className={`revenue-pill-card ${
-                      formData.revenueType === "Financial Recruitment" ? "selected" : ""
-                    }`}
+                    className={`revenue-pill-card ${formData.revenueType === "Financial Recruitment" ? "selected" : ""
+                      }`}
                     onClick={() => handleRevenueChange("Financial Recruitment")}
                   >
                     <div className="radio-pill-circle"></div>
@@ -687,9 +686,8 @@ function RFHForm() {
                   </div>
 
                   <div
-                    className={`revenue-pill-card ${
-                      formData.revenueType === "Non-Financial Recruitment" ? "selected" : ""
-                    }`}
+                    className={`revenue-pill-card ${formData.revenueType === "Non-Financial Recruitment" ? "selected" : ""
+                      }`}
                     onClick={() => handleRevenueChange("Non-Financial Recruitment")}
                   >
                     <div className="radio-pill-circle"></div>
