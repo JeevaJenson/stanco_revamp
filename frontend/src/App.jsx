@@ -4,6 +4,8 @@ import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
 import RFHForm from "./pages/RFHForm";
 import UserManagement from "./pages/UserManagement";
+import BusinessUnit from "./pages/BusinessUnit";
+import Department from "./pages/Department";
 
 function App() {
   return (
@@ -16,6 +18,14 @@ function App() {
         <Route path="/users" element={<UserManagement initialTab="users" />} />
         <Route path="/user-management" element={<UserManagement initialTab="users" />} />
         <Route path="/teams" element={<UserManagement initialTab="teams" />} />
+       <Route
+  path="/business-units"
+  element={<BusinessUnit />}
+/>
+<Route
+  path="/departments"
+  element={<Department />}
+/>
       </Routes>
     </BrowserRouter>
   );
