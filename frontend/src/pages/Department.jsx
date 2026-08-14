@@ -914,7 +914,7 @@ function Department() {
           >
 
             <option value="all">
-              All Status
+              All
             </option>
 
             <option value="active">
