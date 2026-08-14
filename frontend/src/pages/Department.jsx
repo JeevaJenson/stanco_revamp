@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaTimes } from "react-icons/fa";
 import api from "../services/api";
-import DMSidebar from "../pages/DMSidebar";
+import Sidebar from "./Sidebar";
 import "../style/Department.css";
 
 function Department() {
@@ -73,7 +73,7 @@ function Department() {
         showToast(
           "error",
           error.response?.data?.message ||
-            "Failed to load departments"
+          "Failed to load departments"
         );
       }
     } finally {
@@ -231,7 +231,7 @@ function Department() {
         showToast(
           "error",
           error.response?.data?.message ||
-            "Failed to save department"
+          "Failed to save department"
         );
       }
     } finally {
@@ -274,7 +274,7 @@ function Department() {
         showToast(
           "error",
           error.response?.data?.message ||
-            "Failed to delete department"
+          "Failed to delete department"
         );
       }
     }
@@ -309,7 +309,7 @@ function Department() {
   return (
     <div className="department-layout">
 
-      <DMSidebar />
+      <Sidebar />
 
       <div className="department-content">
 
@@ -402,7 +402,7 @@ function Department() {
                 <thead>
 
                   <tr>
-                    <th>#</th>
+                    <th>S.No</th>
                     <th>Department ID</th>
                     <th>Department Name</th>
                     <th>Status</th>
@@ -439,7 +439,7 @@ function Department() {
                           <span
                             className={
                               department.status ===
-                              "active"
+                                "active"
                                 ? "status-badge active"
                                 : "status-badge inactive"
                             }
@@ -456,8 +456,8 @@ function Department() {
                         <td>
                           {department.createdAt
                             ? new Date(
-                                department.createdAt
-                              ).toLocaleDateString()
+                              department.createdAt
+                            ).toLocaleDateString()
                             : "-"}
                         </td>
 
@@ -643,8 +643,8 @@ function Department() {
                   {saving
                     ? "Saving..."
                     : editId
-                    ? "Update Department"
-                    : "Create Department"}
+                      ? "Update Department"
+                      : "Create Department"}
                 </button>
 
               </div>

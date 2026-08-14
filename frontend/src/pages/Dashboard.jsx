@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaPlus } from "react-icons/fa";
-import DMSidebar from "./DMSidebar";
+import Sidebar from "./Sidebar";
 import LogoutModal from "./LogoutModal";
 import api from "../services/api";
 import "./Dashboard.css";
@@ -25,7 +25,7 @@ function Dashboard() {
         api.get("/recruitment-requests").catch(() => ({ data: [] })),
         api.get("/candidates").catch(() => ({ data: [] }))
       ]);
-      
+
       if (reqResponse.data) {
         setRequests(reqResponse.data);
       }
@@ -88,7 +88,7 @@ function Dashboard() {
 
   return (
     <div className="dashboard-layout">
-      <DMSidebar />
+      <Sidebar />
 
       <div className="dashboard-content">
         {/* Top Header */}
@@ -119,7 +119,7 @@ function Dashboard() {
           {/* Metric Cards Row (5 columns) */}
           <div className="dashboard-metrics-container">
             <div className="metrics-row row-five">
-              
+
               <div className="metric-card" style={{ borderLeft: "4px solid #2563EB" }}>
                 <span className="metric-title">OPEN POSITIONS</span>
                 <span className="metric-value" style={{ color: "#2563EB" }}>{openPositions}</span>

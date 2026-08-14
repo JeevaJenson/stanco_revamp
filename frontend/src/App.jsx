@@ -18,15 +18,9 @@ function App() {
         <Route path="/users" element={<UserManagement initialTab="users" />} />
         <Route path="/user-management" element={<UserManagement initialTab="users" />} />
         <Route path="/teams" element={<UserManagement initialTab="teams" />} />
-       <Route
-  path="/business-units"
-  element={<BusinessUnit />}
-/>
-<Route
-  path="/departments"
-  element={<Department />}
-/>
-      </Routes>
+       <Route  path="/business-units" element={<BusinessUnit />} />
+        <Route path="/departments" element={<Department />} /> 
+     </Routes>
     </BrowserRouter>
   );
 }

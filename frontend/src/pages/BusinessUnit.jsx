@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 
 import api from "../services/api";
-import DMSidebar from "./DMSidebar";
+import Sidebar from "./Sidebar";
 
 import "../style/BusinessUnit.css";
 
@@ -92,7 +92,7 @@ function BusinessUnit() {
       showToast(
         "error",
         error.response?.data?.message ||
-          "Failed to load business units"
+        "Failed to load business units"
       );
 
     } finally {
@@ -314,7 +314,7 @@ function BusinessUnit() {
         "error",
 
         error.response?.data?.message ||
-          "Operation failed"
+        "Operation failed"
 
       );
 
@@ -377,7 +377,7 @@ function BusinessUnit() {
         "error",
 
         error.response?.data?.message ||
-          "Failed to delete Business Unit"
+        "Failed to delete Business Unit"
 
       );
 
@@ -475,7 +475,7 @@ function BusinessUnit() {
           SIDEBAR
       ================================================= */}
 
-      <DMSidebar />
+      <Sidebar />
 
 
       {/* =================================================
@@ -642,7 +642,7 @@ function BusinessUnit() {
           ================================================= */}
 
           {loading &&
-          businessUnits.length === 0 ? (
+            businessUnits.length === 0 ? (
 
             <div className="business-loading">
 
@@ -657,230 +657,229 @@ function BusinessUnit() {
           )
 
 
-          /* =================================================
-             EMPTY
-          ================================================= */
+            /* =================================================
+               EMPTY
+            ================================================= */
 
-          : filteredBusinessUnits.length === 0 ? (
+            : filteredBusinessUnits.length === 0 ? (
 
-            <div className="business-empty">
+              <div className="business-empty">
 
-              <FaSearch />
+                <FaSearch />
 
-              <h3>
-                No Business Units found
-              </h3>
+                <h3>
+                  No Business Units found
+                </h3>
 
-              <p>
+                <p>
 
-                {search
-                  ? "Try a different search term."
-                  : "Add a Business Unit to get started."}
+                  {search
+                    ? "Try a different search term."
+                    : "Add a Business Unit to get started."}
 
-              </p>
+                </p>
 
-            </div>
+              </div>
 
-          )
+            )
 
 
-          /* =================================================
-             TABLE
-          ================================================= */
+              /* =================================================
+                 TABLE
+              ================================================= */
 
-          : (
+              : (
 
-            <div className="business-table-wrapper">
+                <div className="business-table-wrapper">
 
-              <table className="business-table">
+                  <table className="business-table">
 
 
-                <thead>
+                    <thead>
 
-                  <tr>
+                      <tr>
 
-                    <th>
-                      S.No
-                    </th>
+                        <th>
+                          S.No
+                        </th>
 
-                    <th>
-                      BU ID
-                    </th>
+                        <th>
+                          BU ID
+                        </th>
 
-                    <th>
-                      Business Name
-                    </th>
+                        <th>
+                          Business Name
+                        </th>
 
-                    <th>
-                      Status
-                    </th>
+                        <th>
+                          Status
+                        </th>
 
-                    <th>
-                      Created By
-                    </th>
+                        <th>
+                          Created By
+                        </th>
 
-                    <th>
-                      Created At
-                    </th>
+                        <th>
+                          Created At
+                        </th>
 
-                    <th>
-                      Actions
-                    </th>
-
-                  </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                  {filteredBusinessUnits.map(
-
-                    (business, index) => (
-
-                      <tr
-                        key={
-                          business.id
-                        }
-                      >
-
-
-                        {/* S.NO */}
-
-                        <td data-label="S.No">
-
-                          {index + 1}
-
-                        </td>
-
-
-                        {/* BU ID */}
-
-                        <td data-label="BU ID">
-
-                          <strong>
-
-                            {business.buId ||
-                              "-"}
-
-                          </strong>
-
-                        </td>
-
-
-                        {/* BUSINESS NAME */}
-
-                        <td data-label="Business Name">
-
-                          <span className="business-name">
-
-                            {business.businessName}
-
-                          </span>
-
-                        </td>
-
-
-                        {/* STATUS */}
-
-                        <td data-label="Status">
-
-                          <span
-                            className={
-                              `status-badge ${
-                                business.status
-                                  ?.toLowerCase() ===
-                                "active"
-                                  ? "active"
-                                  : "inactive"
-                              }`
-                            }
-                          >
-
-                            {business.status}
-
-                          </span>
-
-                        </td>
-
-
-                        {/* CREATED BY */}
-
-                        <td data-label="Created By">
-
-                          {business.createdBy ||
-                            "-"}
-
-                        </td>
-
-
-                        {/* CREATED AT */}
-
-                        <td data-label="Created At">
-
-                          {formatDate(
-                            business.createdAt
-                          )}
-
-                        </td>
-
-
-                        {/* ACTIONS */}
-
-                        <td data-label="Actions">
-
-                          <div className="action-buttons">
-
-
-                            <button
-                              type="button"
-                              className="edit-btn"
-                              title="Edit"
-                              onClick={() =>
-                                openEditModal(
-                                  business
-                                )
-                              }
-                            >
-
-                              <FaEdit />
-
-                            </button>
-
-
-                            <button
-                              type="button"
-                              className="delete-btn"
-                              title="Delete"
-                              onClick={() =>
-                                handleDelete(
-                                  business.id
-                                )
-                              }
-                            >
-
-                              <FaTrash />
-
-                            </button>
-
-
-                          </div>
-
-                        </td>
+                        <th>
+                          Actions
+                        </th>
 
                       </tr>
 
-                    )
+                    </thead>
 
-                  )}
 
-                </tbody>
+                    <tbody>
 
-              </table>
+                      {filteredBusinessUnits.map(
 
-            </div>
+                        (business, index) => (
 
-          )}
+                          <tr
+                            key={
+                              business.id
+                            }
+                          >
+
+
+                            {/* S.NO */}
+
+                            <td data-label="S.No">
+
+                              {index + 1}
+
+                            </td>
+
+
+                            {/* BU ID */}
+
+                            <td data-label="BU ID">
+
+                              <strong>
+
+                                {business.buId ||
+                                  "-"}
+
+                              </strong>
+
+                            </td>
+
+
+                            {/* BUSINESS NAME */}
+
+                            <td data-label="Business Name">
+
+                              <span className="business-name">
+
+                                {business.businessName}
+
+                              </span>
+
+                            </td>
+
+
+                            {/* STATUS */}
+
+                            <td data-label="Status">
+
+                              <span
+                                className={
+                                  `status-badge ${business.status
+                                    ?.toLowerCase() ===
+                                    "active"
+                                    ? "active"
+                                    : "inactive"
+                                  }`
+                                }
+                              >
+
+                                {business.status}
+
+                              </span>
+
+                            </td>
+
+
+                            {/* CREATED BY */}
+
+                            <td data-label="Created By">
+
+                              {business.createdBy ||
+                                "-"}
+
+                            </td>
+
+
+                            {/* CREATED AT */}
+
+                            <td data-label="Created At">
+
+                              {formatDate(
+                                business.createdAt
+                              )}
+
+                            </td>
+
+
+                            {/* ACTIONS */}
+
+                            <td data-label="Actions">
+
+                              <div className="action-buttons">
+
+
+                                <button
+                                  type="button"
+                                  className="edit-btn"
+                                  title="Edit"
+                                  onClick={() =>
+                                    openEditModal(
+                                      business
+                                    )
+                                  }
+                                >
+
+                                  <FaEdit />
+
+                                </button>
+
+
+                                <button
+                                  type="button"
+                                  className="delete-btn"
+                                  title="Delete"
+                                  onClick={() =>
+                                    handleDelete(
+                                      business.id
+                                    )
+                                  }
+                                >
+
+                                  <FaTrash />
+
+                                </button>
+
+
+                              </div>
+
+                            </td>
+
+                          </tr>
+
+                        )
+
+                      )}
+
+                    </tbody>
+
+                  </table>
+
+                </div>
+
+              )}
 
         </div>
 
@@ -1079,9 +1078,9 @@ function BusinessUnit() {
 
                     : editingId
 
-                    ? "Update"
+                      ? "Update"
 
-                    : "Save"}
+                      : "Save"}
 
                 </button>
 

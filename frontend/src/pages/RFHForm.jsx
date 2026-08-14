@@ -12,7 +12,7 @@ import {
   FaRedo
 } from "react-icons/fa";
 import api from "../services/api";
-import DMSidebar from "./DMSidebar";
+import Sidebar from "./Sidebar";
 import "../style/RFHForm.css";
 
 function RFHForm() {
@@ -176,7 +176,7 @@ function RFHForm() {
 
   return (
     <div className="rfh-saas-layout">
-      <DMSidebar />
+      <Sidebar />
 
       <main className="rfh-saas-main">
         {/* Floating Toast Notification */}

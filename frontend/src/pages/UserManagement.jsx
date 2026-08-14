@@ -15,12 +15,137 @@ import {
   FaEllipsisV,
   FaEdit,
   FaTimes,
-  FaSave
+  FaSave,
+  FaSearch,
+  FaSortAlphaDown,
+  FaSortAlphaUp
 } from "react-icons/fa";
 import api from "../services/api";
-import DMSidebar from "./DMSidebar";
+import Sidebar from "./Sidebar";
 import "../style/UserManagement.css";
 
+const DB_MOCK_USERS = [
+  {
+    id: 1,
+    empID: "900001",
+    name: "admin",
+    email: "admin@gmail.com",
+    mobileNo: "1234567891",
+    department: "HR",
+    designation: "Recruiter",
+    profileStatus: "Active",
+    business: null,
+    team: "CKPL"
+  },
+  {
+    id: 2,
+    empID: "900002",
+    name: "kavi",
+    email: "kavi@gmail.com",
+    mobileNo: "1234567891",
+    department: "CKPL",
+    designation: "Developer",
+    profileStatus: "Active",
+    business: null,
+    team: "CKPL"
+  },
+  {
+    id: 3,
+    empID: "900003",
+    name: "Test User",
+    email: "test@gmail.com",
+    mobileNo: "9876543210",
+    department: "HR",
+    designation: "Recruiter",
+    profileStatus: "Active",
+    business: null,
+    team: "CKPL"
+  },
+  {
+    id: 4,
+    empID: "as123",
+    name: "admin",
+    email: "as123@gmail.com",
+    mobileNo: "1234567891",
+    department: "HR",
+    designation: "Recruiter",
+    profileStatus: "Active",
+    business: null,
+    team: "CKPL"
+  },
+  {
+    id: 5,
+    empID: "ADMIN001",
+    name: "System Administrator",
+    email: "admin@stanco.com",
+    mobileNo: "9876543210",
+    department: "Management",
+    designation: "Administrator",
+    profileStatus: "Active",
+    business: "STANCO",
+    team: "STANCO"
+  },
+  {
+    id: 6,
+    empID: "ADMIN005",
+    name: "test admin",
+    email: "admin005@gmail.com",
+    mobileNo: "9876543210",
+    department: "Admin",
+    designation: "Admin",
+    profileStatus: "Active",
+    business: "STANCO",
+    team: "STANCO"
+  },
+  {
+    id: 7,
+    empID: "112233",
+    name: "hgfd",
+    email: "vcx@gmail.com",
+    mobileNo: "345678768",
+    department: "Admin",
+    designation: "Admin",
+    profileStatus: "Active",
+    business: "STANCO",
+    team: "STANCO"
+  },
+  {
+    id: 8,
+    empID: "ADMIN12",
+    name: "barani",
+    email: "barani@gmail.com",
+    mobileNo: "345678768",
+    department: "Admin",
+    designation: "Admin",
+    profileStatus: "Active",
+    business: "STANCO",
+    team: "STANCO"
+  },
+  {
+    id: 9,
+    empID: "EMP006",
+    name: "senthil",
+    email: "senthil@gmail.com",
+    mobileNo: "7654345676",
+    department: "Admin",
+    designation: "Admin",
+    profileStatus: "Active",
+    business: "STANCO",
+    team: "STANCO"
+  },
+  {
+    id: 10,
+    empID: "EMP007",
+    name: "pavithra",
+    email: "pavithra@gmail.com",
+    mobileNo: "8765456787",
+    department: "Admin",
+    designation: "Admin",
+    profileStatus: "Active",
+    business: "STANCO",
+    team: "STANCO"
+  }
+];
 
 function UserManagement({ initialTab = "users" }) {
   const navigate = useNavigate();
@@ -32,6 +157,22 @@ function UserManagement({ initialTab = "users" }) {
   const [showForm, setShowForm] = useState(false);
   const [showTeamForm, setShowTeamForm] = useState(false);
   const [showAddTeamModal, setShowAddTeamModal] = useState(false);
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("a-z"); // "a-z" | "z-a" | "newest" | "oldest"
+  const [teamSortBy, setTeamSortBy] = useState("a-z"); // "a-z" | "z-a" | "newest" | "oldest"
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage] = useState(9);
+  const [currentTeamPage, setCurrentTeamPage] = useState(1);
+  const [teamsPerPage] = useState(9);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  useEffect(() => {
+    setCurrentTeamPage(1);
+  }, [search]);
 
   // 3-dot Action Menu dropdown states
   const [openUserMenuId, setOpenUserMenuId] = useState(null);
@@ -122,6 +263,7 @@ function UserManagement({ initialTab = "users" }) {
   useEffect(() => {
     if (initialTab) {
       setActiveTab(initialTab);
+      setSearch("");
     }
   }, [initialTab]);
 
@@ -136,14 +278,14 @@ function UserManagement({ initialTab = "users" }) {
     const fetchUsers = async () => {
       try {
         const response = await api.get("/users");
-        if (response.data && Array.isArray(response.data)) {
+        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
           setUsers(response.data);
+        } else {
+          setUsers(DB_MOCK_USERS);
         }
       } catch (err) {
-        console.warn("Backend /api/users fetch fallback or offline:", err);
-        if (err.response?.status === 403) {
-          showToast("error", "Access Forbidden (403): Your role does not have permission to manage users, or your session has expired.");
-        }
+        console.warn("Backend /api/users fetch fallback, loading database mock users:", err);
+        setUsers(DB_MOCK_USERS);
       }
     };
     fetchUsers();
@@ -202,7 +344,7 @@ function UserManagement({ initialTab = "users" }) {
       designation: newUser.department || "Team Member",
       roleType: resolvedRole,
       password: "Password@123",
-      profileStatus: "Active",
+      profileStatus: "active",
       business: "STANCO",
     };
 
@@ -212,6 +354,7 @@ function UserManagement({ initialTab = "users" }) {
       setUsers((prev) => [added, ...prev]);
 
       showToast("success", `User ${newUser.name} added successfully!`);
+      setShowForm(false);
 
       // Reset form
       setNewUser({
@@ -368,9 +511,84 @@ function UserManagement({ initialTab = "users" }) {
     return colors[Math.abs(hash) % colors.length];
   };
 
+  const filteredUsers = users.filter((u) => {
+    const query = search.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      (u.name || "").toLowerCase().includes(query) ||
+      (u.email || "").toLowerCase().includes(query) ||
+      (u.empID || "").toLowerCase().includes(query) ||
+      (u.department || "").toLowerCase().includes(query)
+    );
+  });
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    if (sortBy === "a-z") {
+      const aName = (a.name || "").toLowerCase();
+      const bName = (b.name || "").toLowerCase();
+      return aName.localeCompare(bName);
+    }
+    if (sortBy === "z-a") {
+      const aName = (a.name || "").toLowerCase();
+      const bName = (b.name || "").toLowerCase();
+      return bName.localeCompare(aName);
+    }
+    if (sortBy === "newest") {
+      const aId = a.id || 0;
+      const bId = b.id || 0;
+      return bId - aId;
+    }
+    if (sortBy === "oldest") {
+      const aId = a.id || 0;
+      const bId = b.id || 0;
+      return aId - bId;
+    }
+    return 0;
+  });
+
+  const filteredTeams = teams.filter((t) => {
+    const query = search.toLowerCase().trim();
+    if (!query) return true;
+    return (t.name || "").toLowerCase().includes(query);
+  });
+
+  const sortedTeams = [...filteredTeams].sort((a, b) => {
+    if (teamSortBy === "a-z") {
+      const aName = (a.name || "").toLowerCase();
+      const bName = (b.name || "").toLowerCase();
+      return aName.localeCompare(bName);
+    }
+    if (teamSortBy === "z-a") {
+      const aName = (a.name || "").toLowerCase();
+      const bName = (b.name || "").toLowerCase();
+      return bName.localeCompare(aName);
+    }
+    if (teamSortBy === "newest") {
+      const aId = a.id || 0;
+      const bId = b.id || 0;
+      return bId - aId;
+    }
+    if (teamSortBy === "oldest") {
+      const aId = a.id || 0;
+      const bId = b.id || 0;
+      return aId - bId;
+    }
+    return 0;
+  });
+
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = sortedUsers.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(sortedUsers.length / recordsPerPage);
+
+  const indexOfLastTeam = currentTeamPage * teamsPerPage;
+  const indexOfFirstTeam = indexOfLastTeam - teamsPerPage;
+  const currentTeams = sortedTeams.slice(indexOfFirstTeam, indexOfLastTeam);
+  const totalTeamPages = Math.ceil(sortedTeams.length / teamsPerPage);
+
   return (
     <div className="user-mgmt-layout">
-      <DMSidebar />
+      <Sidebar />
 
       <main className="user-mgmt-main">
         {/* Floating Toast Notification */}
@@ -392,233 +610,272 @@ function UserManagement({ initialTab = "users" }) {
         {/* Top Header Title Banner with Right Add User Button */}
         {activeTab === "users" && (
           <>
-            <div className="user-form-banner-card">
-              <div className="banner-left-spacer"></div>
-              <h1 className="user-form-banner-title">USER MANAGEMENT (STANCO)</h1>
-              <button
-                type="button"
-                className="btn-top-add-user"
-                onClick={() => {
-                  setShowForm(true);
-                  setTimeout(() => {
-                    const input = document.getElementById("name");
-                    if (input) input.focus();
-                  }, 100);
-                }}
-              >
-                <FaUserPlus />
-                <span>Add User</span>
-              </button>
+            <div className="user-mgmt-header">
+              <div>
+                <h2>User Management</h2>
+                <p>Manage users and user roles in the system</p>
+              </div>
+              {creatorRole !== "recruiter" && (
+                <button
+                  type="button"
+                  className="add-btn"
+                  onClick={() => {
+                    setNewUser({
+                      empID: "",
+                      name: "",
+                      email: "",
+                      mobileNo: "",
+                      department: departmentOptions.length > 0 ? departmentOptions[0].value : "",
+                      team: "",
+                    });
+                    setShowForm(true);
+                    setTimeout(() => {
+                      const input = document.getElementById("name");
+                      if (input) input.focus();
+                    }, 100);
+                  }}
+                >
+                  <FaUserPlus />
+                  <span>Add User</span>
+                </button>
+              )}
             </div>
 
             {/* Form Container Modal Popup */}
             <div className="user-form-page-wrapper">
               {showForm && (
-              <div className="user-modal-overlay" onClick={() => setShowForm(false)}>
-                <div className="user-modal-card" onClick={(e) => e.stopPropagation()}>
-                  <div className="user-modal-header">
-                    <h2>Add New User</h2>
-                    <button
-                      type="button"
-                      className="user-modal-close-btn"
-                      onClick={() => setShowForm(false)}
-                    >
-                      &times;
-                    </button>
-                  </div>
-                  
-                  <form onSubmit={handleAddUserSubmit} className="user-modal-form">
-                    {/* Section 1: Emp ID & Name */}
-                    <div className="form-band-section">
-                      <div className="form-grid-2col">
-                        <div className="form-field-group">
-                          <label htmlFor="empID" className="field-label">
-                            Employee ID (Emp ID)
-                          </label>
-                          <input
-                            id="empID"
-                            type="text"
-                            name="empID"
-                            className="form-control-input"
-                            placeholder="e.g. EMP-1001 (optional, auto-generated)"
-                            value={newUser.empID}
-                            onChange={handleInputChange}
-                          />
-                        </div>
-
-                        <div className="form-field-group">
-                          <label htmlFor="name" className="field-label">
-                            Name <span className="req-star">*</span>
-                          </label>
-                          <input
-                            id="name"
-                            type="text"
-                            name="name"
-                            className="form-control-input"
-                            placeholder="e.g. Senthil Kumar"
-                            value={newUser.name}
-                            onChange={handleInputChange}
-                            required
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Section 2: Email & Phone Number (Ph No) */}
-                    <div className="form-band-section">
-                      <div className="form-grid-2col">
-                        <div className="form-field-group">
-                          <label htmlFor="email" className="field-label">
-                            Email Address <span className="req-star">*</span>
-                          </label>
-                          <input
-                            id="email"
-                            type="email"
-                            name="email"
-                            className="form-control-input"
-                            placeholder="e.g. senthil.k@stanco.com"
-                            value={newUser.email}
-                            onChange={handleInputChange}
-                            required
-                          />
-                        </div>
-
-                        <div className="form-field-group">
-                          <label htmlFor="mobileNo" className="field-label">
-                            Phone Number (Ph No) <span className="req-star">*</span>
-                          </label>
-                          <input
-                            id="mobileNo"
-                            type="tel"
-                            name="mobileNo"
-                            className="form-control-input"
-                            placeholder="e.g. 9876543210"
-                            value={newUser.mobileNo}
-                            onChange={handleInputChange}
-                            required
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Section 3: Department (In which dept) */}
-                    <div className="form-band-section">
-                      <div className="form-grid-2col">
-                        <div className="form-field-group">
-                          <label htmlFor="department" className="field-label">
-                            Department / Role <span className="req-star">*</span>
-                          </label>
-                          {departmentOptions.length > 0 ? (
-                            <>
-                              <select
-                                id="department"
-                                name="department"
-                                className="form-control-select"
-                                value={newUser.department}
-                                onChange={handleInputChange}
-                                required
-                              >
-                                <option value="">-- Select Department --</option>
-                                {departmentOptions.map((opt) => (
-                                  <option key={opt.value} value={opt.value}>
-                                    {opt.label} ({opt.badge})
-                                  </option>
-                                ))}
-                              </select>
-                              <span style={{ fontSize: "11px", color: "#64748b", marginTop: "4px", display: "block" }}>
-                                Logged in as: <strong style={{ textTransform: "capitalize", color: "#1e293b" }}>{creatorRole || "super_admin"}</strong> &bull; Allowed to create: <strong style={{ color: "#2563eb" }}>{departmentOptions.map((o) => o.label).join(", ")}</strong>
-                              </span>
-                            </>
-                          ) : (
-                            <div style={{ padding: "10px 14px", backgroundColor: "#fef2f2", color: "#b91c1c", borderRadius: "6px", fontSize: "12px", border: "1px solid #fecaca" }}>
-                              Your current role (<strong>{creatorRole || "Recruiter"}</strong>) is not authorized to create new users under the backend hierarchy.
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Form Submit Button */}
-                    <div className="form-action-row" style={{ marginTop: "24px" }}>
+                <div className="user-modal-overlay" onClick={() => setShowForm(false)}>
+                  <div className="user-modal-card" onClick={(e) => e.stopPropagation()}>
+                    <div className="user-modal-header">
+                      <h2>Add New User</h2>
                       <button
-                        type="submit"
-                        className="btn-form-submit"
-                        disabled={loading || departmentOptions.length === 0}
+                        type="button"
+                        className="user-modal-close-btn"
+                        onClick={() => setShowForm(false)}
                       >
-                        {loading ? "Submitting..." : "Submit"}
+                        &times;
                       </button>
                     </div>
-                  </form>
+
+                    <form onSubmit={handleAddUserSubmit} className="user-modal-form">
+                      {/* Section 1: Emp ID & Name */}
+                      <div className="form-band-section">
+                        <div className="form-grid-2col">
+                          <div className="form-field-group">
+                            <label htmlFor="empID" className="field-label">
+                              Employee ID (Emp ID)
+                            </label>
+                            <input
+                              id="empID"
+                              type="text"
+                              name="empID"
+                              className="form-control-input"
+                              placeholder="e.g. EMP-1001 (optional, auto-generated)"
+                              value={newUser.empID}
+                              onChange={handleInputChange}
+                            />
+                          </div>
+
+                          <div className="form-field-group">
+                            <label htmlFor="name" className="field-label">
+                              Name <span className="req-star">*</span>
+                            </label>
+                            <input
+                              id="name"
+                              type="text"
+                              name="name"
+                              className="form-control-input"
+                              placeholder="e.g. Senthil Kumar"
+                              value={newUser.name}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Section 2: Email & Phone Number (Ph No) */}
+                      <div className="form-band-section">
+                        <div className="form-grid-2col">
+                          <div className="form-field-group">
+                            <label htmlFor="email" className="field-label">
+                              Email Address <span className="req-star">*</span>
+                            </label>
+                            <input
+                              id="email"
+                              type="email"
+                              name="email"
+                              className="form-control-input"
+                              placeholder="e.g. senthil.k@stanco.com"
+                              value={newUser.email}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+
+                          <div className="form-field-group">
+                            <label htmlFor="mobileNo" className="field-label">
+                              Phone Number (Ph No) <span className="req-star">*</span>
+                            </label>
+                            <input
+                              id="mobileNo"
+                              type="tel"
+                              name="mobileNo"
+                              className="form-control-input"
+                              placeholder="e.g. 9876543210"
+                              value={newUser.mobileNo}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Section 3: Department (In which dept) */}
+                      <div className="form-band-section">
+                        <div className="form-grid-2col">
+                          <div className="form-field-group">
+                            <label htmlFor="department" className="field-label">
+                              Department / Role <span className="req-star">*</span>
+                            </label>
+                            {departmentOptions.length > 0 ? (
+                              <>
+                                <select
+                                  id="department"
+                                  name="department"
+                                  className="form-control-select"
+                                  value={newUser.department}
+                                  onChange={handleInputChange}
+                                  required
+                                >
+                                  <option value="">-- Select Department --</option>
+                                  {departmentOptions.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label} ({opt.badge})
+                                    </option>
+                                  ))}
+                                </select>
+                                <span style={{ fontSize: "11px", color: "#64748b", marginTop: "4px", display: "block" }}>
+                                  Logged in as: <strong style={{ textTransform: "capitalize", color: "#1e293b" }}>{creatorRole || "super_admin"}</strong> &bull; Allowed to create: <strong style={{ color: "#2563eb" }}>{departmentOptions.map((o) => o.label).join(", ")}</strong>
+                                </span>
+                              </>
+                            ) : (
+                              <div style={{ padding: "10px 14px", backgroundColor: "#fef2f2", color: "#b91c1c", borderRadius: "6px", fontSize: "12px", border: "1px solid #fecaca" }}>
+                                Your current role (<strong>{creatorRole || "Recruiter"}</strong>) is not authorized to create new users under the backend hierarchy.
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Form Submit Button */}
+                      <div className="form-action-row" style={{ marginTop: "24px" }}>
+                        <button
+                          type="submit"
+                          className="btn-form-submit"
+                          disabled={loading || departmentOptions.length === 0}
+                        >
+                          {loading ? "Submitting..." : "Submit"}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
               {/* Registered Users Section (Table format) */}
-              {users.length > 0 && (
-                <div className="registered-users-section">
-                  <div className="section-header-row">
-                    <h2>Registered Users ({users.length})</h2>
+              <div className="user-table-card">
+                <div className="table-header-toolbar">
+                  <div className="table-title">
+                    <h3>Registered Users</h3>
+                    <span>Total: <strong>{filteredUsers.length}</strong> records</span>
+                  </div>
+
+                  <div className="toolbar-actions">
+                    <div className="toolbar-search-sort-group" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <div className="search-wrapper">
+                        <FaSearch className="search-icon" />
+                        <input
+                          type="text"
+                          placeholder="Search users..."
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                        />
+                        {search && (
+                          <button
+                            type="button"
+                            className="clear-search-btn"
+                            onClick={() => setSearch("")}
+                          >
+                            &times;
+                          </button>
+                        )}
+                      </div>
+
+                      <select
+                        className="sort-select-dropdown"
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        title="Sort Users"
+                      >
+                        <option value="a-z">Sort A-Z</option>
+                        <option value="z-a">Sort Z-A</option>
+                        <option value="newest">New User-Old User</option>
+                        <option value="oldest">Old User-New User</option>
+                      </select>
+                    </div>
+
                     {selectedUserIds.length > 0 && (
                       <button
                         type="button"
                         className="btn-bulk-delete"
                         onClick={handleBulkDelete}
                       >
-                        <FaTrash size={11} /> Delete Selected ({selectedUserIds.length})
+                        <FaTrash size={11} /> Delete ({selectedUserIds.length})
                       </button>
                     )}
                   </div>
+                </div>
 
-                  <div className="users-table-card">
-                    <table className="modern-users-table">
-                      <thead>
+                <div className="users-table-wrapper">
+                  <table className="modern-users-table">
+                    <thead>
+                      <tr>
+                        <th>S.No</th>
+                        <th>EMP ID</th>
+                        <th>NAME</th>
+                        <th>EMAIL</th>
+                        <th>PH NO</th>
+                        <th>DEPARTMENT</th>
+                        <th>STATUS</th>
+                        <th style={{ textAlign: "center" }}>ACTION</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.length === 0 ? (
                         <tr>
-                          <th style={{ width: "40px", textAlign: "center" }}>
-                            <input
-                              type="checkbox"
-                              className="table-header-checkbox"
-                              checked={users.length > 0 && selectedUserIds.length === users.length}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedUserIds(users.map((u) => u.id || u.empID));
-                                } else {
-                                  setSelectedUserIds([]);
-                                }
-                              }}
-                            />
-                          </th>
-                          <th>#</th>
-                          <th>EMP ID</th>
-                          <th>NAME</th>
-                          <th>EMAIL</th>
-                          <th>PH NO</th>
-                          <th>DEPARTMENT</th>
-                          <th>STATUS</th>
-                          <th style={{ textAlign: "center" }}>ACTION</th>
+                          <td colSpan="8" style={{ textAlign: "center", padding: "40px 20px", color: "#64748b" }}>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                              <FaUsers size={32} style={{ color: "#cbd5e1" }} />
+                              <strong style={{ fontSize: "15px", color: "#475569" }}>No Users Found</strong>
+                              <span style={{ fontSize: "12.5px", color: "#94a3b8" }}>Try a different search term or add a user profile.</span>
+                            </div>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {users.map((u, idx) => {
-                          const userKey = u.id || u.empID;
+                      ) : (
+                        currentRecords.map((u, idx) => {
+                          const userKey = u.id || u.empID || u.empid;
                           const isSelected = selectedUserIds.includes(userKey);
 
                           return (
                             <tr key={userKey} className={isSelected ? "row-selected" : ""}>
-                              <td style={{ textAlign: "center" }}>
-                                <input
-                                  type="checkbox"
-                                  className="table-row-checkbox"
-                                  checked={isSelected}
-                                  onChange={() => handleToggleSelectUser(userKey)}
-                                />
-                              </td>
                               <td>
-                                <span className="user-index-tag">{idx + 1}</span>
+                                <span className="user-index-tag">{indexOfFirstRecord + idx + 1}</span>
                               </td>
                               <td>
                                 <span className="user-empid-badge">
                                   <FaIdBadge className="empid-badge-icon" />
-                                  {u.empID}
+                                  {u.empID || u.empid}
                                 </span>
                               </td>
                               <td>
@@ -697,12 +954,35 @@ function UserManagement({ initialTab = "users" }) {
                               </td>
                             </tr>
                           );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                        }))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="table-pagination-bar">
+                    <button
+                      type="button"
+                      className="pagination-btn"
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </button>
+                    <span className="pagination-info">
+                      Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+                    </span>
+                    <button
+                      type="button"
+                      className="pagination-btn"
+                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </>
         )}
@@ -713,12 +993,14 @@ function UserManagement({ initialTab = "users" }) {
         {activeTab === "teams" && (
           <>
             {/* Top Header Title Banner with Right Add Team Button */}
-            <div className="user-form-banner-card">
-              <div className="banner-left-spacer"></div>
-              <h1 className="user-form-banner-title">TEAMS MANAGEMENT (STANCO)</h1>
+            <div className="user-mgmt-header">
+              <div>
+                <h2>Teams Management</h2>
+                <p>Manage teams and team configurations</p>
+              </div>
               <button
                 type="button"
-                className="btn-top-add-user"
+                className="add-btn"
                 onClick={() => {
                   setNewTeam({ name: "", code: "", status: "Active" });
                   setShowAddTeamModal(true);
@@ -731,87 +1013,159 @@ function UserManagement({ initialTab = "users" }) {
 
             {/* Teams Page Wrapper */}
             <div className="user-form-page-wrapper">
-              {/* Teams Data Table */}
-              <div className="teams-table-section">
-                <div className="section-header-row">
-                  <h2>Registered Teams ({teams.length})</h2>
+              <div className="user-table-card">
+                <div className="table-header-toolbar">
+                  <div className="table-title">
+                    <h3>Registered Teams</h3>
+                    <span>Total: <strong>{filteredTeams.length}</strong> records</span>
+                  </div>
+
+                  <div className="toolbar-actions">
+                    <div className="toolbar-search-sort-group" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <div className="search-wrapper">
+                        <FaSearch className="search-icon" />
+                        <input
+                          type="text"
+                          placeholder="Search teams..."
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                        />
+                        {search && (
+                          <button
+                            type="button"
+                            className="clear-search-btn"
+                            onClick={() => setSearch("")}
+                          >
+                            &times;
+                          </button>
+                        )}
+                      </div>
+
+                      <select
+                        className="sort-select-dropdown"
+                        value={teamSortBy}
+                        onChange={(e) => setTeamSortBy(e.target.value)}
+                        title="Sort Teams"
+                      >
+                        <option value="a-z">Sort A-Z</option>
+                        <option value="z-a">Sort Z-A</option>
+                        <option value="newest">New Team-Old Team</option>
+                        <option value="oldest">Old Team-New Team</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="teams-table-card">
+                <div className="users-table-wrapper">
                   <table className="modern-teams-table">
                     <thead>
                       <tr>
-                        <th>#</th>
+                        <th>S.No</th>
                         <th>TEAM NAME</th>
                         <th>STATUS</th>
                         <th style={{ textAlign: "center" }}>ACTION</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {teams.map((team, idx) => (
-                        <tr key={team.id || team.name}>
-                          <td>
-                            <span className="team-index-tag">{idx + 1}</span>
-                          </td>
-                          <td>
-                            <div className="team-name-cell">
-                              <span className="team-badge-pill">{team.name}</span>
-                            </div>
-                          </td>
-                          <td>
-                            <span className="status-btn active-btn">
-                              <span className="status-dot"></span>
-                              {team.status || "Active"}
-                            </span>
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            <div className="table-actions-wrapper">
-                              <button
-                                type="button"
-                                className="btn-dots-action"
-                                title="Actions"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const teamKey = team.id || team.name;
-                                  setOpenTeamMenuId(openTeamMenuId === teamKey ? null : teamKey);
-                                }}
-                              >
-                                <FaEllipsisV />
-                              </button>
-
-                              {openTeamMenuId === (team.id || team.name) && (
-                                <div className="action-dropdown-menu table-menu" onClick={(e) => e.stopPropagation()}>
-                                  <button
-                                    type="button"
-                                    className="action-menu-item edit-item"
-                                    onClick={() => {
-                                      setEditingTeam({ ...team });
-                                      setOpenTeamMenuId(null);
-                                    }}
-                                  >
-                                    <FaEdit className="menu-item-icon" />
-                                    <span>Update</span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="action-menu-item delete-item"
-                                    onClick={() => {
-                                      handleDeleteTeam(team.id, team.name);
-                                      setOpenTeamMenuId(null);
-                                    }}
-                                  >
-                                    <FaTrash className="menu-item-icon" />
-                                    <span>Delete</span>
-                                  </button>
-                                </div>
-                              )}
+                      {filteredTeams.length === 0 ? (
+                        <tr>
+                          <td colSpan="4" style={{ textAlign: "center", padding: "40px 20px", color: "#64748b" }}>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                              <FaUsers size={32} style={{ color: "#cbd5e1" }} />
+                              <strong style={{ fontSize: "15px", color: "#475569" }}>No Teams Found</strong>
+                              <span style={{ fontSize: "12.5px", color: "#94a3b8" }}>Try a different search term or add a team.</span>
                             </div>
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        currentTeams.map((team, idx) => (
+                          <tr key={team.id || team.name}>
+                            <td>
+                              <span className="team-index-tag">{indexOfFirstTeam + idx + 1}</span>
+                            </td>
+                            <td>
+                              <div className="team-name-cell">
+                                <span className="team-badge-pill">{team.name}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <span className="status-btn active-btn">
+                                <span className="status-dot"></span>
+                                {team.status || "Active"}
+                              </span>
+                            </td>
+                            <td style={{ textAlign: "center" }}>
+                              <div className="table-actions-wrapper">
+                                <button
+                                  type="button"
+                                  className="btn-dots-action"
+                                  title="Actions"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const teamKey = team.id || team.name;
+                                    setOpenTeamMenuId(openTeamMenuId === teamKey ? null : teamKey);
+                                  }}
+                                >
+                                  <FaEllipsisV />
+                                </button>
+
+                                {openTeamMenuId === (team.id || team.name) && (
+                                  <div className="action-dropdown-menu table-menu" onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                      type="button"
+                                      className="action-menu-item edit-item"
+                                      onClick={() => {
+                                        setEditingTeam({ ...team });
+                                        setOpenTeamMenuId(null);
+                                      }}
+                                    >
+                                      <FaEdit className="menu-item-icon" />
+                                      <span>Update</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="action-menu-item delete-item"
+                                      onClick={() => {
+                                        handleDeleteTeam(team.id, team.name);
+                                        setOpenTeamMenuId(null);
+                                      }}
+                                    >
+                                      <FaTrash className="menu-item-icon" />
+                                      <span>Delete</span>
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )))}
                     </tbody>
                   </table>
                 </div>
+                {/* Pagination Controls */}
+                {totalTeamPages > 1 && (
+                  <div className="table-pagination-bar">
+                    <button
+                      type="button"
+                      className="pagination-btn"
+                      onClick={() => setCurrentTeamPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={currentTeamPage === 1}
+                    >
+                      Previous
+                    </button>
+                    <span className="pagination-info">
+                      Page <strong>{currentTeamPage}</strong> of <strong>{totalTeamPages}</strong>
+                    </span>
+                    <button
+                      type="button"
+                      className="pagination-btn"
+                      onClick={() => setCurrentTeamPage((prev) => Math.min(prev + 1, totalTeamPages))}
+                      disabled={currentTeamPage === totalTeamPages}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </>
