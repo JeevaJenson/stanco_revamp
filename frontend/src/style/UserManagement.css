@@ -8,6 +8,10 @@
   box-sizing: border-box;
 }
 
+.user-mgmt-header-spaced {
+  margin-bottom: 35px;
+}
+
 .user-mgmt-layout {
   display: flex;
   min-height: 100vh;
@@ -1243,4 +1247,119 @@
 
 .pagination-info strong {
   color: #1e293b;
+}
+
+/* =========================================================
+   DIRECT ACTION ICONS - UPDATE / DELETE
+   ========================================================= */
+
+.business-style-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.icon-action-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.icon-edit-btn {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.icon-edit-btn:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+.icon-delete-btn {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.icon-delete-btn:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+  transform: translateY(-1px);
+}
+
+.icon-action-btn:active {
+  transform: translateY(0);
+}
+
+.icon-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================================================
+   UPDATE USER MODAL - ALL FIELDS
+   ========================================================= */
+
+.mgmt-modal-card {
+  max-width: 760px;
+  max-height: 90vh;
+}
+
+.mgmt-modal-form .modal-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.mgmt-modal-form .form-control-input,
+.mgmt-modal-form .form-control-select {
+  width: 100%;
+  min-width: 0;
+}
+
+.mgmt-modal-form input.form-control-input {
+  height: 40px;
+}
+
+.mgmt-modal-form select.form-control-input {
+  height: 40px;
+}
+
+.mgmt-modal-form input[type="password"].form-control-input {
+  letter-spacing: 0.2px;
+}
+
+@media (max-width: 900px) {
+  .mgmt-modal-card {
+    max-width: calc(100vw - 32px);
+  }
+
+  .mgmt-modal-form .modal-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .business-style-actions {
+    gap: 5px;
+  }
+
+  .icon-action-btn {
+    width: 30px;
+    height: 30px;
+  }
 }
