@@ -1,5 +1,5 @@
 /* =========================================================
-   Vibrant Blue Sidebar with Curved Inverted Radius Active Tab
+   Dark Teal Sidebar with Curved Inverted Radius Active Tab
    ========================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Prata&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -7,14 +7,17 @@
 .dm-sidebar {
   width: 250px;
   height: 100vh;
-  background: #2563eb; /* Vibrant Solid Blue */
+  background: #0B2B2B; /* Dark Teal */
   box-sizing: border-box;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  position: relative;
+  position: fixed; /* Fixed sidebar on desktop */
+  top: 0;
+  left: 0;
+  bottom: 0;
   z-index: 60;
   border-right: none;
   overflow: hidden;
@@ -41,8 +44,8 @@
 
 .sidebar-bottom-section {
   padding: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  background: #2563eb;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: #0B2B2B; /* Dark Teal */
   flex-shrink: 0;
 }
 
@@ -147,14 +150,14 @@
    Active Item - Normal Rounded Highlight
    ========================================================= */
 .sidebar-menu-item.active {
-  background: #ffffff; /* Normal white background */
-  color: #2563eb;
+  background: #134E4A; /* Active Medium Dark Teal Background */
+  color: #ffffff;
   font-weight: 700;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-menu-item.active .nav-icon {
-  color: #2563eb;
+  color: #5EEAD4;
 }
 
 /* Accordion Submenu */
@@ -177,7 +180,7 @@
 }
 
 .sidebar-menu-item.active .accordion-chevron {
-  color: #2563eb;
+  color: #5EEAD4;
 }
 
 /* Submenu List */
@@ -210,7 +213,7 @@
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
-  color: #e0e7ff;
+  color: #99f6e4;
   cursor: pointer;
   transition: all 0.15s ease;
   user-select: none;
@@ -218,23 +221,27 @@
 
 .sub-nav-icon {
   font-size: 13px;
-  color: #c7d2fe;
+  color: #0D9488;
   transition: color 0.15s ease;
 }
 
 .sidebar-submenu-item:hover:not(.sub-active) {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background: rgba(13, 148, 136, 0.15);
+  color: #5EEAD4;
+}
+
+.sidebar-submenu-item:hover:not(.sub-active) .sub-nav-icon {
+  color: #5EEAD4;
 }
 
 .sidebar-submenu-item.sub-active {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(19, 78, 74, 0.5);
   color: #ffffff;
   font-weight: 600;
 }
 
 .sidebar-submenu-item.sub-active .sub-nav-icon {
-  color: #ffffff;
+  color: #5EEAD4;
 }
 
 /* Sign out button */
@@ -246,4 +253,87 @@
 .sidebar-menu-item.signout-item:hover {
   background: rgba(239, 68, 68, 0.2);
   color: #ffffff;
+}
+
+/* Mobile Toggle Hamburger Button styling */
+.sidebar-mobile-toggle {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 10000; /* Must be higher than the sidebar overlay */
+  background: #0B2B2B;
+  border: 1px solid #134E4A;
+  color: #ffffff;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(11, 43, 43, 0.25);
+  transition: all 0.2s ease;
+}
+
+.sidebar-mobile-toggle:hover {
+  background: #134E4A;
+  transform: scale(1.05);
+}
+
+.sidebar-mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeInOverlay 0.2s ease-out;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Media Query for mobile & tablet viewports */
+@media (max-width: 1024px) {
+  .sidebar-mobile-toggle {
+    display: flex;
+  }
+
+  .dm-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: -260px; /* Offscreen */
+    width: 250px;
+    z-index: 1000;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .dm-sidebar.mobile-open {
+    left: 0; /* Slide in */
+  }
+
+  /* Indent top headers to avoid overlapping with hamburger menu */
+  .rfh-saas-header,
+  .dashboard-header,
+  .user-form-banner-card {
+    padding-left: 68px !important;
+  }
+}
+
+/* Offset content wrappers to make room for fixed sidebar on Desktop */
+@media (min-width: 1025px) {
+  .dashboard-content,
+  .user-mgmt-main,
+  .rfh-saas-main,
+  .business-content,
+  .department-content {
+    margin-left: 250px;
+    width: calc(100% - 250px) !important;
+  }
 }

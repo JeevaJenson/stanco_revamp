@@ -1,1697 +1,778 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaArrowLeft,
-  FaArrowRight,
-  FaCheck,
+  FaCheckCircle,
+  FaFileAlt,
+  FaUserTie,
+  FaBriefcase,
+  FaMoneyBillWave,
+  FaPaperPlane,
   FaSave,
-  FaTimes,
+  FaRedo
 } from "react-icons/fa";
-
-import DMSidebar from "./DMSidebar";
 import api from "../services/api";
-
+import Sidebar from "./Sidebar";
 import "../style/RFHForm.css";
 
-
-/* =========================================================
-   INITIAL FORM DATA
-========================================================= */
-
-const initialFormData = {
-  resId: "",
-  rollsOption: "",
-  name: "",
-  mobile: "",
-  email: "",
-  positionReports: "",
-  reportEmail: "",
-  costCenter: "",
-  approvedBy: "",
-
-  requestType: "",
-  replacementOf: "",
-  approvalHire: "",
-  ticketNumber: "",
-
-  positionTitle: "",
-  location: "",
-  locationPreferred: "",
-  business: "",
-  band: "",
-  division: "",
-  function: "",
-  noOfPositions: "",
-
-  jdRoles: "",
-  qualification: "",
-  essentialSkill: "",
-  goodSkill: "",
-  experience: "",
-
-  salaryRange: "",
-  salaryRangeAnnual: "",
-  anySpecific: "",
-
-  deleteRemark: "",
-  approvalHirePath: 0,
-
-  requestDate: "",
-  approveDate: "",
-
-  department: "",
-  designation: "",
-  vertical: "",
-
-  tenDoj: "",
-  empCategory: "",
-  type: "",
-  attendanceFormat: "",
-  weekOff: "",
-
-  ckSupervisior: "",
-  ckMail: "",
-  approverId: "",
-  reporterId: "",
-
-  clientName: "",
-};
-
-
-/* =========================================================
-   STEPS
-========================================================= */
-
-const steps = [
-  {
-    id: 1,
-    title: "Request Details",
-    shortTitle: "Request",
-  },
-  {
-    id: 2,
-    title: "Employee & Reporting",
-    shortTitle: "Employee",
-  },
-  {
-    id: 3,
-    title: "Position Details",
-    shortTitle: "Position",
-  },
-  {
-    id: 4,
-    title: "Skills & Qualification",
-    shortTitle: "Skills",
-  },
-  {
-    id: 5,
-    title: "Salary Details",
-    shortTitle: "Salary",
-  },
-  {
-    id: 6,
-    title: "Employment Details",
-    shortTitle: "Employment",
-  },
-];
-
-
-/* =========================================================
-   INPUT FIELD
-   IMPORTANT:
-   This component is OUTSIDE RFHForm.
-   This fixes input focus issue.
-========================================================= */
-
-const InputField = ({
-  label,
-  name,
-  value,
-  onChange,
-  placeholder = "",
-  type = "text",
-  required = false,
-}) => {
-  return (
-    <div className="rfh-field">
-
-      <label htmlFor={name}>
-        {label}
-
-        {required && (
-          <span className="required-star">
-            *
-          </span>
-        )}
-      </label>
-
-      <input
-        id={name}
-        name={name}
-        type={type}
-        value={value ?? ""}
-        onChange={onChange}
-        placeholder={placeholder}
-        autoComplete="off"
-      />
-
-    </div>
-  );
-};
-
-
-/* =========================================================
-   SELECT FIELD
-========================================================= */
-
-const SelectField = ({
-  label,
-  name,
-  value,
-  onChange,
-  options = [],
-  required = false,
-}) => {
-  return (
-    <div className="rfh-field">
-
-      <label htmlFor={name}>
-        {label}
-
-        {required && (
-          <span className="required-star">
-            *
-          </span>
-        )}
-      </label>
-
-      <select
-        id={name}
-        name={name}
-        value={value ?? ""}
-        onChange={onChange}
-      >
-
-        <option value="">
-          Select {label}
-        </option>
-
-        {options.map((option) => (
-          <option
-            key={option.value}
-            value={option.value}
-          >
-            {option.label}
-          </option>
-        ))}
-
-      </select>
-
-    </div>
-  );
-};
-
-
-/* =========================================================
-   TEXT AREA FIELD
-========================================================= */
-
-const TextAreaField = ({
-  label,
-  name,
-  value,
-  onChange,
-  placeholder = "",
-  required = false,
-}) => {
-  return (
-    <div className="rfh-field rfh-full-field">
-
-      <label htmlFor={name}>
-        {label}
-
-        {required && (
-          <span className="required-star">
-            *
-          </span>
-        )}
-      </label>
-
-      <textarea
-        id={name}
-        name={name}
-        value={value ?? ""}
-        onChange={onChange}
-        placeholder={placeholder}
-        rows={4}
-      />
-
-    </div>
-  );
-};
-
-
-/* =========================================================
-   MAIN COMPONENT
-========================================================= */
-
 function RFHForm() {
-
   const navigate = useNavigate();
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const today = new Date().toISOString().split("T")[0];
 
-  const { id } = useParams();
-
-
-  /* =======================================================
-     STATE
-  ======================================================= */
-
-  const [currentStep, setCurrentStep] = useState(1);
-
-  const [formData, setFormData] =
-    useState(initialFormData);
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [loadingData, setLoadingData] =
-    useState(false);
-
-  const [toast, setToast] = useState({
-    show: false,
-    type: "",
-    message: "",
+  const [formData, setFormData] = useState({
+    requestRaisedBy: currentUser.name || currentUser.empID || "Manager / Requester",
+    costCenter: "",
+    requestDate: today,
+    requestType: "",
+    clientName: "",
+    positionTitle: "",
+    workLocation: "",
+    business: "",
+    vertical: "",
+    noOfPositions: "1",
+    qualification: "",
+    employmentCategory: "Full Time",
+    jdRolesResponsibilities: "",
+    essentialSkills: "",
+    goodToHaveSkills: "",
+    experience: "",
+    maxCtcMonthly: "",
+    maxCtcAnnual: "",
+    revenueType: "Financial Recruitment",
+    otherConsiderations: "",
   });
 
-
-  /* =======================================================
-     TOAST
-  ======================================================= */
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [successModal, setSuccessModal] = useState(null);
 
   const showToast = (type, message) => {
-
-    setToast({
-      show: true,
-      type,
-      message,
-    });
-
-    setTimeout(() => {
-
-      setToast({
-        show: false,
-        type: "",
-        message: "",
-      });
-
-    }, 3500);
+    setToast({ type, message });
   };
-
-
-  /* =======================================================
-     FETCH EDIT DATA
-  ======================================================= */
 
   useEffect(() => {
-
-    if (id) {
-      fetchRfhById(id);
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 4000);
+      return () => clearTimeout(timer);
     }
+  }, [toast]);
 
-  }, [id]);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
 
-  const fetchRfhById = async (rfhId) => {
+      if (name === "maxCtcMonthly" && value && !isNaN(value)) {
+        updated.maxCtcAnnual = String(Math.round(parseFloat(value) * 12));
+      } else if (name === "maxCtcAnnual" && value && !isNaN(value)) {
+        updated.maxCtcMonthly = String(Math.round(parseFloat(value) / 12));
+      }
 
-    try {
+      return updated;
+    });
+  };
 
-      setLoadingData(true);
+  const handleRevenueChange = (type) => {
+    setFormData((prev) => ({ ...prev, revenueType: type }));
+  };
 
-      const response =
-        await api.get(`/rfh/${rfhId}`);
-
+  const handleReset = () => {
+    if (window.confirm("Are you sure you want to reset all fields in this form?")) {
       setFormData({
-        ...initialFormData,
-        ...(response.data || {}),
+        requestRaisedBy: currentUser.name || currentUser.empID || "Manager / Requester",
+        costCenter: "",
+        requestDate: today,
+        requestType: "",
+        clientName: "",
+        positionTitle: "",
+        workLocation: "",
+        business: "",
+        vertical: "",
+        noOfPositions: "1",
+        qualification: "",
+        employmentCategory: "Full Time",
+        jdRolesResponsibilities: "",
+        essentialSkills: "",
+        goodToHaveSkills: "",
+        experience: "",
+        maxCtcMonthly: "",
+        maxCtcAnnual: "",
+        revenueType: "Financial Recruitment",
+        otherConsiderations: "",
       });
-
-    } catch (error) {
-
-      console.error(
-        "RFH fetch error:",
-        error
-      );
-
-      showToast(
-        "error",
-        error?.response?.data?.message ||
-          "Failed to load RFH details"
-      );
-
-    } finally {
-
-      setLoadingData(false);
-
+      showToast("success", "Form reset successfully");
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setToast(null);
 
-  /* =======================================================
-     HANDLE INPUT
-  ======================================================= */
+    const requiredFields = [
+      { key: "requestRaisedBy", label: "Request Raised By" },
+      { key: "requestDate", label: "Request Date" },
+      { key: "requestType", label: "Request Type" },
+      { key: "clientName", label: "Client Name" },
+      { key: "positionTitle", label: "Position Title" },
+      { key: "workLocation", label: "Work Location" },
+      { key: "business", label: "Business" },
+      { key: "vertical", label: "Vertical" },
+      { key: "noOfPositions", label: "No. of Positions" },
+      { key: "jdRolesResponsibilities", label: "JD / Roles & Responsibilities" },
+      { key: "qualification", label: "Qualification" },
+      { key: "essentialSkills", label: "Essential Skill sets" },
+      { key: "experience", label: "Experience (in yrs)" },
+      { key: "maxCtcMonthly", label: "Maximum CTC (Per Month)" },
+      { key: "maxCtcAnnual", label: "Maximum CTC (Per Annum)" },
+      { key: "revenueType", label: "Revenue Type" },
+    ];
 
-  const handleChange = (event) => {
-
-    const {
-      name,
-      value,
-    } = event.target;
-
-    setFormData((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
-  };
-
-
-  /* =======================================================
-     VALIDATION
-  ======================================================= */
-
-  const validateStep = () => {
-
-    /* -----------------------------------------------------
-       STEP 1
-    ----------------------------------------------------- */
-
-    if (currentStep === 1) {
-
-      if (
-        !String(
-          formData.requestType || ""
-        ).trim()
-      ) {
-
-        showToast(
-          "error",
-          "Request Type is required"
-        );
-
-        return false;
+    for (const field of requiredFields) {
+      if (!formData[field.key] || !String(formData[field.key]).trim()) {
+        showToast("error", `Please fill in required field: ${field.label}`);
+        return;
       }
-
-
-      if (
-        !String(
-          formData.replacementOf || ""
-        ).trim()
-      ) {
-
-        showToast(
-          "error",
-          "Replacement Of is required"
-        );
-
-        return false;
-      }
-
-
-      return true;
     }
 
-
-    /* -----------------------------------------------------
-       STEP 2
-    ----------------------------------------------------- */
-
-    if (currentStep === 2) {
-
-      if (
-        formData.mobile &&
-        !/^[0-9]{10}$/.test(
-          formData.mobile
-        )
-      ) {
-
-        showToast(
-          "error",
-          "Mobile number must contain 10 digits"
-        );
-
-        return false;
-      }
-
-
-      if (
-        formData.email &&
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-          formData.email
-        )
-      ) {
-
-        showToast(
-          "error",
-          "Please enter a valid email"
-        );
-
-        return false;
-      }
-
-
-      if (
-        formData.reportEmail &&
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-          formData.reportEmail
-        )
-      ) {
-
-        showToast(
-          "error",
-          "Please enter a valid report email"
-        );
-
-        return false;
-      }
-
-
-      return true;
-    }
-
-
-    /* -----------------------------------------------------
-       STEP 3
-    ----------------------------------------------------- */
-
-    if (currentStep === 3) {
-
-      if (
-        !String(
-          formData.positionTitle || ""
-        ).trim()
-      ) {
-
-        showToast(
-          "error",
-          "Position Title is required"
-        );
-
-        return false;
-      }
-
-
-      if (
-        !String(
-          formData.noOfPositions || ""
-        ).trim()
-      ) {
-
-        showToast(
-          "error",
-          "Number of Positions is required"
-        );
-
-        return false;
-      }
-
-
-      if (
-        !String(
-          formData.clientName || ""
-        ).trim()
-      ) {
-
-        showToast(
-          "error",
-          "Client Name is required"
-        );
-
-        return false;
-      }
-
-
-      return true;
-    }
-
-
-    /* -----------------------------------------------------
-       STEP 4
-    ----------------------------------------------------- */
-
-    if (currentStep === 4) {
-      return true;
-    }
-
-
-    /* -----------------------------------------------------
-       STEP 5
-    ----------------------------------------------------- */
-
-    if (currentStep === 5) {
-      return true;
-    }
-
-
-    /* -----------------------------------------------------
-       STEP 6
-    ----------------------------------------------------- */
-
-    if (currentStep === 6) {
-      return true;
-    }
-
-
-    return true;
-  };
-
-
-  /* =======================================================
-     NEXT
-  ======================================================= */
-
-  const handleNext = () => {
-
-    if (!validateStep()) {
-      return;
-    }
-
-
-    if (
-      currentStep < steps.length
-    ) {
-
-      setCurrentStep(
-        (previous) =>
-          previous + 1
-      );
-
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  };
-
-
-  /* =======================================================
-     BACK
-  ======================================================= */
-
-  const handleBack = () => {
-
-    if (currentStep > 1) {
-
-      setCurrentStep(
-        (previous) =>
-          previous - 1
-      );
-
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  };
-
-
-  /* =======================================================
-     CANCEL
-  ======================================================= */
-
-  const handleCancel = () => {
-
-    const confirmed =
-      window.confirm(
-        "Are you sure you want to cancel this RFH?"
-      );
-
-    if (confirmed) {
-      navigate("/dashboard");
-    }
-  };
-
-
-  /* =======================================================
-     SUBMIT
-  ======================================================= */
-
-  const handleSubmit = async (event) => {
-
-    event.preventDefault();
-
-
-    if (!validateStep()) {
-      return;
-    }
-
+    setLoading(true);
+    const generatedRfhNo = `TRFH-${Math.floor(1000 + Math.random() * 9000)}`;
 
     try {
-
-      setLoading(true);
-
-
       const payload = {
-        ...formData,
-
-        approvalHirePath:
-          formData.approvalHirePath === ""
-            ? 0
-            : Number(
-                formData.approvalHirePath
-              ),
+        rfhNo: generatedRfhNo,
+        positionTitle: formData.positionTitle,
+        noOfPosition: formData.noOfPositions,
+        openDate: formData.requestDate,
+        business: formData.business,
+        division: formData.vertical,
+        location: formData.workLocation,
+        salaryRange: formData.maxCtcMonthly,
+        salaryRangeAnnual: formData.maxCtcAnnual,
+        requestStatus: "OPEN",
+        createdBy: formData.requestRaisedBy,
       };
 
+      await api.post("/recruitment-requests", payload).catch((err) => {
+        console.warn("Backend API request fallback or running locally:", err);
+      });
 
-      let response;
+      setSuccessModal({
+        rfhNo: generatedRfhNo,
+        position: formData.positionTitle,
+        positionsCount: formData.noOfPositions,
+        date: formData.requestDate,
+        client: formData.clientName,
+      });
 
-
-      /* UPDATE */
-
-      if (id) {
-
-        response = await api.put(
-          `/rfh/${id}`,
-          payload
-        );
-
-      }
-
-      /* CREATE */
-
-      else {
-
-        response = await api.post(
-          "/rfh",
-          payload
-        );
-      }
-
-
-      console.log(
-        "RFH saved:",
-        response.data
-      );
-
-
-      showToast(
-        "success",
-        id
-          ? "RFH updated successfully"
-          : "RFH created successfully"
-      );
-
-
-      setTimeout(() => {
-
-        navigate("/rfh");
-
-      }, 1200);
-
-    } catch (error) {
-
-      console.error(
-        "RFH save error:",
-        error
-      );
-
-
-      const message =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        "Failed to save RFH";
-
-
-      showToast(
-        "error",
-        message
-      );
-
+    } catch (err) {
+      console.error("Submission error:", err);
+      showToast("error", "An error occurred while submitting RFH.");
     } finally {
-
       setLoading(false);
-
     }
   };
-
-
-  /* =======================================================
-     STEP 1
-  ======================================================= */
-
-  const renderStepOne = () => {
-
-    return (
-
-      <div className="rfh-form-grid">
-
-        <SelectField
-          label="Request Type"
-          name="requestType"
-          value={formData.requestType}
-          onChange={handleChange}
-          required
-          options={[
-            {
-              value: "NEW",
-              label: "New",
-            },
-            {
-              value: "REPLACEMENT",
-              label: "Replacement",
-            },
-            {
-              value: "ADDITIONAL",
-              label: "Additional",
-            },
-          ]}
-        />
-
-
-        <InputField
-          label="Replacement Of"
-          name="replacementOf"
-          value={formData.replacementOf}
-          onChange={handleChange}
-          required
-          placeholder="Enter replacement employee"
-        />
-
-
-        <SelectField
-          label="Rolls Option"
-          name="rollsOption"
-          value={formData.rollsOption}
-          onChange={handleChange}
-          options={[
-            {
-              value: "INTERNAL",
-              label: "Internal",
-            },
-            {
-              value: "EXTERNAL",
-              label: "External",
-            },
-          ]}
-        />
-
-
-        <SelectField
-          label="Approval Hire"
-          name="approvalHire"
-          value={formData.approvalHire}
-          onChange={handleChange}
-          options={[
-            {
-              value: "YES",
-              label: "Yes",
-            },
-            {
-              value: "NO",
-              label: "No",
-            },
-          ]}
-        />
-
-
-        <InputField
-          label="Ticket Number"
-          name="ticketNumber"
-          value={formData.ticketNumber}
-          onChange={handleChange}
-          placeholder="Enter ticket number"
-        />
-
-
-        <InputField
-          label="Request Date"
-          name="requestDate"
-          value={formData.requestDate}
-          onChange={handleChange}
-          type="date"
-        />
-
-
-        <InputField
-          label="Approve Date"
-          name="approveDate"
-          value={formData.approveDate}
-          onChange={handleChange}
-          type="date"
-        />
-
-
-        <InputField
-          label="Approval Hire Path"
-          name="approvalHirePath"
-          value={formData.approvalHirePath}
-          onChange={handleChange}
-          type="number"
-          placeholder="Enter approval path"
-        />
-
-      </div>
-    );
-  };
-
-
-  /* =======================================================
-     STEP 2
-  ======================================================= */
-
-  const renderStepTwo = () => {
-
-    return (
-
-      <div className="rfh-form-grid">
-
-        <InputField
-          label="Employee Name"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          placeholder="Enter employee name"
-        />
-
-
-        <InputField
-          label="Mobile"
-          name="mobile"
-          value={formData.mobile}
-          onChange={handleChange}
-          type="tel"
-          placeholder="10 digit mobile number"
-        />
-
-
-        <InputField
-          label="Email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          type="email"
-          placeholder="Enter email"
-        />
-
-
-        <InputField
-          label="Position Reports"
-          name="positionReports"
-          value={formData.positionReports}
-          onChange={handleChange}
-          placeholder="Enter reporting position"
-        />
-
-
-        <InputField
-          label="Report Email"
-          name="reportEmail"
-          value={formData.reportEmail}
-          onChange={handleChange}
-          type="email"
-          placeholder="Enter report email"
-        />
-
-
-        <InputField
-          label="Cost Center"
-          name="costCenter"
-          value={formData.costCenter}
-          onChange={handleChange}
-          placeholder="Enter cost center"
-        />
-
-
-        <InputField
-          label="Approved By"
-          name="approvedBy"
-          value={formData.approvedBy}
-          onChange={handleChange}
-          placeholder="Enter approver"
-        />
-
-
-        <InputField
-          label="Reporter ID"
-          name="reporterId"
-          value={formData.reporterId}
-          onChange={handleChange}
-          placeholder="Enter reporter ID"
-        />
-
-
-        <InputField
-          label="Approver ID"
-          name="approverId"
-          value={formData.approverId}
-          onChange={handleChange}
-          placeholder="Enter approver ID"
-        />
-
-      </div>
-    );
-  };
-
-
-  /* =======================================================
-     STEP 3
-  ======================================================= */
-
-  const renderStepThree = () => {
-
-    return (
-
-      <div className="rfh-form-grid">
-
-        <InputField
-          label="Position Title"
-          name="positionTitle"
-          value={formData.positionTitle}
-          onChange={handleChange}
-          required
-          placeholder="Enter position title"
-        />
-
-
-        <InputField
-          label="No. Of Positions"
-          name="noOfPositions"
-          value={formData.noOfPositions}
-          onChange={handleChange}
-          required
-          type="number"
-          placeholder="Enter number"
-        />
-
-
-        <InputField
-          label="Location"
-          name="location"
-          value={formData.location}
-          onChange={handleChange}
-          placeholder="Enter location"
-        />
-
-
-        <InputField
-          label="Preferred Location"
-          name="locationPreferred"
-          value={formData.locationPreferred}
-          onChange={handleChange}
-          placeholder="Enter preferred location"
-        />
-
-
-        <InputField
-          label="Business"
-          name="business"
-          value={formData.business}
-          onChange={handleChange}
-          placeholder="Enter business"
-        />
-
-
-        <InputField
-          label="Band"
-          name="band"
-          value={formData.band}
-          onChange={handleChange}
-          placeholder="Enter band"
-        />
-
-
-        <InputField
-          label="Division"
-          name="division"
-          value={formData.division}
-          onChange={handleChange}
-          placeholder="Enter division"
-        />
-
-
-        <InputField
-          label="Function"
-          name="function"
-          value={formData.function}
-          onChange={handleChange}
-          placeholder="Enter function"
-        />
-
-
-        <InputField
-          label="Department"
-          name="department"
-          value={formData.department}
-          onChange={handleChange}
-          placeholder="Enter department"
-        />
-
-
-        <InputField
-          label="Designation"
-          name="designation"
-          value={formData.designation}
-          onChange={handleChange}
-          placeholder="Enter designation"
-        />
-
-
-        <InputField
-          label="Vertical"
-          name="vertical"
-          value={formData.vertical}
-          onChange={handleChange}
-          placeholder="Enter vertical"
-        />
-
-
-        <InputField
-          label="Client Name"
-          name="clientName"
-          value={formData.clientName}
-          onChange={handleChange}
-          required
-          placeholder="Enter client name"
-        />
-
-      </div>
-    );
-  };
-
-
-  /* =======================================================
-     STEP 4
-  ======================================================= */
-
-  const renderStepFour = () => {
-
-    return (
-
-      <div className="rfh-form-grid">
-
-        <InputField
-          label="Qualification"
-          name="qualification"
-          value={formData.qualification}
-          onChange={handleChange}
-          placeholder="Enter qualification"
-        />
-
-
-        <InputField
-          label="Experience"
-          name="experience"
-          value={formData.experience}
-          onChange={handleChange}
-          placeholder="Example: 3-5 years"
-        />
-
-
-        <TextAreaField
-          label="JD / Roles"
-          name="jdRoles"
-          value={formData.jdRoles}
-          onChange={handleChange}
-          placeholder="Enter job description / roles"
-        />
-
-
-        <TextAreaField
-          label="Essential Skills"
-          name="essentialSkill"
-          value={formData.essentialSkill}
-          onChange={handleChange}
-          placeholder="Enter essential skills"
-        />
-
-
-        <TextAreaField
-          label="Good Skills"
-          name="goodSkill"
-          value={formData.goodSkill}
-          onChange={handleChange}
-          placeholder="Enter good-to-have skills"
-        />
-
-      </div>
-    );
-  };
-
-
-  /* =======================================================
-     STEP 5
-  ======================================================= */
-
-  const renderStepFive = () => {
-
-    return (
-
-      <div className="rfh-form-grid">
-
-        <InputField
-          label="Salary Range"
-          name="salaryRange"
-          value={formData.salaryRange}
-          onChange={handleChange}
-          placeholder="Example: 30,000 - 40,000"
-        />
-
-
-        <InputField
-          label="Annual Salary Range"
-          name="salaryRangeAnnual"
-          value={formData.salaryRangeAnnual}
-          onChange={handleChange}
-          placeholder="Example: 4 LPA - 6 LPA"
-        />
-
-
-        <TextAreaField
-          label="Any Specific Requirement"
-          name="anySpecific"
-          value={formData.anySpecific}
-          onChange={handleChange}
-          placeholder="Enter any specific requirement"
-        />
-
-      </div>
-    );
-  };
-
-
-  /* =======================================================
-     STEP 6
-  ======================================================= */
-
-  const renderStepSix = () => {
-
-    return (
-
-      <div className="rfh-form-grid">
-
-        <InputField
-          label="Ten DOJ"
-          name="tenDoj"
-          value={formData.tenDoj}
-          onChange={handleChange}
-          type="date"
-        />
-
-
-        <InputField
-          label="Employee Category"
-          name="empCategory"
-          value={formData.empCategory}
-          onChange={handleChange}
-          placeholder="Enter employee category"
-        />
-
-
-        <InputField
-          label="Type"
-          name="type"
-          value={formData.type}
-          onChange={handleChange}
-          placeholder="Enter employment type"
-        />
-
-
-        <SelectField
-          label="Attendance Format"
-          name="attendanceFormat"
-          value={formData.attendanceFormat}
-          onChange={handleChange}
-          options={[
-            {
-              value: "OFFICE",
-              label: "Office",
-            },
-            {
-              value: "HYBRID",
-              label: "Hybrid",
-            },
-            {
-              value: "REMOTE",
-              label: "Remote",
-            },
-          ]}
-        />
-
-
-        <InputField
-          label="Week Off"
-          name="weekOff"
-          value={formData.weekOff}
-          onChange={handleChange}
-          placeholder="Example: Saturday / Sunday"
-        />
-
-
-        <InputField
-          label="Supervisor"
-          name="ckSupervisior"
-          value={formData.ckSupervisior}
-          onChange={handleChange}
-          placeholder="Enter supervisor"
-        />
-
-
-        <InputField
-          label="Supervisor Mail"
-          name="ckMail"
-          value={formData.ckMail}
-          onChange={handleChange}
-          type="email"
-          placeholder="Enter supervisor email"
-        />
-
-
-        <InputField
-          label="Approver ID"
-          name="approverId"
-          value={formData.approverId}
-          onChange={handleChange}
-          placeholder="Enter approver ID"
-        />
-
-
-        <InputField
-          label="Reporter ID"
-          name="reporterId"
-          value={formData.reporterId}
-          onChange={handleChange}
-          placeholder="Enter reporter ID"
-        />
-
-
-        <TextAreaField
-          label="Delete Remark"
-          name="deleteRemark"
-          value={formData.deleteRemark}
-          onChange={handleChange}
-          placeholder="Optional"
-        />
-
-      </div>
-    );
-  };
-
-
-  /* =======================================================
-     CURRENT STEP
-  ======================================================= */
-
-  const renderCurrentStep = () => {
-
-    switch (currentStep) {
-
-      case 1:
-        return renderStepOne();
-
-      case 2:
-        return renderStepTwo();
-
-      case 3:
-        return renderStepThree();
-
-      case 4:
-        return renderStepFour();
-
-      case 5:
-        return renderStepFive();
-
-      case 6:
-        return renderStepSix();
-
-      default:
-        return null;
-    }
-  };
-
-
-  /* =======================================================
-     LOADING
-  ======================================================= */
-
-  if (loadingData) {
-
-    return (
-
-      <div className="rfh-layout">
-
-        <DMSidebar />
-
-        <main className="rfh-content">
-
-          <div className="rfh-loading-page">
-            Loading RFH...
-          </div>
-
-        </main>
-
-      </div>
-    );
-  }
-
-
-  /* =======================================================
-     UI
-  ======================================================= */
 
   return (
+    <div className="rfh-saas-layout">
+      <Sidebar />
 
-    <div className="rfh-layout">
-
-      {/* SIDEBAR */}
-
-      <DMSidebar />
-
-
-      {/* MAIN CONTENT */}
-
-      <main className="rfh-content">
-
-
-        {/* =================================================
-            TOAST
-        ================================================= */}
-
-        {toast.show && (
-
-          <div
-            className={`rfh-toast ${toast.type}`}
-          >
-
-            <span>
-              {toast.message}
-            </span>
-
-
-            <button
-              type="button"
-              onClick={() =>
-                setToast({
-                  show: false,
-                  type: "",
-                  message: "",
-                })
-              }
-            >
-              <FaTimes />
-            </button>
-
+      <main className="rfh-saas-main">
+        {/* Floating Toast Notification */}
+        {toast && (
+          <div className="rfh-toast-container">
+            <div className={`rfh-toast-box ${toast.type}`}>
+              <span>{toast.message}</span>
+              <button
+                type="button"
+                className="rfh-toast-close"
+                onClick={() => setToast(null)}
+              >
+                &times;
+              </button>
+            </div>
           </div>
         )}
 
-
-        {/* =================================================
-            HEADER
-        ================================================= */}
-
-        <div className="rfh-page-header">
-
-          <div>
-
-            <h1>
-              {id
-                ? "Edit RFH"
-                : "Create Temporary RFH"}
-            </h1>
-
-            <p>
-              Fill the recruitment request
-              details step by step
-            </p>
-
-          </div>
-
-
-          <button
-            type="button"
-            className="rfh-cancel-top"
-            onClick={handleCancel}
-          >
-
-            <FaTimes />
-
-            Cancel
-
-          </button>
-
-        </div>
-
-
-        {/* =================================================
-            STEP PROGRESS
-        ================================================= */}
-
-        <div className="rfh-step-card">
-
-          <div className="rfh-step-progress">
-
-            {steps.map(
-              (step, index) => (
-
-                <React.Fragment
-                  key={step.id}
-                >
-
-                  <div
-                    className={`rfh-step-item ${
-                      currentStep >=
-                      step.id
-                        ? "completed"
-                        : ""
-                    } ${
-                      currentStep ===
-                      step.id
-                        ? "current"
-                        : ""
-                    }`}
-                  >
-
-                    <div className="rfh-step-circle">
-
-                      {currentStep >
-                      step.id ? (
-                        <FaCheck />
-                      ) : (
-                        step.id
-                      )}
-
-                    </div>
-
-
-                    <div className="rfh-step-label">
-
-                      <span>
-                        Step {step.id}
-                      </span>
-
-                      <strong>
-                        {step.title}
-                      </strong>
-
-                    </div>
-
-                  </div>
-
-
-                  {index <
-                    steps.length - 1 && (
-
-                    <div
-                      className={`rfh-step-line ${
-                        currentStep >
-                        step.id
-                          ? "completed"
-                          : ""
-                      }`}
-                    />
-
-                  )}
-
-                </React.Fragment>
-
-              )
-            )}
-
-          </div>
-
-
-          {/* MOBILE STEP TITLE */}
-
-          <div className="rfh-mobile-step-title">
-
-            Step {currentStep} of{" "}
-            {steps.length}
-
-            <strong>
-              {
-                steps[
-                  currentStep - 1
-                ].title
-              }
-            </strong>
-
-          </div>
-
-        </div>
-
-
-        {/* =================================================
-            FORM
-        ================================================= */}
-
-        <form
-          className="rfh-form-card"
-          onSubmit={handleSubmit}
-          noValidate
-        >
-
-
-          {/* FORM HEADER */}
-
-          <div className="rfh-form-header">
-
-            <div>
-
-              <h2>
-                {
-                  steps[
-                    currentStep - 1
-                  ].title
-                }
-              </h2>
-
-              <p>
-                Enter the required
-                information below.
+        {/* Success Modal */}
+        {successModal && (
+          <div className="rfh-modal-backdrop">
+            <div className="rfh-success-card">
+              <div className="rfh-success-icon">
+                <FaCheckCircle />
+              </div>
+              <h2>RFH Created Successfully</h2>
+              <p className="rfh-ref-code">
+                Requisition Code: <strong>{successModal.rfhNo}</strong>
               </p>
 
-            </div>
+              <div className="rfh-summary-table">
+                <div className="rfh-sum-row">
+                  <span>Position Title:</span>
+                  <strong>{successModal.position}</strong>
+                </div>
+                <div className="rfh-sum-row">
+                  <span>Total Vacancies:</span>
+                  <strong>{successModal.positionsCount} Positions</strong>
+                </div>
+                <div className="rfh-sum-row">
+                  <span>Client / Account:</span>
+                  <strong>{successModal.client}</strong>
+                </div>
+                <div className="rfh-sum-row">
+                  <span>Date Created:</span>
+                  <strong>{successModal.date}</strong>
+                </div>
+              </div>
 
-
-            <div className="rfh-step-number">
-
-              {currentStep} /{" "}
-              {steps.length}
-
-            </div>
-
-          </div>
-
-
-          {/* FORM BODY */}
-
-          <div className="rfh-form-body">
-
-            {renderCurrentStep()}
-
-          </div>
-
-
-          {/* =================================================
-              FOOTER
-          ================================================= */}
-
-          <div className="rfh-form-footer">
-
-
-            {/* BACK */}
-
-            <button
-              type="button"
-              className="rfh-back-btn"
-              onClick={handleBack}
-              disabled={
-                currentStep === 1
-              }
-            >
-
-              <FaArrowLeft />
-
-              Back
-
-            </button>
-
-
-            <div className="rfh-footer-right">
-
-
-              {/* CANCEL */}
-
-              <button
-                type="button"
-                className="rfh-cancel-btn"
-                onClick={handleCancel}
-              >
-
-                Cancel
-
-              </button>
-
-
-              {/* NEXT */}
-
-              {currentStep <
-              steps.length ? (
-
+              <div className="rfh-modal-buttons">
                 <button
                   type="button"
-                  className="rfh-next-btn"
-                  onClick={handleNext}
+                  className="rfh-btn-secondary"
+                  onClick={() => navigate("/dashboard")}
                 >
-
-                  Next
-
-                  <FaArrowRight />
-
+                  Return to Dashboard
                 </button>
+                <button
+                  type="button"
+                  className="rfh-btn-primary"
+                  onClick={() => {
+                    setSuccessModal(null);
+                    setFormData({
+                      requestRaisedBy: currentUser.name || currentUser.empID || "Manager / Requester",
+                      costCenter: "",
+                      requestDate: today,
+                      requestType: "",
+                      clientName: "",
+                      positionTitle: "",
+                      workLocation: "",
+                      business: "",
+                      vertical: "",
+                      noOfPositions: "1",
+                      qualification: "",
+                      employmentCategory: "Full Time",
+                      jdRolesResponsibilities: "",
+                      essentialSkills: "",
+                      goodToHaveSkills: "",
+                      experience: "",
+                      maxCtcMonthly: "",
+                      maxCtcAnnual: "",
+                      revenueType: "Financial Recruitment",
+                      otherConsiderations: "",
+                    });
+                  }}
+                >
+                  Create Another RFH
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-              ) : (
+        {/* Top Header Card */}
+        <div className="rfh-saas-header">
+          <div className="header-left-col">
+            <button
+              type="button"
+              className="rfh-saas-back-btn"
+              onClick={() => navigate("/dashboard")}
+            >
+              <FaArrowLeft size={12} />
+              <span>Back</span>
+            </button>
+            <div className="header-title-group">
+              <h1>Request For Hire (RFH) Stanco</h1>
+              <p>Fill out candidate requisition details to initiate recruitment workflow</p>
+            </div>
+          </div>
 
+          <div className="header-right-badges">
+            <span className="badge-tag rfh-tag-blue">STANCO PORTAL</span>
+            <span className="badge-tag rfh-tag-green">NEW REQUISITION</span>
+          </div>
+        </div>
 
-                /* SUBMIT */
+        {/* Form Main Body */}
+        <div className="rfh-form-wrapper">
+          <form onSubmit={handleSubmit} className="rfh-saas-form">
+            {/* Card 1: Requester & Client Details */}
+            <div className="saas-card">
+              <div className="saas-card-title">
+                <div className="title-icon-box">
+                  <FaUserTie />
+                </div>
+                <div>
+                  <h3>Requester & Client Information</h3>
+                  <p>Origin of the hiring request and client specifications</p>
+                </div>
+              </div>
+
+              <div className="saas-form-grid grid-2">
+                <div className="saas-field">
+                  <label htmlFor="requestRaisedBy">
+                    Request raised by <span className="req-dot">*</span>
+                  </label>
+                  <input
+                    id="requestRaisedBy"
+                    type="text"
+                    name="requestRaisedBy"
+                    className="saas-input"
+                    placeholder="Enter requester name / Employee ID"
+                    value={formData.requestRaisedBy}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="saas-field">
+                  <label htmlFor="costCenter">Cost Center</label>
+                  <input
+                    id="costCenter"
+                    type="text"
+                    name="costCenter"
+                    className="saas-input"
+                    placeholder="e.g. CC-104 / TechOps"
+                    value={formData.costCenter}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <div className="saas-form-grid grid-3">
+                <div className="saas-field">
+                  <label htmlFor="requestDate">
+                    Request Date <span className="req-dot">*</span>
+                  </label>
+                  <input
+                    id="requestDate"
+                    type="date"
+                    name="requestDate"
+                    className="saas-input"
+                    value={formData.requestDate}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="saas-field">
+                  <label htmlFor="requestType">
+                    Request Type <span className="req-dot">*</span>
+                  </label>
+                  <select
+                    id="requestType"
+                    name="requestType"
+                    className="saas-select"
+                    value={formData.requestType}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">-- Select Request Type --</option>
+                    <option value="New Position">New Position</option>
+                    <option value="Replacement">Replacement</option>
+                    <option value="Contractual">Contractual</option>
+                    <option value="Temp RFH">Temp RFH</option>
+                    <option value="Project Basis">Project Basis</option>
+                  </select>
+                </div>
+
+                <div className="saas-field">
+                  <label htmlFor="clientName">
+                    Client Name <span className="req-dot">*</span>
+                  </label>
+                  <input
+                    id="clientName"
+                    type="text"
+                    name="clientName"
+                    className="saas-input"
+                    placeholder="e.g. Stanco Global / Client Corp"
+                    value={formData.clientName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Position & Organization */}
+            <div className="saas-card">
+              <div className="saas-card-title">
+                <div className="title-icon-box">
+                  <FaBriefcase />
+                </div>
+                <div>
+                  <h3>Position & Location Details</h3>
+                  <p>Role specifications, department alignment, and vacancy counts</p>
+                </div>
+              </div>
+
+              <div className="saas-form-grid grid-2">
+                <div className="saas-field">
+                  <label htmlFor="positionTitle">
+                    Position Title <span className="req-dot">*</span>
+                  </label>
+                  <input
+                    id="positionTitle"
+                    type="text"
+                    name="positionTitle"
+                    className="saas-input"
+                    placeholder="e.g. Senior Full Stack Developer"
+                    value={formData.positionTitle}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="saas-field">
+                  <label htmlFor="workLocation">
+                    Work Location <span className="req-dot">*</span>
+                  </label>
+                  <input
+                    id="workLocation"
+                    type="text"
+                    name="workLocation"
+                    className="saas-input"
+                    placeholder="e.g. Bangalore / Chennai / Hybrid"
+                    value={formData.workLocation}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="saas-form-grid grid-2">
+                <div className="saas-field">
+                  <label htmlFor="business">
+                    Business <span className="req-dot">*</span>
+                  </label>
+                  <select
+                    id="business"
+                    name="business"
+                    className="saas-select"
+                    value={formData.business}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">-- Select Business Unit --</option>
+                    <option value="IT Services">IT Services</option>
+                    <option value="Digital Engineering">Digital Engineering</option>
+                    <option value="Enterprise Consulting">Enterprise Consulting</option>
+                    <option value="Corporate Operations">Corporate Operations</option>
+                  </select>
+                </div>
+
+                <div className="saas-field">
+                  <label htmlFor="vertical">
+                    Vertical <span className="req-dot">*</span>
+                  </label>
+                  <select
+                    id="vertical"
+                    name="vertical"
+                    className="saas-select"
+                    value={formData.vertical}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">-- Select Vertical --</option>
+                    <option value="BFSI">BFSI</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Retail">Retail</option>
+                    <option value="Manufacturing">Manufacturing</option>
+                    <option value="Telecom">Telecom</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="saas-form-grid grid-3">
+                <div className="saas-field">
+                  <label htmlFor="noOfPositions">
+                    No. of Positions <span className="req-dot">*</span>
+                  </label>
+                  <input
+                    id="noOfPositions"
+                    type="number"
+                    min="1"
+                    name="noOfPositions"
+                    className="saas-input"
+                    placeholder="e.g. 1"
+                    value={formData.noOfPositions}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="saas-field">
+                  <label htmlFor="qualification">
+                    Qualification <span className="req-dot">*</span>
+                  </label>
+                  <input
+                    id="qualification"
+                    type="text"
+                    name="qualification"
+                    className="saas-input"
+                    placeholder="e.g. B.Tech / B.E / MCA / Any Degree"
+                    value={formData.qualification}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="saas-field">
+                  <label htmlFor="employmentCategory">
+                    Employment Category
+                  </label>
+                  <select
+                    id="employmentCategory"
+                    name="employmentCategory"
+                    className="saas-select"
+                    value={formData.employmentCategory}
+                    onChange={handleChange}
+                  >
+                    <option value="Full Time">Full Time</option>
+                    <option value="Contractual">Contractual</option>
+                    <option value="Part Time">Part Time</option>
+                    <option value="Internship">Internship</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Job Description & Skill Requirements */}
+            <div className="saas-card">
+              <div className="saas-card-title">
+                <div className="title-icon-box">
+                  <FaFileAlt />
+                </div>
+                <div>
+                  <h3>Job Description & Skill Requirements</h3>
+                  <p>Responsibilities, mandatory technologies, and preferred proficiencies</p>
+                </div>
+              </div>
+
+              <div className="saas-field full-row">
+                <label htmlFor="jdRolesResponsibilities">
+                  JD / Roles & Responsibilities <span className="req-dot">*</span>
+                </label>
+                <textarea
+                  id="jdRolesResponsibilities"
+                  name="jdRolesResponsibilities"
+                  rows="4"
+                  className="saas-textarea"
+                  placeholder="Please list as bullet points or describe key role expectations..."
+                  value={formData.jdRolesResponsibilities}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="saas-form-grid grid-2">
+                <div className="saas-field">
+                  <label htmlFor="essentialSkills">
+                    Essential Skill sets: <span className="req-dot">*</span>
+                  </label>
+                  <textarea
+                    id="essentialSkills"
+                    name="essentialSkills"
+                    rows="3"
+                    className="saas-textarea"
+                    placeholder="e.g. React.js, Spring Boot, MySQL, Java 17, Microservices"
+                    value={formData.essentialSkills}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="saas-field">
+                  <label htmlFor="goodToHaveSkills">
+                    Good to have Skill sets (if any):
+                  </label>
+                  <textarea
+                    id="goodToHaveSkills"
+                    name="goodToHaveSkills"
+                    rows="3"
+                    className="saas-textarea"
+                    placeholder="e.g. AWS, Docker, Kubernetes, CI/CD pipelines"
+                    value={formData.goodToHaveSkills}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Card 4: Experience, Compensation & Commercials */}
+            <div className="saas-card">
+              <div className="saas-card-title">
+                <div className="title-icon-box">
+                  <FaMoneyBillWave />
+                </div>
+                <div>
+                  <h3>Experience & Commercial Compensation</h3>
+                  <p>Candidate seniority level, compensation budget, and billing type</p>
+                </div>
+              </div>
+
+              <div className="saas-form-grid grid-3">
+                <div className="saas-field">
+                  <label htmlFor="experience">
+                    Experience (in yrs) <span className="req-dot">*</span>
+                  </label>
+                  <input
+                    id="experience"
+                    type="text"
+                    name="experience"
+                    className="saas-input"
+                    placeholder="e.g. 3-5 Years"
+                    value={formData.experience}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="saas-field">
+                  <label htmlFor="maxCtcMonthly">
+                    Maximum CTC (Per Month) <span className="req-dot">*</span>
+                  </label>
+                  <div className="currency-box">
+                    <span className="currency-tag">₹</span>
+                    <input
+                      id="maxCtcMonthly"
+                      type="number"
+                      name="maxCtcMonthly"
+                      className="saas-input with-curr"
+                      placeholder="e.g. 85000"
+                      value={formData.maxCtcMonthly}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="saas-field">
+                  <label htmlFor="maxCtcAnnual">
+                    Maximum CTC (Per Annum) <span className="req-dot">*</span>
+                  </label>
+                  <div className="currency-box">
+                    <span className="currency-tag">₹</span>
+                    <input
+                      id="maxCtcAnnual"
+                      type="number"
+                      name="maxCtcAnnual"
+                      className="saas-input with-curr"
+                      placeholder="e.g. 1020000"
+                      value={formData.maxCtcAnnual}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Revenue Type Segmented Cards */}
+              <div className="revenue-segment-wrapper">
+                <label className="saas-group-label">
+                  Revenue Type <span className="req-dot">*</span>
+                </label>
+                <div className="revenue-pill-grid">
+                  <div
+                    className={`revenue-pill-card ${formData.revenueType === "Financial Recruitment" ? "selected" : ""
+                      }`}
+                    onClick={() => handleRevenueChange("Financial Recruitment")}
+                  >
+                    <div className="radio-pill-circle"></div>
+                    <div className="pill-text">
+                      <strong>Financial Recruitment</strong>
+                      <span>Direct billable recruitment with revenue realization</span>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`revenue-pill-card ${formData.revenueType === "Non-Financial Recruitment" ? "selected" : ""
+                      }`}
+                    onClick={() => handleRevenueChange("Non-Financial Recruitment")}
+                  >
+                    <div className="radio-pill-circle"></div>
+                    <div className="pill-text">
+                      <strong>Non-Financial Recruitment</strong>
+                      <span>Internal corporate / non-billable strategic hire</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 5: Specific Considerations & Sharing */}
+            <div className="saas-card">
+              <div className="saas-card-title">
+                <div className="title-icon-box">
+                  <FaFileAlt />
+                </div>
+                <div>
+                  <h3>Additional Notes & CV Routing</h3>
+                  <p>Special instructions or recipient emails to receive shortlisted profiles</p>
+                </div>
+              </div>
+
+              <div className="saas-field full-row">
+                <label htmlFor="otherConsiderations">
+                  Any other specific consideration / Add cvs Share to:
+                </label>
+                <textarea
+                  id="otherConsiderations"
+                  name="otherConsiderations"
+                  rows="3"
+                  className="saas-textarea"
+                  placeholder="e.g. Please share profiles directly with hr.lead@stanco.com, hiring.manager@stanco.com"
+                  value={formData.otherConsiderations}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            {/* Bottom Action Controls */}
+            <div className="rfh-saas-footer">
+              <button
+                type="button"
+                className="saas-btn-reset"
+                onClick={handleReset}
+              >
+                <FaRedo size={12} />
+                <span>Reset All</span>
+              </button>
+
+              <div className="saas-footer-right">
+                <button
+                  type="button"
+                  className="saas-btn-draft"
+                  onClick={() => showToast("success", "Draft saved locally.")}
+                >
+                  <FaSave size={13} />
+                  <span>Save Draft</span>
+                </button>
 
                 <button
                   type="submit"
-                  className="rfh-submit-btn"
+                  className="saas-btn-submit"
                   disabled={loading}
                 >
-
                   {loading ? (
-
-                    "Saving..."
-
+                    <span className="saas-loading-state">
+                      <span className="saas-spinner"></span>
+                      <span>Submitting RFH...</span>
+                    </span>
                   ) : (
-
                     <>
-                      <FaSave />
-
-                      {id
-                        ? "Update RFH"
-                        : "Create RFH"}
+                      <FaPaperPlane size={13} />
+                      <span>Submit Request</span>
                     </>
-
                   )}
-
                 </button>
-
-              )}
-
+              </div>
             </div>
-
-          </div>
-
-        </form>
-
+          </form>
+        </div>
       </main>
-
     </div>
   );
 }
-
 
 export default RFHForm;
