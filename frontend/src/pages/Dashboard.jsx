@@ -4,7 +4,7 @@ import { FaPlus } from "react-icons/fa";
 import Sidebar from "./Sidebar";
 import LogoutModal from "./LogoutModal";
 import api from "../services/api";
-import "./Dashboard.css";
+import "../style/Dashboard.css";
 
 function Dashboard() {
   const navigate = useNavigate();

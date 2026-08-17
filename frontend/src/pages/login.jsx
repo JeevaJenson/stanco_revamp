@@ -55,7 +55,7 @@ function Login() {
 
       {
 
-        showToast("success", "Login successful! Redirecting...");
+        showToast("success", "Login successful!");
         setTimeout(() => {
           navigate("/dashboard");
         }, 1000);

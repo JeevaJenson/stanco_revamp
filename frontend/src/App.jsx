@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/login";
-import Dashboard from "./pages/dashboard";
+import Dashboard from "./pages/Dashboard";
 import RFHForm from "./pages/RFHForm";
 import UserManagement from "./pages/UserManagement";
 import BusinessUnit from "./pages/BusinessUnit";
@@ -12,6 +12,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/rfh/create" element={<RFHForm />} />
         <Route path="/rfh" element={<RFHForm />} />

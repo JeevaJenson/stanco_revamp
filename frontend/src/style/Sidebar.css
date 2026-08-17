@@ -320,6 +320,7 @@
 
   /* Indent top headers to avoid overlapping with hamburger menu */
   .rfh-saas-header,
+  .rfh-page-header,
   .dashboard-header,
   .user-form-banner-card {
     padding-left: 68px !important;
@@ -331,6 +332,7 @@
   .dashboard-content,
   .user-mgmt-main,
   .rfh-saas-main,
+  .rfh-content,
   .business-content,
   .department-content {
     margin-left: 250px;

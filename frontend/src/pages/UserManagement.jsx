@@ -1,1207 +1,1805 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   FaUserPlus,
   FaTrash,
   FaEnvelope,
   FaIdBadge,
-  FaBuilding,
   FaUsers,
-  FaCheck,
   FaPhoneAlt,
-  FaUser,
   FaPlus,
-  FaUserFriends,
-  FaEllipsisV,
   FaEdit,
   FaTimes,
   FaSave,
   FaSearch,
-  FaSortAlphaDown,
-  FaSortAlphaUp
+  FaCheck,
+  FaEllipsisV,
 } from "react-icons/fa";
+
 import api from "../services/api";
 import Sidebar from "./Sidebar";
 import "../style/UserManagement.css";
 
-const DB_MOCK_USERS = [
+const ROLE_OPTIONS = {
+  super_admin: [
+    {
+      label: "Admin",
+      roleType: "admin",
+    },
+  ],
+
+  admin: [
+    {
+      label: "Hiring Manager",
+      roleType: "delivery_lead",
+    },
+  ],
+
+  delivery_lead: [
+    {
+      label: "Recruiter",
+      roleType: "recruiter",
+    },
+  ],
+
+  recruiter: [],
+};
+
+const ALL_ROLE_OPTIONS = [
   {
-    id: 1,
-    empID: "900001",
-    name: "admin",
-    email: "admin@gmail.com",
-    mobileNo: "1234567891",
-    department: "HR",
-    designation: "Recruiter",
-    profileStatus: "Active",
-    business: null,
-    team: "CKPL"
+    label: "Admin",
+    roleType: "admin",
   },
   {
-    id: 2,
-    empID: "900002",
-    name: "kavi",
-    email: "kavi@gmail.com",
-    mobileNo: "1234567891",
-    department: "CKPL",
-    designation: "Developer",
-    profileStatus: "Active",
-    business: null,
-    team: "CKPL"
+    label: "Hiring Manager",
+    roleType: "delivery_lead",
   },
   {
-    id: 3,
-    empID: "900003",
-    name: "Test User",
-    email: "test@gmail.com",
-    mobileNo: "9876543210",
-    department: "HR",
-    designation: "Recruiter",
-    profileStatus: "Active",
-    business: null,
-    team: "CKPL"
+    label: "Recruiter",
+    roleType: "recruiter",
   },
-  {
-    id: 4,
-    empID: "as123",
-    name: "admin",
-    email: "as123@gmail.com",
-    mobileNo: "1234567891",
-    department: "HR",
-    designation: "Recruiter",
-    profileStatus: "Active",
-    business: null,
-    team: "CKPL"
-  },
-  {
-    id: 5,
-    empID: "ADMIN001",
-    name: "System Administrator",
-    email: "admin@stanco.com",
-    mobileNo: "9876543210",
-    department: "Management",
-    designation: "Administrator",
-    profileStatus: "Active",
-    business: "STANCO",
-    team: "STANCO"
-  },
-  {
-    id: 6,
-    empID: "ADMIN005",
-    name: "test admin",
-    email: "admin005@gmail.com",
-    mobileNo: "9876543210",
-    department: "Admin",
-    designation: "Admin",
-    profileStatus: "Active",
-    business: "STANCO",
-    team: "STANCO"
-  },
-  {
-    id: 7,
-    empID: "112233",
-    name: "hgfd",
-    email: "vcx@gmail.com",
-    mobileNo: "345678768",
-    department: "Admin",
-    designation: "Admin",
-    profileStatus: "Active",
-    business: "STANCO",
-    team: "STANCO"
-  },
-  {
-    id: 8,
-    empID: "ADMIN12",
-    name: "barani",
-    email: "barani@gmail.com",
-    mobileNo: "345678768",
-    department: "Admin",
-    designation: "Admin",
-    profileStatus: "Active",
-    business: "STANCO",
-    team: "STANCO"
-  },
-  {
-    id: 9,
-    empID: "EMP006",
-    name: "senthil",
-    email: "senthil@gmail.com",
-    mobileNo: "7654345676",
-    department: "Admin",
-    designation: "Admin",
-    profileStatus: "Active",
-    business: "STANCO",
-    team: "STANCO"
-  },
-  {
-    id: 10,
-    empID: "EMP007",
-    name: "pavithra",
-    email: "pavithra@gmail.com",
-    mobileNo: "8765456787",
-    department: "Admin",
-    designation: "Admin",
-    profileStatus: "Active",
-    business: "STANCO",
-    team: "STANCO"
-  }
 ];
 
+const DROPDOWN_DESIGNATIONS = [
+  { label: "Admin", value: "Admin" },
+  { label: "Hiring Manager", value: "Hiring Manager" },
+  { label: "Recruiter", value: "Recruiter" }
+];
+
+const EMPTY_USER = {
+  empID: "",
+  name: "",
+  designation: "",
+  business: "",
+  department: "",
+  lobDivision: "",
+  email: "",
+  mobileNo: "",
+  roleType: "",
+  profileStatus: "active",
+  password: "",
+  team: "",
+  colorCode: "",
+};
+
+const EMPTY_TEAM = {
+  name: "",
+  status: 1,
+};
+
 function UserManagement({ initialTab = "users" }) {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(initialTab); // "users" | "teams"
+  const location = useLocation();
+
+  const routeTab =
+    location.pathname === "/teams"
+      ? "teams"
+      : "users";
+
+  const [activeTab, setActiveTab] = useState(
+    routeTab || initialTab
+  );
+
+  useEffect(() => {
+    setActiveTab(routeTab);
+  }, [routeTab]);
+
+  /* =========================
+     USER STATE
+  ========================= */
+
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [selectedUserIds, setSelectedUserIds] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [showTeamForm, setShowTeamForm] = useState(false);
-  const [showAddTeamModal, setShowAddTeamModal] = useState(false);
-  const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("a-z"); // "a-z" | "z-a" | "newest" | "oldest"
-  const [teamSortBy, setTeamSortBy] = useState("a-z"); // "a-z" | "z-a" | "newest" | "oldest"
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [creatingUser, setCreatingUser] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [recordsPerPage] = useState(9);
-  const [currentTeamPage, setCurrentTeamPage] = useState(1);
-  const [teamsPerPage] = useState(9);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search]);
-
-  useEffect(() => {
-    setCurrentTeamPage(1);
-  }, [search]);
-
-  // 3-dot Action Menu dropdown states
-  const [openUserMenuId, setOpenUserMenuId] = useState(null);
-  const [openTeamMenuId, setOpenTeamMenuId] = useState(null);
-
-  // Edit / Update State
+  const [newUser, setNewUser] = useState(EMPTY_USER);
   const [editingUser, setEditingUser] = useState(null);
+
+  /* =========================
+     TEAM STATE
+  ========================= */
+
+  const [teams, setTeams] = useState([]);
+  const [activeTeams, setActiveTeams] = useState([]);
+  const [newTeam, setNewTeam] = useState(EMPTY_TEAM);
   const [editingTeam, setEditingTeam] = useState(null);
 
-  // Current logged in user & role hierarchy mapping
-  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-  const creatorRole = (currentUser.roleType || "").toLowerCase();
+  /* =========================
+     MODAL STATE
+  ========================= */
 
-  // Role hierarchy mapping matching backend UserServiceImpl
-  const getDepartmentOptionsForRole = (role) => {
-    switch (role) {
-      case "super_admin":
-        return [
-          { label: "Admin", value: "Admin", roleType: "admin", badge: "Role: Admin" },
-        ];
-      case "admin":
-        return [
-          { label: "Hiring Manager", value: "Hiring Manager", roleType: "delivery_lead", badge: "Role: Delivery Lead" },
-          { label: "Business Lead", value: "Business Lead", roleType: "line_business_head", badge: "Role: Line Business Head" },
-          { label: "Recruiter", value: "Recruiter", roleType: "recruiter", badge: "Role: Recruiter" },
-        ];
-      case "delivery_lead":
-      case "hiring_manager":
-        return [
-          { label: "Recruiter", value: "Recruiter", roleType: "recruiter", badge: "Role: Recruiter" },
-        ];
-      case "recruiter":
-        return [];
-      default:
-        return [
-          { label: "Admin", value: "Admin", roleType: "admin", badge: "Role: Admin" },
-          { label: "Hiring Manager", value: "Hiring Manager", roleType: "delivery_lead", badge: "Role: Delivery Lead" },
-          { label: "Business Lead", value: "Business Lead", roleType: "line_business_head", badge: "Role: Line Business Head" },
-          { label: "Recruiter", value: "Recruiter", roleType: "recruiter", badge: "Role: Recruiter" },
-        ];
-    }
-  };
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [showTeamModal, setShowTeamModal] = useState(false);
 
-  const departmentOptions = getDepartmentOptionsForRole(creatorRole);
 
-  // Teams list data
-  const [teams, setTeams] = useState([
-    { id: 1, name: "HPEL", code: "TEAM-HPEL", memberCount: 12, status: "Active" },
-    { id: 2, name: "CKPL", code: "TEAM-CKPL", memberCount: 8, status: "Active" },
-    { id: 3, name: "STANCO", code: "TEAM-STANCO", memberCount: 15, status: "Active" },
-    { id: 4, name: "TEST", code: "TEAM-TEST", memberCount: 4, status: "Active" },
-  ]);
+  /* =========================
+     SEARCH / SORT
+  ========================= */
 
-  // New Team Form State
-  const [newTeam, setNewTeam] = useState({
-    name: "",
-    code: "",
-    status: "Active",
-  });
+  const [userSearch, setUserSearch] = useState("");
+  const [teamSearch, setTeamSearch] = useState("");
 
-  // New User Form State
-  const [newUser, setNewUser] = useState({
-    empID: "",
-    name: "",
-    email: "",
-    mobileNo: "",
-    department: departmentOptions.length > 0 ? departmentOptions[0].value : "",
-    team: "",
-  });
+  const [userSort, setUserSort] = useState("a-z");
+  const [teamSort, setTeamSort] = useState("a-z");
 
-  useEffect(() => {
-    if (departmentOptions.length > 0 && !newUser.department) {
-      setNewUser((prev) => ({ ...prev, department: departmentOptions[0].value }));
-    }
-  }, [creatorRole]);
+  /* =========================
+     PAGINATION
+  ========================= */
+
+  const [userPage, setUserPage] = useState(1);
+  const [teamPage, setTeamPage] = useState(1);
+
+  const USERS_PER_PAGE = 9;
+  const TEAMS_PER_PAGE = 9;
+
+  /* =========================
+     TOAST
+  ========================= */
+
+  const [toast, setToast] = useState(null);
 
   const showToast = (type, message) => {
-    setToast({ type, message });
+    setToast({
+      type,
+      message,
+    });
   };
 
   useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 4000);
-      return () => clearTimeout(timer);
+    if (!toast) {
+      return;
     }
+
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 3500);
+
+    return () => clearTimeout(timer);
   }, [toast]);
 
-  useEffect(() => {
-    if (initialTab) {
-      setActiveTab(initialTab);
-      setSearch("");
-    }
-  }, [initialTab]);
+  const [activeActionMenu, setActiveActionMenu] = useState(null);
 
-  // Load existing users from backend if available
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      showToast("error", "You are not logged in. Please log in first.");
-      return;
-    }
-
-    const fetchUsers = async () => {
-      try {
-        const response = await api.get("/users");
-        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-          setUsers(response.data);
-        } else {
-          setUsers(DB_MOCK_USERS);
-        }
-      } catch (err) {
-        console.warn("Backend /api/users fetch fallback, loading database mock users:", err);
-        setUsers(DB_MOCK_USERS);
-      }
-    };
-    fetchUsers();
-  }, []);
-
-  const handleToggleSelectUser = (id) => {
-    setSelectedUserIds((prev) =>
-      prev.includes(id) ? prev.filter((userId) => userId !== id) : [...prev, id]
-    );
-  };
-
-  const handleBulkDelete = () => {
-    if (selectedUserIds.length === 0) return;
-    if (window.confirm(`Are you sure you want to remove ${selectedUserIds.length} selected users?`)) {
-      setUsers((prev) => prev.filter((u) => !selectedUserIds.includes(u.id || u.empID)));
-      setSelectedUserIds([]);
-      showToast("success", `${selectedUserIds.length} users removed.`);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewUser((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleTeamInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewTeam((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleAddUserSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!newUser.name.trim() || !newUser.email.trim() || !newUser.department) {
-      showToast("error", "Please fill in all required fields (Name, Email, Ph No, Dept).");
-      return;
-    }
-
-    setLoading(true);
-
-    const generatedEmpId = newUser.empID.trim()
-      ? newUser.empID.trim().toUpperCase()
-      : `EMP-${Math.floor(1000 + Math.random() * 9000)}`;
-
-    // Determine valid roleType from departmentOptions based on role hierarchy
-    const matchedOption = departmentOptions.find((opt) => opt.value === newUser.department);
-    const resolvedRole = matchedOption ? matchedOption.roleType : (newUser.department === "Admin" ? "admin" : "delivery_lead");
-
-    const userPayload = {
-      empID: generatedEmpId,
-      name: newUser.name.trim(),
-      email: newUser.email.trim().toLowerCase(),
-      mobileNo: newUser.mobileNo.trim() || "9876543210",
-      department: newUser.department,
-      team: newUser.team || "STANCO",
-      designation: newUser.department || "Team Member",
-      roleType: resolvedRole,
-      password: "Password@123",
-      profileStatus: "active",
-      business: "STANCO",
-    };
-
-    try {
-      const response = await api.post("/users", userPayload);
-      const added = response.data || { ...userPayload, id: Date.now() };
-      setUsers((prev) => [added, ...prev]);
-
-      showToast("success", `User ${newUser.name} added successfully!`);
-      setShowForm(false);
-
-      // Reset form
-      setNewUser({
-        empID: "",
-        name: "",
-        email: "",
-        mobileNo: "",
-        department: "",
-        team: "",
-      });
-    } catch (err) {
-      console.error("Error creating user:", err);
-      const errorMsg =
-        err.response?.data?.message ||
-        (typeof err.response?.data === "string" ? err.response.data : "Failed to add user to backend.");
-      showToast("error", errorMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Close menus when clicking outside
   useEffect(() => {
     const handleOutsideClick = () => {
-      setOpenUserMenuId(null);
-      setOpenTeamMenuId(null);
+      setActiveActionMenu(null);
     };
     window.addEventListener("click", handleOutsideClick);
     return () => window.removeEventListener("click", handleOutsideClick);
   }, []);
 
-  const handleDeleteUser = (id, userName) => {
-    if (window.confirm(`Are you sure you want to remove user "${userName}"?`)) {
-      setUsers((prev) => prev.filter((u) => u.id !== id));
-      setSelectedUserIds((prev) => prev.filter((userId) => userId !== id));
-      showToast("success", `User "${userName}" removed.`);
+  const [businessList, setBusinessList] = useState([
+    { label: "CKLP", value: "CKLP" },
+    { label: "STANCO", value: "STANCO" }
+  ]);
+  const [departmentList, setDepartmentList] = useState([
+    { label: "IT", value: "IT" },
+    { label: "Human Resources", value: "Human Resources" },
+    { label: "Business", value: "Business" }
+  ]);
+
+  useEffect(() => {
+    const loadDropdownData = async () => {
+      try {
+        const [busRes, deptRes] = await Promise.all([
+          api.get("/business-masters"),
+          api.get("/departments")
+        ]);
+        
+        const activeBuses = (busRes.data || [])
+          .filter(b => String(b.status || "active").toLowerCase() === "active")
+          .map(b => ({ label: b.businessName, value: b.businessName }));
+        if (activeBuses.length > 0) setBusinessList(activeBuses);
+
+        const activeDepts = (deptRes.data || [])
+          .filter(d => String(d.status || "active").toLowerCase() === "active")
+          .map(d => ({ label: d.name, value: d.name }));
+        if (activeDepts.length > 0) setDepartmentList(activeDepts);
+      } catch (err) {
+        console.error("Error loading dropdown data:", err);
+      }
+    };
+    loadDropdownData();
+  }, []);
+
+  /* =========================
+     CURRENT USER
+  ========================= */
+
+  const currentUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  }, []);
+
+  const creatorRole = (
+    currentUser?.roleType ||
+    ""
+  ).toLowerCase();
+
+  /* =========================
+     ROLE OPTIONS
+  ========================= */
+
+  const roleOptions =
+    ROLE_OPTIONS[creatorRole] || [];
+
+  /* =========================
+     LOAD USERS
+  ========================= */
+
+  const fetchUsers = async () => {
+    try {
+      setLoadingUsers(true);
+
+      const response = await api.get("/users");
+
+      const data = Array.isArray(response.data)
+        ? response.data
+        : [];
+
+      setUsers(data);
+    } catch (error) {
+      console.error("Failed to load users:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        "Unable to load users";
+
+      showToast("error", message);
+    } finally {
+      setLoadingUsers(false);
     }
   };
 
-  // Update User Submit Handler
-  const handleUpdateUserSubmit = async (e) => {
-    e.preventDefault();
-    if (!editingUser) return;
+  const fetchTeams = async () => {
+    try {
+      const [allResponse, activeResponse] = await Promise.all([
+        api.get("/teams"),
+        api.get("/teams/active"),
+      ]);
 
-    if (!editingUser.name.trim() || !editingUser.email.trim() || !editingUser.department) {
-      showToast("error", "Please fill in all required fields (Name, Email, Ph No, Dept).");
+      const allTeams = Array.isArray(allResponse.data)
+        ? allResponse.data
+        : [];
+
+      const activeTeamData = Array.isArray(activeResponse.data)
+        ? activeResponse.data
+        : [];
+
+      setTeams(allTeams);
+      setActiveTeams(activeTeamData);
+    } catch (error) {
+      console.error("Failed to load teams:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        "Unable to load teams";
+
+      showToast("error", message);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+    fetchTeams();
+  }, []);
+
+  /* =========================
+     USER FORM CHANGE
+  ========================= */
+
+  const handleUserChange = (event) => {
+    const {
+      name,
+      value,
+    } = event.target;
+
+    setNewUser((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  };
+
+  /* =========================
+     CREATE USER
+  ========================= */
+
+  const handleCreateUser = async (event) => {
+    event.preventDefault();
+
+    if (!newUser.empID.trim()) {
+      showToast(
+        "error",
+        "Employee ID is required"
+      );
+      return;
+    }
+
+    if (!newUser.name.trim()) {
+      showToast(
+        "error",
+        "Name is required"
+      );
+      return;
+    }
+
+    if (!newUser.designation.trim()) {
+      showToast(
+        "error",
+        "Designation is required"
+      );
+      return;
+    }
+
+    if (!newUser.email.trim()) {
+      showToast(
+        "error",
+        "Email is required"
+      );
+      return;
+    }
+
+    if (!newUser.team.trim()) {
+      showToast(
+        "error",
+        "Active team is required"
+      );
+      return;
+    }
+
+    const derivedMobile = newUser.mobileNo?.trim() || "0000000000";
+    const derivedPassword = newUser.password || "Stanco@123";
+    let derivedRole = "recruiter";
+    if (newUser.designation === "Admin") derivedRole = "admin";
+    else if (newUser.designation === "Hiring Manager") derivedRole = "delivery_lead";
+
+    try {
+      setCreatingUser(true);
+
+      const payload = {
+        empID: newUser.empID.trim(),
+        name: newUser.name.trim(),
+        designation: newUser.designation.trim(),
+
+        business:
+          newUser.business?.trim() || null,
+
+        department:
+          newUser.department?.trim() || null,
+
+        lobDivision:
+          newUser.lobDivision?.trim() || null,
+
+        email:
+          newUser.email
+            .trim()
+            .toLowerCase(),
+
+        mobileNo: derivedMobile,
+
+        roleType: derivedRole,
+
+        profileStatus:
+          newUser.profileStatus || "active",
+
+        password: derivedPassword,
+
+        team:
+          newUser.team.trim() || "",
+
+        colorCode:
+          newUser.colorCode.trim() || "",
+      };
+
+      const response = await api.post(
+        "/users",
+        payload
+      );
+
+      const createdUser = response.data;
+
+      setUsers((previous) => [
+        createdUser,
+        ...previous,
+      ]);
+
+      /*
+       * Refresh teams from users
+       */
+      await fetchUsers();
+
+      setNewUser(EMPTY_USER);
+      setShowUserModal(false);
+
+      showToast(
+        "success",
+        "User created successfully"
+      );
+    } catch (error) {
+      console.error(
+        "Create user error:",
+        error
+      );
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        "Failed to create user";
+
+      showToast(
+        "error",
+        typeof message === "string"
+          ? message
+          : "Failed to create user"
+      );
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+
+  /* =========================
+     USER UPDATE
+  ========================= */
+
+  const handleUpdateUser = async (event) => {
+    event.preventDefault();
+
+    if (!editingUser?.id) {
+      showToast("error", "User ID is missing");
+      return;
+    }
+
+    if (
+      !editingUser.empID?.trim() ||
+      !editingUser.name?.trim() ||
+      !editingUser.designation?.trim() ||
+      !editingUser.email?.trim() ||
+      !editingUser.team?.trim()
+    ) {
+      showToast("error", "Please fill all required fields");
+      return;
+    }
+
+    let derivedRole = editingUser.roleType || "recruiter";
+    if (editingUser.designation === "Admin") derivedRole = "admin";
+    else if (editingUser.designation === "Hiring Manager") derivedRole = "delivery_lead";
+    else if (editingUser.designation === "Recruiter") derivedRole = "recruiter";
+
+    try {
+      setCreatingUser(true);
+
+      const payload = {
+        empID: editingUser.empID.trim(),
+        name: editingUser.name.trim(),
+        designation: editingUser.designation.trim(),
+        business: editingUser.business?.trim() || null,
+        department: editingUser.department?.trim() || null,
+        lobDivision: editingUser.lobDivision?.trim() || null,
+        email: editingUser.email.trim().toLowerCase(),
+        mobileNo: editingUser.mobileNo?.trim() || "0000000000",
+        roleType: derivedRole,
+        profileStatus: editingUser.profileStatus || "active",
+        team: editingUser.team?.trim() || "",
+        colorCode: editingUser.colorCode?.trim() || "",
+      };
+
+      if (editingUser.password?.trim()) {
+        payload.password = editingUser.password.trim();
+      }
+
+      const response = await api.put(
+        `/users/${editingUser.id}`,
+        payload
+      );
+
+      setUsers((previous) =>
+        previous.map((user) =>
+          user.id === editingUser.id ? response.data : user
+        )
+      );
+
+      setEditingUser(null);
+      await fetchUsers();
+      showToast("success", "User updated successfully");
+    } catch (error) {
+      console.error("Update user error:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        "Failed to update user";
+
+      showToast(
+        "error",
+        typeof message === "string"
+          ? message
+          : "Failed to update user"
+      );
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+
+  /* =========================
+     USER DELETE
+  ========================= */
+
+  const handleDeleteUser = async (
+    user
+  ) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${user.name}"?`
+    );
+
+    if (!confirmed) {
       return;
     }
 
     try {
-      // If API update available
-      if (editingUser.id) {
-        await api.put(`/users/${editingUser.id}`, editingUser).catch(() => { });
-      }
-    } catch (err) {
-      console.warn("API update fallback to local state:", err);
+      await api.delete(`/users/${user.id}`);
+
+      setUsers((previous) =>
+        previous.filter(
+          (item) => item.id !== user.id
+        )
+      );
+
+      await fetchUsers();
+
+      showToast(
+        "success",
+        "User deleted successfully"
+      );
+    } catch (error) {
+      console.error(
+        "Delete user error:",
+        error
+      );
+
+      const message =
+        error?.response?.data?.message ||
+        "Failed to delete user";
+
+      showToast("error", message);
     }
-
-    setUsers((prev) =>
-      prev.map((u) => (u.id === editingUser.id || u.empID === editingUser.empID ? { ...editingUser } : u))
-    );
-
-    showToast("success", `User "${editingUser.name}" updated successfully!`);
-    setEditingUser(null);
   };
 
-  // Add Team Submit Handler
-  const handleAddTeamSubmit = (e) => {
-    e.preventDefault();
+  /* =========================
+     OPEN CREATE USER
+  ========================= */
 
-    if (!newTeam.name.trim()) {
-      showToast("error", "Please enter a team name.");
+  const openCreateUser = () => {
+    if (creatorRole === "recruiter") {
+      showToast(
+        "error",
+        "Recruiter cannot create users"
+      );
       return;
     }
 
-    const teamNameClean = newTeam.name.trim().toUpperCase();
-
-    // Check duplicate
-    if (teams.some((t) => t.name.toUpperCase() === teamNameClean)) {
-      showToast("error", `Team "${teamNameClean}" already exists!`);
+    if (roleOptions.length === 0) {
+      showToast(
+        "error",
+        "You are not authorized to create users"
+      );
       return;
     }
 
-    const newTeamObj = {
-      id: Date.now(),
-      name: teamNameClean,
-      status: "Active",
-    };
-
-    setTeams((prev) => [newTeamObj, ...prev]);
-    showToast("success", `Team "${newTeamObj.name}" added successfully!`);
-
-    setNewTeam({
-      name: "",
-      code: "",
-      status: "Active",
+    setNewUser({
+      ...EMPTY_USER,
+      roleType: roleOptions[0]?.roleType || "",
     });
-    setShowAddTeamModal(false);
+
+    setShowUserModal(true);
   };
 
-  // Update Team Submit Handler
-  const handleUpdateTeamSubmit = (e) => {
-    e.preventDefault();
-    if (!editingTeam) return;
+  /* =========================
+     TEAM FUNCTIONS
+  ========================= */
 
-    if (!editingTeam.name.trim()) {
-      showToast("error", "Please enter a team name.");
+  const handleTeamChange = (event) => {
+    const { name, value } = event.target;
+
+    setNewTeam((previous) => ({
+      ...previous,
+      [name]: name === "status" ? Number(value) : value,
+    }));
+  };
+
+  const handleAddTeam = async (event) => {
+    event.preventDefault();
+
+    const name = newTeam.name.trim();
+
+    if (!name) {
+      showToast("error", "Team name is required");
       return;
     }
 
-    const oldTeamName = teams.find((t) => t.id === editingTeam.id)?.name;
-    const updatedTeamObj = {
-      ...editingTeam,
-      name: editingTeam.name.trim().toUpperCase(),
-      code: editingTeam.code ? editingTeam.code.trim().toUpperCase() : `TEAM-${editingTeam.name.trim().toUpperCase()}`,
-    };
+    try {
+      const response = await api.post("/teams", {
+        name,
+        status: Number(newTeam.status ?? 1),
+      });
 
-    setTeams((prev) =>
-      prev.map((t) => (t.id === editingTeam.id ? updatedTeamObj : t))
-    );
+      setTeams((previous) => [
+        response.data,
+        ...previous,
+      ]);
 
-    // Also update any user who was in the old team
-    if (oldTeamName && oldTeamName !== updatedTeamObj.name) {
-      setUsers((prev) =>
-        prev.map((u) => (u.team === oldTeamName ? { ...u, team: updatedTeamObj.name } : u))
+      await fetchTeams();
+
+      setNewTeam(EMPTY_TEAM);
+      setShowTeamModal(false);
+
+      showToast(
+        "success",
+        `Team "${name}" added successfully`
+      );
+    } catch (error) {
+      console.error("Create team error:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        "Failed to create team";
+
+      showToast(
+        "error",
+        typeof message === "string"
+          ? message
+          : "Failed to create team"
       );
     }
-
-    showToast("success", `Team "${updatedTeamObj.name}" updated successfully!`);
-    setEditingTeam(null);
   };
 
-  const handleDeleteTeam = (id, teamName) => {
-    if (window.confirm(`Are you sure you want to delete team "${teamName}"?`)) {
-      setTeams((prev) => prev.filter((t) => t.id !== id));
-      showToast("success", `Team "${teamName}" removed.`);
+  const handleUpdateTeam = async (event) => {
+    event.preventDefault();
+
+    if (!editingTeam?.id) {
+      showToast("error", "Team ID is missing");
+      return;
+    }
+
+    const name = editingTeam.name?.trim();
+
+    if (!name) {
+      showToast("error", "Team name is required");
+      return;
+    }
+
+    try {
+      const response = await api.put(
+        `/teams/${editingTeam.id}`,
+        {
+          name,
+          status: Number(editingTeam.status ?? 1),
+        }
+      );
+
+      setTeams((previous) =>
+        previous.map((team) =>
+          team.id === editingTeam.id
+            ? response.data
+            : team
+        )
+      );
+
+      setEditingTeam(null);
+
+      await fetchTeams();
+      await fetchUsers();
+
+      showToast(
+        "success",
+        "Team updated successfully"
+      );
+    } catch (error) {
+      console.error("Update team error:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        "Failed to update team";
+
+      showToast(
+        "error",
+        typeof message === "string"
+          ? message
+          : "Failed to update team"
+      );
     }
   };
 
-  const getAvatarColor = (name = "U") => {
-    const colors = [
-      "#2563eb",
-      "#7c3aed",
-      "#059669",
-      "#d97706",
-      "#dc2626",
-      "#0891b2",
-      "#4f46e5",
-    ];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
-  };
-
-  const filteredUsers = users.filter((u) => {
-    const query = search.toLowerCase().trim();
-    if (!query) return true;
-    return (
-      (u.name || "").toLowerCase().includes(query) ||
-      (u.email || "").toLowerCase().includes(query) ||
-      (u.empID || "").toLowerCase().includes(query) ||
-      (u.department || "").toLowerCase().includes(query)
+  const handleDeleteTeam = async (team) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete team "${team.name}"?`
     );
-  });
 
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
-    if (sortBy === "a-z") {
-      const aName = (a.name || "").toLowerCase();
-      const bName = (b.name || "").toLowerCase();
-      return aName.localeCompare(bName);
+    if (!confirmed) {
+      return;
     }
-    if (sortBy === "z-a") {
-      const aName = (a.name || "").toLowerCase();
-      const bName = (b.name || "").toLowerCase();
-      return bName.localeCompare(aName);
-    }
-    if (sortBy === "newest") {
-      const aId = a.id || 0;
-      const bId = b.id || 0;
-      return bId - aId;
-    }
-    if (sortBy === "oldest") {
-      const aId = a.id || 0;
-      const bId = b.id || 0;
-      return aId - bId;
-    }
-    return 0;
-  });
 
-  const filteredTeams = teams.filter((t) => {
-    const query = search.toLowerCase().trim();
-    if (!query) return true;
-    return (t.name || "").toLowerCase().includes(query);
-  });
+    try {
+      await api.delete(`/teams/${team.id}`);
 
-  const sortedTeams = [...filteredTeams].sort((a, b) => {
-    if (teamSortBy === "a-z") {
-      const aName = (a.name || "").toLowerCase();
-      const bName = (b.name || "").toLowerCase();
-      return aName.localeCompare(bName);
-    }
-    if (teamSortBy === "z-a") {
-      const aName = (a.name || "").toLowerCase();
-      const bName = (b.name || "").toLowerCase();
-      return bName.localeCompare(aName);
-    }
-    if (teamSortBy === "newest") {
-      const aId = a.id || 0;
-      const bId = b.id || 0;
-      return bId - aId;
-    }
-    if (teamSortBy === "oldest") {
-      const aId = a.id || 0;
-      const bId = b.id || 0;
-      return aId - bId;
-    }
-    return 0;
-  });
+      await fetchTeams();
+      await fetchUsers();
 
-  const indexOfLastRecord = currentPage * recordsPerPage;
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = sortedUsers.slice(indexOfFirstRecord, indexOfLastRecord);
-  const totalPages = Math.ceil(sortedUsers.length / recordsPerPage);
+      showToast(
+        "success",
+        `Team "${team.name}" deleted successfully`
+      );
+    } catch (error) {
+      console.error("Delete team error:", error);
 
-  const indexOfLastTeam = currentTeamPage * teamsPerPage;
-  const indexOfFirstTeam = indexOfLastTeam - teamsPerPage;
-  const currentTeams = sortedTeams.slice(indexOfFirstTeam, indexOfLastTeam);
-  const totalTeamPages = Math.ceil(sortedTeams.length / teamsPerPage);
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        "Failed to delete team";
+
+      showToast(
+        "error",
+        typeof message === "string"
+          ? message
+          : "Failed to delete team"
+      );
+    }
+  };
+
+  /* =========================
+     USER SEARCH
+  ========================= */
+
+  const filteredUsers = useMemo(() => {
+    const query =
+      userSearch
+        .trim()
+        .toLowerCase();
+
+    if (!query) {
+      return users;
+    }
+
+    return users.filter((user) =>
+      [
+        user.name,
+        user.empID,
+        user.email,
+        user.department,
+        user.designation,
+        user.team,
+        user.roleType,
+      ].some((value) =>
+        String(value || "")
+          .toLowerCase()
+          .includes(query)
+      )
+    );
+  }, [users, userSearch]);
+
+  /* =========================
+     USER SORT
+  ========================= */
+
+  const sortedUsers = useMemo(() => {
+    const result = [
+      ...filteredUsers,
+    ];
+
+    switch (userSort) {
+      case "a-z":
+        return result.sort((a, b) =>
+          String(a.name || "")
+            .toLowerCase()
+            .localeCompare(
+              String(b.name || "")
+                .toLowerCase()
+            )
+        );
+
+      case "z-a":
+        return result.sort((a, b) =>
+          String(b.name || "")
+            .toLowerCase()
+            .localeCompare(
+              String(a.name || "")
+                .toLowerCase()
+            )
+        );
+
+      case "newest":
+        return result.sort(
+          (a, b) =>
+            Number(b.id || 0) -
+            Number(a.id || 0)
+        );
+
+      case "oldest":
+        return result.sort(
+          (a, b) =>
+            Number(a.id || 0) -
+            Number(b.id || 0)
+        );
+
+      default:
+        return result;
+    }
+  }, [filteredUsers, userSort]);
+
+  /* =========================
+     TEAM SEARCH
+  ========================= */
+
+  const filteredTeams = useMemo(() => {
+    const query =
+      teamSearch
+        .trim()
+        .toLowerCase();
+
+    if (!query) {
+      return teams;
+    }
+
+    return teams.filter((team) =>
+      [
+        team.name,
+        team.status,
+      ].some((value) =>
+        String(value || "")
+          .toLowerCase()
+          .includes(query)
+      )
+    );
+  }, [teams, teamSearch]);
+
+  /* =========================
+     TEAM SORT
+  ========================= */
+
+  const sortedTeams = useMemo(() => {
+    const result = [
+      ...filteredTeams,
+    ];
+
+    switch (teamSort) {
+      case "a-z":
+        return result.sort((a, b) =>
+          String(a.name || "")
+            .toLowerCase()
+            .localeCompare(
+              String(b.name || "")
+                .toLowerCase()
+            )
+        );
+
+      case "z-a":
+        return result.sort((a, b) =>
+          String(b.name || "")
+            .toLowerCase()
+            .localeCompare(
+              String(a.name || "")
+                .toLowerCase()
+            )
+        );
+
+      case "newest":
+        return result.sort(
+          (a, b) =>
+            Number(b.id || 0) -
+            Number(a.id || 0)
+        );
+
+      case "oldest":
+        return result.sort(
+          (a, b) =>
+            Number(a.id || 0) -
+            Number(b.id || 0)
+        );
+
+      default:
+        return result;
+    }
+  }, [filteredTeams, teamSort]);
+
+  /* =========================
+     PAGINATION
+  ========================= */
+
+  const totalUserPages = Math.max(
+    1,
+    Math.ceil(
+      sortedUsers.length /
+        USERS_PER_PAGE
+    )
+  );
+
+  const totalTeamPages = Math.max(
+    1,
+    Math.ceil(
+      sortedTeams.length /
+        TEAMS_PER_PAGE
+    )
+  );
+
+  const currentUsers = sortedUsers.slice(
+    (userPage - 1) *
+      USERS_PER_PAGE,
+    userPage * USERS_PER_PAGE
+  );
+
+  const currentTeams = sortedTeams.slice(
+    (teamPage - 1) *
+      TEAMS_PER_PAGE,
+    teamPage * TEAMS_PER_PAGE
+  );
+
+  const teamStartIndex =
+    filteredTeams.length === 0
+      ? 0
+      : (teamPage - 1) * TEAMS_PER_PAGE + 1;
+
+  const teamEndIndex = Math.min(
+    teamPage * TEAMS_PER_PAGE,
+    filteredTeams.length
+  );
+
+  useEffect(() => {
+    setUserPage(1);
+  }, [userSearch]);
+
+  useEffect(() => {
+    setTeamPage(1);
+  }, [teamSearch]);
+
+  /* =========================
+     AVATAR
+  ========================= */
+
+  const getAvatarLetter = (name) => {
+    return (
+      name?.trim()?.charAt(0)
+        ?.toUpperCase() || "U"
+    );
+  };
+
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
     <div className="user-mgmt-layout">
       <Sidebar />
 
       <main className="user-mgmt-main">
-        {/* Floating Toast Notification */}
+
+        {/* =====================
+            TOAST
+        ====================== */}
+
         {toast && (
           <div className="user-toast-container">
-            <div className={`user-toast-box ${toast.type}`}>
-              <span>{toast.message}</span>
+            <div
+              className={`user-toast-box ${toast.type}`}
+            >
+              <span>
+                {toast.message}
+              </span>
+
               <button
                 type="button"
                 className="user-toast-close"
-                onClick={() => setToast(null)}
+                onClick={() =>
+                  setToast(null)
+                }
               >
-                &times;
+                ×
               </button>
             </div>
           </div>
         )}
 
-        {/* Top Header Title Banner with Right Add User Button */}
+  
+        {/* =================================================
+            USERS
+        ================================================= */}
+
         {activeTab === "users" && (
           <>
             <div className="user-mgmt-header">
               <div>
-                <h2>User Management</h2>
-                <p>Manage users and user roles in the system</p>
+                <h2>
+                  User Management
+                </h2>
+
+                <p>
+                  Manage users and user
+                  roles in the system
+                </p>
               </div>
-              {creatorRole !== "recruiter" && (
-                <button
-                  type="button"
-                  className="add-btn"
-                  onClick={() => {
-                    setNewUser({
-                      empID: "",
-                      name: "",
-                      email: "",
-                      mobileNo: "",
-                      department: departmentOptions.length > 0 ? departmentOptions[0].value : "",
-                      team: "",
-                    });
-                    setShowForm(true);
-                    setTimeout(() => {
-                      const input = document.getElementById("name");
-                      if (input) input.focus();
-                    }, 100);
-                  }}
-                >
-                  <FaUserPlus />
-                  <span>Add User</span>
-                </button>
-              )}
+
+              {creatorRole !==
+                "recruiter" &&
+                roleOptions.length >
+                  0 && (
+                  <button
+                    type="button"
+                    className="add-btn"
+                    onClick={
+                      openCreateUser
+                    }
+                  >
+                    <FaUserPlus />
+                    <span>
+                      Add User
+                    </span>
+                  </button>
+                )}
             </div>
 
-            {/* Form Container Modal Popup */}
-            <div className="user-form-page-wrapper">
-              {showForm && (
-                <div className="user-modal-overlay" onClick={() => setShowForm(false)}>
-                  <div className="user-modal-card" onClick={(e) => e.stopPropagation()}>
-                    <div className="user-modal-header">
-                      <h2>Add New User</h2>
-                      <button
-                        type="button"
-                        className="user-modal-close-btn"
-                        onClick={() => setShowForm(false)}
-                      >
-                        &times;
-                      </button>
-                    </div>
+            {/* USER TABLE */}
 
-                    <form onSubmit={handleAddUserSubmit} className="user-modal-form">
-                      {/* Section 1: Emp ID & Name */}
-                      <div className="form-band-section">
-                        <div className="form-grid-2col">
-                          <div className="form-field-group">
-                            <label htmlFor="empID" className="field-label">
-                              Employee ID (Emp ID)
-                            </label>
-                            <input
-                              id="empID"
-                              type="text"
-                              name="empID"
-                              className="form-control-input"
-                              placeholder="e.g. EMP-1001 (optional, auto-generated)"
-                              value={newUser.empID}
-                              onChange={handleInputChange}
-                            />
-                          </div>
+            <div className="user-table-card">
 
-                          <div className="form-field-group">
-                            <label htmlFor="name" className="field-label">
-                              Name <span className="req-star">*</span>
-                            </label>
-                            <input
-                              id="name"
-                              type="text"
-                              name="name"
-                              className="form-control-input"
-                              placeholder="e.g. Senthil Kumar"
-                              value={newUser.name}
-                              onChange={handleInputChange}
-                              required
-                            />
-                          </div>
-                        </div>
-                      </div>
+              <div className="table-header-toolbar">
+                <div className="table-title">
+                  <h3>
+                    Registered Users
+                  </h3>
 
-                      {/* Section 2: Email & Phone Number (Ph No) */}
-                      <div className="form-band-section">
-                        <div className="form-grid-2col">
-                          <div className="form-field-group">
-                            <label htmlFor="email" className="field-label">
-                              Email Address <span className="req-star">*</span>
-                            </label>
-                            <input
-                              id="email"
-                              type="email"
-                              name="email"
-                              className="form-control-input"
-                              placeholder="e.g. senthil.k@stanco.com"
-                              value={newUser.email}
-                              onChange={handleInputChange}
-                              required
-                            />
-                          </div>
-
-                          <div className="form-field-group">
-                            <label htmlFor="mobileNo" className="field-label">
-                              Phone Number (Ph No) <span className="req-star">*</span>
-                            </label>
-                            <input
-                              id="mobileNo"
-                              type="tel"
-                              name="mobileNo"
-                              className="form-control-input"
-                              placeholder="e.g. 9876543210"
-                              value={newUser.mobileNo}
-                              onChange={handleInputChange}
-                              required
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Section 3: Department (In which dept) */}
-                      <div className="form-band-section">
-                        <div className="form-grid-2col">
-                          <div className="form-field-group">
-                            <label htmlFor="department" className="field-label">
-                              Department / Role <span className="req-star">*</span>
-                            </label>
-                            {departmentOptions.length > 0 ? (
-                              <>
-                                <select
-                                  id="department"
-                                  name="department"
-                                  className="form-control-select"
-                                  value={newUser.department}
-                                  onChange={handleInputChange}
-                                  required
-                                >
-                                  <option value="">-- Select Department --</option>
-                                  {departmentOptions.map((opt) => (
-                                    <option key={opt.value} value={opt.value}>
-                                      {opt.label} ({opt.badge})
-                                    </option>
-                                  ))}
-                                </select>
-                                <span style={{ fontSize: "11px", color: "#64748b", marginTop: "4px", display: "block" }}>
-                                  Logged in as: <strong style={{ textTransform: "capitalize", color: "#1e293b" }}>{creatorRole || "super_admin"}</strong> &bull; Allowed to create: <strong style={{ color: "#2563eb" }}>{departmentOptions.map((o) => o.label).join(", ")}</strong>
-                                </span>
-                              </>
-                            ) : (
-                              <div style={{ padding: "10px 14px", backgroundColor: "#fef2f2", color: "#b91c1c", borderRadius: "6px", fontSize: "12px", border: "1px solid #fecaca" }}>
-                                Your current role (<strong>{creatorRole || "Recruiter"}</strong>) is not authorized to create new users under the backend hierarchy.
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Form Submit Button */}
-                      <div className="form-action-row" style={{ marginTop: "24px" }}>
-                        <button
-                          type="submit"
-                          className="btn-form-submit"
-                          disabled={loading || departmentOptions.length === 0}
-                        >
-                          {loading ? "Submitting..." : "Submit"}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
+                  <span>
+                    Total:{" "}
+                    <strong>
+                      {
+                        filteredUsers.length
+                      }
+                    </strong>{" "}
+                    records
+                  </span>
                 </div>
-              )}
 
-              {/* Registered Users Section (Table format) */}
-              <div className="user-table-card">
-                <div className="table-header-toolbar">
-                  <div className="table-title">
-                    <h3>Registered Users</h3>
-                    <span>Total: <strong>{filteredUsers.length}</strong> records</span>
-                  </div>
+                <div className="toolbar-actions">
 
-                  <div className="toolbar-actions">
-                    <div className="toolbar-search-sort-group" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div className="search-wrapper">
-                        <FaSearch className="search-icon" />
-                        <input
-                          type="text"
-                          placeholder="Search users..."
-                          value={search}
-                          onChange={(e) => setSearch(e.target.value)}
-                        />
-                        {search && (
-                          <button
-                            type="button"
-                            className="clear-search-btn"
-                            onClick={() => setSearch("")}
-                          >
-                            &times;
-                          </button>
-                        )}
-                      </div>
+                  <div className="search-wrapper">
+                    <FaSearch className="search-icon" />
 
-                      <select
-                        className="sort-select-dropdown"
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        title="Sort Users"
-                      >
-                        <option value="a-z">Sort A-Z</option>
-                        <option value="z-a">Sort Z-A</option>
-                        <option value="newest">New User-Old User</option>
-                        <option value="oldest">Old User-New User</option>
-                      </select>
-                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search users..."
+                      value={
+                        userSearch
+                      }
+                      onChange={(event) =>
+                        setUserSearch(
+                          event.target
+                            .value
+                        )
+                      }
+                    />
 
-                    {selectedUserIds.length > 0 && (
+                    {userSearch && (
                       <button
                         type="button"
-                        className="btn-bulk-delete"
-                        onClick={handleBulkDelete}
+                        className="clear-search-btn"
+                        onClick={() =>
+                          setUserSearch(
+                            ""
+                          )
+                        }
                       >
-                        <FaTrash size={11} /> Delete ({selectedUserIds.length})
+                        ×
                       </button>
                     )}
                   </div>
-                </div>
 
-                <div className="users-table-wrapper">
+                  <select
+                    className="sort-select-dropdown"
+                    value={userSort}
+                    onChange={(event) =>
+                      setUserSort(
+                        event.target
+                          .value
+                      )
+                    }
+                  >
+                    <option value="a-z">
+                      Sort A-Z
+                    </option>
+
+                    <option value="z-a">
+                      Sort Z-A
+                    </option>
+
+                    <option value="newest">
+                      Newest
+                    </option>
+
+                    <option value="oldest">
+                      Oldest
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="users-table-wrapper">
+
+                {loadingUsers ? (
+                  <div className="table-loading">
+                    Loading users...
+                  </div>
+                ) : (
                   <table className="modern-users-table">
+
                     <thead>
                       <tr>
                         <th>S.No</th>
                         <th>EMP ID</th>
                         <th>NAME</th>
+                        <th>DESIGNATION</th>
                         <th>EMAIL</th>
-                        <th>PH NO</th>
-                        <th>DEPARTMENT</th>
+                        <th>TEAM</th>
                         <th>STATUS</th>
-                        <th style={{ textAlign: "center" }}>ACTION</th>
+                        <th>ACTION</th>
                       </tr>
                     </thead>
+
                     <tbody>
-                      {filteredUsers.length === 0 ? (
+
+                      {currentUsers.length ===
+                      0 ? (
                         <tr>
-                          <td colSpan="8" style={{ textAlign: "center", padding: "40px 20px", color: "#64748b" }}>
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
-                              <FaUsers size={32} style={{ color: "#cbd5e1" }} />
-                              <strong style={{ fontSize: "15px", color: "#475569" }}>No Users Found</strong>
-                              <span style={{ fontSize: "12.5px", color: "#94a3b8" }}>Try a different search term or add a user profile.</span>
+                          <td
+                            colSpan="8"
+                            style={{
+                              textAlign:
+                                "center",
+                              padding:
+                                "40px",
+                            }}
+                          >
+                            <FaUsers
+                              size={32}
+                            />
+
+                            <div>
+                              No users
+                              found
                             </div>
                           </td>
                         </tr>
                       ) : (
-                        currentRecords.map((u, idx) => {
-                          const userKey = u.id || u.empID || u.empid;
-                          const isSelected = selectedUserIds.includes(userKey);
+                        currentUsers.map(
+                          (
+                            user,
+                            index
+                          ) => {
+                            const userId =
+                              user.id ||
+                              user.empID;
 
-                          return (
-                            <tr key={userKey} className={isSelected ? "row-selected" : ""}>
-                              <td>
-                                <span className="user-index-tag">{indexOfFirstRecord + idx + 1}</span>
-                              </td>
-                              <td>
-                                <span className="user-empid-badge">
-                                  <FaIdBadge className="empid-badge-icon" />
-                                  {u.empID || u.empid}
-                                </span>
-                              </td>
-                              <td>
-                                <div className="user-name-cell">
-                                  <div
-                                    className="user-table-avatar"
-                                    style={{ backgroundColor: getAvatarColor(u.name) }}
-                                  >
-                                    {u.name ? u.name.charAt(0).toUpperCase() : "U"}
-                                  </div>
-                                  <span className="user-table-name">{u.name}</span>
-                                </div>
-                              </td>
-                              <td>
-                                <a href={`mailto:${u.email}`} className="user-table-email" title={u.email}>
-                                  <FaEnvelope className="table-email-icon" />
-                                  {u.email}
-                                </a>
-                              </td>
-                              <td>
-                                <span className="user-table-phone">
-                                  <FaPhoneAlt className="table-phone-icon" />
-                                  {u.mobileNo || "-"}
-                                </span>
-                              </td>
-                              <td>
-                                <span className="user-dept-badge">{u.department || "-"}</span>
-                              </td>
-                              <td>
-                                <span className="status-btn active-btn">
-                                  <span className="status-dot"></span>
-                                  {u.profileStatus || "Active"}
-                                </span>
-                              </td>
-                              <td style={{ textAlign: "center" }}>
-                                <div className="table-actions-wrapper">
-                                  <button
-                                    type="button"
-                                    className="btn-dots-action"
-                                    title="Actions"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setOpenUserMenuId(openUserMenuId === userKey ? null : userKey);
-                                    }}
-                                  >
-                                    <FaEllipsisV />
-                                  </button>
+                            return (
+                              <tr
+                                key={
+                                  userId
+                                }
+                              >
 
-                                  {openUserMenuId === userKey && (
-                                    <div className="action-dropdown-menu table-menu" onClick={(e) => e.stopPropagation()}>
-                                      <button
-                                        type="button"
-                                        className="action-menu-item edit-item"
-                                        onClick={() => {
-                                          setEditingUser({ ...u });
-                                          setOpenUserMenuId(null);
-                                        }}
-                                      >
-                                        <FaEdit className="menu-item-icon" />
-                                        <span>Update</span>
-                                      </button>
-                                      <button
-                                        type="button"
-                                        className="action-menu-item delete-item"
-                                        onClick={() => {
-                                          handleDeleteUser(u.id, u.name);
-                                          setOpenUserMenuId(null);
-                                        }}
-                                      >
-                                        <FaTrash className="menu-item-icon" />
-                                        <span>Delete</span>
-                                      </button>
+                                <td>
+                                  {(userPage -
+                                    1) *
+                                    USERS_PER_PAGE +
+                                    index +
+                                    1}
+                                </td>
+
+                                <td>
+                                  <span className="user-empid-badge">
+                                    <FaIdBadge />
+                                    {
+                                      user.empID
+                                    }
+                                  </span>
+                                </td>
+
+                                <td>
+                                  <div className="user-name-cell">
+
+                                    <div className="user-table-avatar">
+                                      {getAvatarLetter(
+                                        user.name
+                                      )}
                                     </div>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        }))}
+
+                                    <span>
+                                      {
+                                        user.name
+                                      }
+                                    </span>
+                                  </div>
+                                </td>
+
+                                <td>
+                                  {
+                                    user.designation ||
+                                    "-"
+                                  }
+                                </td>
+
+                                <td>
+                                  <a
+                                    href={`mailto:${user.email}`}
+                                    className="user-table-email"
+                                  >
+                                    <FaEnvelope />
+                                    {
+                                      user.email
+                                    }
+                                  </a>
+                                </td>
+
+                                <td>
+                                  {
+                                    user.team ||
+                                    "-"
+                                  }
+                                </td>
+
+                                <td>
+                                  <span
+                                    className={`status-btn ${
+                                      String(
+                                        user.profileStatus ||
+                                          "active"
+                                      ).toLowerCase() === "active"
+                                        ? "active-btn"
+                                        : "inactive-btn"
+                                    }`}
+                                  >
+                                    <span className="status-dot" />
+
+                                    {String(
+                                      user.profileStatus ||
+                                        "active"
+                                    ).toLowerCase() === "active"
+                                      ? "Active"
+                                      : "Inactive"}
+                                  </span>
+                                </td>
+
+                                <td>
+                                  <div className="table-actions-wrapper" onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                      type="button"
+                                      className="btn-dots-action"
+                                      onClick={() =>
+                                        setActiveActionMenu(
+                                          activeActionMenu === `user-${user.id || user.empID}`
+                                            ? null
+                                            : `user-${user.id || user.empID}`
+                                        )
+                                      }
+                                    >
+                                      <FaEllipsisV />
+                                    </button>
+
+                                    {activeActionMenu === `user-${user.id || user.empID}` && (
+                                      <div className="action-dropdown-menu table-menu">
+                                        <button
+                                          type="button"
+                                          className="action-menu-item"
+                                          onClick={() => {
+                                            setEditingUser({
+                                              ...user,
+                                              password: "",
+                                            });
+                                            setActiveActionMenu(null);
+                                          }}
+                                        >
+                                          <FaEdit /> Update
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className="action-menu-item delete"
+                                          onClick={() => {
+                                            handleDeleteUser(user);
+                                            setActiveActionMenu(null);
+                                          }}
+                                          style={{ color: "#dc2626" }}
+                                        >
+                                          <FaTrash /> Delete
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+
+                              </tr>
+                            );
+                          }
+                        )
+                      )}
+
                     </tbody>
                   </table>
-                </div>
-                {/* Pagination Controls */}
-                {totalPages > 1 && (
-                  <div className="table-pagination-bar">
-                    <button
-                      type="button"
-                      className="pagination-btn"
-                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </button>
-                    <span className="pagination-info">
-                      Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
-                    </span>
-                    <button
-                      type="button"
-                      className="pagination-btn"
-                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </button>
-                  </div>
                 )}
+
               </div>
+
+              {/* USER PAGINATION */}
+
+              {totalUserPages >
+                1 && (
+                <div className="table-pagination-bar">
+
+                  <button
+                    type="button"
+                    className="pagination-btn"
+                    disabled={
+                      userPage ===
+                      1
+                    }
+                    onClick={() =>
+                      setUserPage(
+                        (page) =>
+                          Math.max(
+                            page - 1,
+                            1
+                          )
+                      )
+                    }
+                  >
+                    Previous
+                  </button>
+
+                  <span className="pagination-info">
+                    Page{" "}
+                    <strong>
+                      {userPage}
+                    </strong>{" "}
+                    of{" "}
+                    <strong>
+                      {
+                        totalUserPages
+                      }
+                    </strong>
+                  </span>
+
+                  <button
+                    type="button"
+                    className="pagination-btn"
+                    disabled={
+                      userPage ===
+                      totalUserPages
+                    }
+                    onClick={() =>
+                      setUserPage(
+                        (page) =>
+                          Math.min(
+                            page + 1,
+                            totalUserPages
+                          )
+                      )
+                    }
+                  >
+                    Next
+                  </button>
+
+                </div>
+              )}
+
             </div>
           </>
         )}
 
-        {/* =========================================================
-            TEAMS TAB VIEW
-            ========================================================= */}
+        {/* =================================================
+            TEAMS
+        ================================================= */}
+
         {activeTab === "teams" && (
           <>
-            {/* Top Header Title Banner with Right Add Team Button */}
             <div className="user-mgmt-header">
+
               <div>
-                <h2>Teams Management</h2>
-                <p>Manage teams and team configurations</p>
+                <h2>
+                  Teams Management
+                </h2>
+
+                <p>
+                  Manage teams and team
+                  configurations
+                </p>
               </div>
+
               <button
                 type="button"
                 className="add-btn"
                 onClick={() => {
-                  setNewTeam({ name: "", code: "", status: "Active" });
-                  setShowAddTeamModal(true);
+                  setNewTeam(
+                    EMPTY_TEAM
+                  );
+
+                  setShowTeamModal(
+                    true
+                  );
                 }}
               >
                 <FaPlus />
-                <span>Add Team</span>
+                <span>
+                  Add Team
+                </span>
               </button>
+
             </div>
 
-            {/* Teams Page Wrapper */}
-            <div className="user-form-page-wrapper">
-              <div className="user-table-card">
-                <div className="table-header-toolbar">
-                  <div className="table-title">
-                    <h3>Registered Teams</h3>
-                    <span>Total: <strong>{filteredTeams.length}</strong> records</span>
-                  </div>
+            <div className="user-table-card">
 
-                  <div className="toolbar-actions">
-                    <div className="toolbar-search-sort-group" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div className="search-wrapper">
-                        <FaSearch className="search-icon" />
-                        <input
-                          type="text"
-                          placeholder="Search teams..."
-                          value={search}
-                          onChange={(e) => setSearch(e.target.value)}
-                        />
-                        {search && (
-                          <button
-                            type="button"
-                            className="clear-search-btn"
-                            onClick={() => setSearch("")}
-                          >
-                            &times;
-                          </button>
-                        )}
-                      </div>
+              <div className="table-header-toolbar">
 
-                      <select
-                        className="sort-select-dropdown"
-                        value={teamSortBy}
-                        onChange={(e) => setTeamSortBy(e.target.value)}
-                        title="Sort Teams"
-                      >
-                        <option value="a-z">Sort A-Z</option>
-                        <option value="z-a">Sort Z-A</option>
-                        <option value="newest">New Team-Old Team</option>
-                        <option value="oldest">Old Team-New Team</option>
-                      </select>
-                    </div>
-                  </div>
+                <div className="table-title">
+                  <h3>
+                    Registered Teams
+                  </h3>
+
+                  <span>
+                    Total:{" "}
+                    <strong>
+                      {
+                        filteredTeams.length
+                      }
+                    </strong>{" "}
+                    records
+                  </span>
                 </div>
 
-                <div className="users-table-wrapper">
-                  <table className="modern-teams-table">
-                    <thead>
+                <div className="toolbar-actions">
+
+                  <div className="search-wrapper">
+
+                    <FaSearch className="search-icon" />
+
+                    <input
+                      type="text"
+                      placeholder="Search teams..."
+                      value={
+                        teamSearch
+                      }
+                      onChange={(event) =>
+                        setTeamSearch(
+                          event.target
+                            .value
+                        )
+                      }
+                    />
+
+                    {teamSearch && (
+                      <button
+                        type="button"
+                        className="clear-search-btn"
+                        onClick={() =>
+                          setTeamSearch(
+                            ""
+                          )
+                        }
+                      >
+                        ×
+                      </button>
+                    )}
+
+                  </div>
+
+                  <select
+                    className="sort-select-dropdown"
+                    value={teamSort}
+                    onChange={(event) =>
+                      setTeamSort(
+                        event.target
+                          .value
+                      )
+                    }
+                  >
+                    <option value="a-z">
+                      Sort A-Z
+                    </option>
+
+                    <option value="z-a">
+                      Sort Z-A
+                    </option>
+
+                    <option value="newest">
+                      Newest
+                    </option>
+
+                    <option value="oldest">
+                      Oldest
+                    </option>
+                  </select>
+
+                </div>
+              </div>
+
+              <div className="users-table-wrapper">
+
+                <table className="modern-teams-table">
+
+                  <thead>
+                    <tr>
+                      <th>S.No</th>
+                      <th>TEAM NAME</th>
+                      <th>STATUS</th>
+                      <th>CREATED BY</th>
+                      <th>ACTION</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+
+                    {currentTeams.length ===
+                    0 ? (
                       <tr>
-                        <th>S.No</th>
-                        <th>TEAM NAME</th>
-                        <th>STATUS</th>
-                        <th style={{ textAlign: "center" }}>ACTION</th>
+                        <td
+                          colSpan="5"
+                          style={{
+                            textAlign:
+                              "center",
+                            padding:
+                              "40px",
+                          }}
+                        >
+                          <FaUsers
+                            size={32}
+                          />
+
+                          <div>
+                            No teams
+                            found
+                          </div>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTeams.length === 0 ? (
-                        <tr>
-                          <td colSpan="4" style={{ textAlign: "center", padding: "40px 20px", color: "#64748b" }}>
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
-                              <FaUsers size={32} style={{ color: "#cbd5e1" }} />
-                              <strong style={{ fontSize: "15px", color: "#475569" }}>No Teams Found</strong>
-                              <span style={{ fontSize: "12.5px", color: "#94a3b8" }}>Try a different search term or add a team.</span>
-                            </div>
-                          </td>
-                        </tr>
-                      ) : (
-                        currentTeams.map((team, idx) => (
-                          <tr key={team.id || team.name}>
+                    ) : (
+                      currentTeams.map(
+                        (
+                          team,
+                          index
+                        ) => (
+                          <tr
+                            key={
+                              team.id ||
+                              team.name
+                            }
+                          >
+
                             <td>
-                              <span className="team-index-tag">{indexOfFirstTeam + idx + 1}</span>
+                              {(teamPage -
+                                1) *
+                                TEAMS_PER_PAGE +
+                                index +
+                                1}
                             </td>
+
                             <td>
-                              <div className="team-name-cell">
-                                <span className="team-badge-pill">{team.name}</span>
-                              </div>
-                            </td>
-                            <td>
-                              <span className="status-btn active-btn">
-                                <span className="status-dot"></span>
-                                {team.status || "Active"}
+                              <span className="team-badge-pill">
+                                {
+                                  team.name
+                                }
                               </span>
                             </td>
-                            <td style={{ textAlign: "center" }}>
-                              <div className="table-actions-wrapper">
+
+                            <td>
+                              <span
+                                className={`status-btn ${
+                                  Number(team.status) === 1
+                                    ? "active-btn"
+                                    : "inactive-btn"
+                                }`}
+                              >
+                                <span className="status-dot" />
+                                {Number(team.status) === 1
+                                  ? "ACTIVE"
+                                  : "INACTIVE"}
+                              </span>
+                            </td>
+
+        
+                            <td>
+                              {team.createdBy || "-"}
+                            </td>
+
+                            <td>
+                              <div className="table-actions-wrapper" onClick={(e) => e.stopPropagation()}>
                                 <button
                                   type="button"
                                   className="btn-dots-action"
-                                  title="Actions"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const teamKey = team.id || team.name;
-                                    setOpenTeamMenuId(openTeamMenuId === teamKey ? null : teamKey);
-                                  }}
+                                  onClick={() =>
+                                    setActiveActionMenu(
+                                      activeActionMenu === `team-${team.id || team.name}`
+                                        ? null
+                                        : `team-${team.id || team.name}`
+                                    )
+                                  }
                                 >
                                   <FaEllipsisV />
                                 </button>
 
-                                {openTeamMenuId === (team.id || team.name) && (
-                                  <div className="action-dropdown-menu table-menu" onClick={(e) => e.stopPropagation()}>
+                                {activeActionMenu === `team-${team.id || team.name}` && (
+                                  <div className="action-dropdown-menu table-menu">
                                     <button
                                       type="button"
-                                      className="action-menu-item edit-item"
+                                      className="action-menu-item"
                                       onClick={() => {
                                         setEditingTeam({ ...team });
-                                        setOpenTeamMenuId(null);
+                                        setActiveActionMenu(null);
                                       }}
                                     >
-                                      <FaEdit className="menu-item-icon" />
-                                      <span>Update</span>
+                                      <FaEdit /> Update
                                     </button>
                                     <button
                                       type="button"
-                                      className="action-menu-item delete-item"
+                                      className="action-menu-item delete"
                                       onClick={() => {
-                                        handleDeleteTeam(team.id, team.name);
-                                        setOpenTeamMenuId(null);
+                                        handleDeleteTeam(team);
+                                        setActiveActionMenu(null);
                                       }}
+                                      style={{ color: "#dc2626" }}
                                     >
-                                      <FaTrash className="menu-item-icon" />
-                                      <span>Delete</span>
+                                      <FaTrash /> Delete
                                     </button>
                                   </div>
                                 )}
                               </div>
                             </td>
+
                           </tr>
-                        )))}
-                    </tbody>
-                  </table>
-                </div>
-                {/* Pagination Controls */}
-                {totalTeamPages > 1 && (
-                  <div className="table-pagination-bar">
+                        )
+                      )
+                    )}
+
+                  </tbody>
+                </table>
+
+              </div>
+
+              {filteredTeams.length > 0 && (
+                <div className="table-pagination-bar">
+
+                  <span className="pagination-info">
+                    Showing <strong>{teamStartIndex}</strong> to{" "}
+                    <strong>{teamEndIndex}</strong> of{" "}
+                    <strong>{filteredTeams.length}</strong> records
+                  </span>
+
+                  <div className="pagination-buttons">
                     <button
                       type="button"
                       className="pagination-btn"
-                      onClick={() => setCurrentTeamPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={currentTeamPage === 1}
+                      disabled={teamPage === 1}
+                      onClick={() =>
+                        setTeamPage((page) => Math.max(page - 1, 1))
+                      }
                     >
-                      Previous
+                      &lt; Previous
                     </button>
-                    <span className="pagination-info">
-                      Page <strong>{currentTeamPage}</strong> of <strong>{totalTeamPages}</strong>
-                    </span>
+
+                    {Array.from({ length: totalTeamPages }, (_, i) => i + 1).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        className={`pagination-page-btn ${
+                          teamPage === p ? "active" : ""
+                        }`}
+                        onClick={() => setTeamPage(p)}
+                      >
+                        {p}
+                      </button>
+                    ))}
+
                     <button
                       type="button"
                       className="pagination-btn"
-                      onClick={() => setCurrentTeamPage((prev) => Math.min(prev + 1, totalTeamPages))}
-                      disabled={currentTeamPage === totalTeamPages}
+                      disabled={teamPage === totalTeamPages}
+                      onClick={() =>
+                        setTeamPage((page) =>
+                          Math.min(page + 1, totalTeamPages)
+                        )
+                      }
                     >
-                      Next
+                      Next &gt;
                     </button>
                   </div>
-                )}
-              </div>
+
+                </div>
+              )}
+
             </div>
           </>
         )}
 
-        {/* =========================================================
-            UPDATE USER MODAL
-            ========================================================= */}
-        {editingUser && (
-          <div className="mgmt-modal-backdrop" onClick={() => setEditingUser(null)}>
-            <div className="mgmt-modal-card" onClick={(e) => e.stopPropagation()}>
+        {/* =================================================
+            ADD USER MODAL
+        ================================================= */}
+
+        {showUserModal && (
+          <div
+            className="mgmt-modal-backdrop"
+            onClick={() =>
+              setShowUserModal(false)
+            }
+          >
+
+            <div
+              className="mgmt-modal-card"
+              onClick={(event) =>
+                event.stopPropagation()
+              }
+            >
+
               <div className="mgmt-modal-header">
+
                 <div className="mgmt-modal-title-group">
-                  <FaEdit className="modal-title-icon" />
-                  <h3>Update User Details</h3>
+                  <FaUserPlus />
+                  <h3>
+                    Add New User
+                  </h3>
                 </div>
+
                 <button
                   type="button"
                   className="mgmt-modal-close"
-                  onClick={() => setEditingUser(null)}
+                  onClick={() =>
+                    setShowUserModal(
+                      false
+                    )
+                  }
                 >
                   <FaTimes />
                 </button>
+
               </div>
 
-              <form onSubmit={handleUpdateUserSubmit} className="mgmt-modal-form">
+              <form
+                className="mgmt-modal-form"
+                onSubmit={
+                  handleCreateUser
+                }
+              >
+
                 <div className="modal-grid-2col">
+
                   <div className="form-field-group">
-                    <label className="field-label">Emp ID</label>
+                    <label className="field-label">
+                      Employee ID <span className="req-star">*</span>
+                    </label>
+
                     <input
-                      type="text"
                       className="form-control-input"
-                      value={editingUser.empID || ""}
-                      onChange={(e) =>
-                        setEditingUser({ ...editingUser, empID: e.target.value })
+                      name="empID"
+                      value={
+                        newUser.empID
                       }
+                      onChange={
+                        handleUserChange
+                      }
+                      placeholder="EMP001"
                     />
                   </div>
 
@@ -1209,70 +1807,317 @@ function UserManagement({ initialTab = "users" }) {
                     <label className="field-label">
                       Full Name <span className="req-star">*</span>
                     </label>
+
                     <input
-                      type="text"
                       className="form-control-input"
-                      value={editingUser.name || ""}
-                      onChange={(e) =>
-                        setEditingUser({ ...editingUser, name: e.target.value })
+                      name="name"
+                      value={
+                        newUser.name
                       }
-                      required
+                      onChange={
+                        handleUserChange
+                      }
+                      placeholder="Enter your full name"
                     />
                   </div>
+
                 </div>
 
                 <div className="modal-grid-2col">
+
                   <div className="form-field-group">
                     <label className="field-label">
-                      Email Address <span className="req-star">*</span>
+                      Email <span className="req-star">*</span>
                     </label>
+
+                    <input
+                      type="email"
+                      className="form-control-input"
+                      name="email"
+                      value={
+                        newUser.email
+                      }
+                      onChange={
+                        handleUserChange
+                      }
+                      placeholder="user@stanco.com"
+                    />
+                  </div>
+
+                  <div className="form-field-group">
+                    <label className="field-label">
+                      Designation <span className="req-star">*</span>
+                    </label>
+
+                    <select
+                      className="form-control-input"
+                      name="designation"
+                      value={
+                        newUser.designation
+                      }
+                      onChange={
+                        handleUserChange
+                      }
+                    >
+                      <option value="">
+                        Select Designation
+                      </option>
+                      {DROPDOWN_DESIGNATIONS.map((opt) => (
+                        <option
+                          key={opt.value}
+                          value={opt.value}
+                        >
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                </div>
+
+                <div className="modal-grid-2col">
+
+                  <div className="form-field-group">
+                    <label className="field-label">
+                      Team <span className="req-star">*</span>
+                    </label>
+
+                    <select
+                      className="form-control-select"
+                      name="team"
+                      value={
+                        newUser.team
+                      }
+                      onChange={
+                        handleUserChange
+                      }
+                    >
+                      <option value="">
+                        Select Team
+                      </option>
+
+                      {activeTeams.map(
+                        (team) => (
+                          <option
+                            key={
+                              team.id
+                            }
+                            value={
+                              team.name
+                            }
+                          >
+                            {
+                              team.name
+                            }
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
+
+                  <div className="form-field-group"></div>
+
+                </div>
+
+                <div className="mgmt-modal-actions">
+
+                  <button
+                    type="button"
+                    className="btn-modal-cancel"
+                    onClick={() =>
+                      setShowUserModal(
+                        false
+                      )
+                    }
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="btn-modal-save"
+                    disabled={
+                      creatingUser
+                    }
+                  >
+                    <FaSave />
+
+                    {creatingUser
+                      ? "Creating..."
+                      : "Create User"}
+                  </button>
+
+                </div>
+
+              </form>
+
+            </div>
+          </div>
+        )}
+
+        {/* =================================================
+            UPDATE USER MODAL
+        ================================================= */}
+
+        {editingUser && (
+          <div
+            className="mgmt-modal-backdrop"
+            onClick={() =>
+              setEditingUser(null)
+            }
+          >
+            <div
+              className="mgmt-modal-card"
+              onClick={(event) =>
+                event.stopPropagation()
+              }
+            >
+
+              <div className="mgmt-modal-header">
+
+                <div className="mgmt-modal-title-group">
+                  <FaEdit />
+                  <h3>
+                    Update User
+                  </h3>
+                </div>
+
+                <button
+                  type="button"
+                  className="mgmt-modal-close"
+                  onClick={() =>
+                    setEditingUser(
+                      null
+                    )
+                  }
+                >
+                  <FaTimes />
+                </button>
+
+              </div>
+
+              <form
+                className="mgmt-modal-form"
+                onSubmit={handleUpdateUser}
+              >
+                <div className="modal-grid-2col">
+
+                  <div className="form-field-group">
+                    <label className="field-label">Employee ID <span className="req-star">*</span></label>
+                    <input
+                      className="form-control-input"
+                      value={editingUser.empID || ""}
+                      onChange={(e) =>
+                        setEditingUser({
+                          ...editingUser,
+                          empID: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-field-group">
+                    <label className="field-label">Name <span className="req-star">*</span></label>
+                    <input
+                      className="form-control-input"
+                      value={editingUser.name || ""}
+                      onChange={(e) =>
+                        setEditingUser({
+                          ...editingUser,
+                          name: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                </div>
+
+                <div className="modal-grid-2col">
+
+                  <div className="form-field-group">
+                    <label className="field-label">Email <span className="req-star">*</span></label>
                     <input
                       type="email"
                       className="form-control-input"
                       value={editingUser.email || ""}
                       onChange={(e) =>
-                        setEditingUser({ ...editingUser, email: e.target.value })
+                        setEditingUser({
+                          ...editingUser,
+                          email: e.target.value,
+                        })
                       }
-                      required
                     />
                   </div>
 
                   <div className="form-field-group">
-                    <label className="field-label">
-                      Phone Number (Ph No) <span className="req-star">*</span>
-                    </label>
-                    <input
-                      type="tel"
+                    <label className="field-label">Designation <span className="req-star">*</span></label>
+                    <select
                       className="form-control-input"
-                      value={editingUser.mobileNo || ""}
+                      value={editingUser.designation || ""}
                       onChange={(e) =>
-                        setEditingUser({ ...editingUser, mobileNo: e.target.value })
+                        setEditingUser({
+                          ...editingUser,
+                          designation: e.target.value,
+                        })
                       }
-                      required
-                    />
+                    >
+                      <option value="">Select Designation</option>
+                      {DROPDOWN_DESIGNATIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
                 </div>
 
                 <div className="modal-grid-2col">
+
                   <div className="form-field-group">
-                    <label className="field-label">
-                      Department (In which dept) <span className="req-star">*</span>
-                    </label>
+                    <label className="field-label">Team <span className="req-star">*</span></label>
                     <select
                       className="form-control-select"
-                      value={editingUser.department || ""}
+                      value={editingUser.team || ""}
                       onChange={(e) =>
-                        setEditingUser({ ...editingUser, department: e.target.value })
+                        setEditingUser({
+                          ...editingUser,
+                          team: e.target.value,
+                        })
                       }
-                      required
                     >
-                      <option value="">-- Select Department --</option>
-                      <option value="Admin">Admin</option>
-                      <option value="Hiring Manager">Hiring Manager</option>
-                      <option value="Business Lead">Business Lead</option>
-                      <option value="Recruiter">Recruiter</option>
+                      <option value="">
+                        Select Team
+                      </option>
+
+                      {activeTeams.map((team) => (
+                        <option
+                          key={team.id}
+                          value={team.name}
+                        >
+                          {team.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
+
+                  <div className="form-field-group">
+                    <label className="field-label">Profile Status <span className="req-star">*</span></label>
+                    <select
+                      className="form-control-input"
+                      value={editingUser.profileStatus || "active"}
+                      onChange={(e) =>
+                        setEditingUser({
+                          ...editingUser,
+                          profileStatus: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+
                 </div>
 
                 <div className="mgmt-modal-actions">
@@ -1280,134 +2125,269 @@ function UserManagement({ initialTab = "users" }) {
                     type="button"
                     className="btn-modal-cancel"
                     onClick={() => setEditingUser(null)}
+                    disabled={creatingUser}
                   >
+                    <FaTimes />
                     Cancel
                   </button>
-                  <button type="submit" className="btn-modal-save">
-                    <FaSave />
-                    <span>Update User</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
 
-        {/* =========================================================
-            UPDATE TEAM MODAL
-            ========================================================= */}
-        {editingTeam && (
-          <div className="mgmt-modal-backdrop" onClick={() => setEditingTeam(null)}>
-            <div className="mgmt-modal-card" onClick={(e) => e.stopPropagation()}>
-              <div className="mgmt-modal-header">
-                <div className="mgmt-modal-title-group">
-                  <FaEdit className="modal-title-icon" />
-                  <h3>Update Team Details</h3>
-                </div>
-                <button
-                  type="button"
-                  className="mgmt-modal-close"
-                  onClick={() => setEditingTeam(null)}
-                >
-                  <FaTimes />
-                </button>
-              </div>
-
-              <form onSubmit={handleUpdateTeamSubmit} className="mgmt-modal-form">
-                <div className="modal-grid-2col">
-                  <div className="form-field-group">
-                    <label className="field-label">
-                      Team Name <span className="req-star">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control-input"
-                      value={editingTeam.name || ""}
-                      onChange={(e) =>
-                        setEditingTeam({ ...editingTeam, name: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="mgmt-modal-actions">
                   <button
-                    type="button"
-                    className="btn-modal-cancel"
-                    onClick={() => setEditingTeam(null)}
+                    type="submit"
+                    className="btn-modal-save"
+                    disabled={creatingUser}
                   >
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn-modal-save">
                     <FaSave />
-                    <span>Update Team</span>
+                    {creatingUser ? "Updating..." : "Update User"}
                   </button>
                 </div>
               </form>
+
             </div>
           </div>
         )}
 
-        {/* =========================================================
-            ADD TEAM DIALOG BOX MODAL
-            ========================================================= */}
-        {showAddTeamModal && (
-          <div className="mgmt-modal-backdrop" onClick={() => setShowAddTeamModal(false)}>
-            <div className="mgmt-modal-card" onClick={(e) => e.stopPropagation()}>
+        {/* =================================================
+            ADD TEAM MODAL
+        ================================================= */}
+
+        {showTeamModal && (
+          <div
+            className="mgmt-modal-backdrop"
+            onClick={() =>
+              setShowTeamModal(
+                false
+              )
+            }
+          >
+
+            <div
+              className="mgmt-modal-card"
+              onClick={(event) =>
+                event.stopPropagation()
+              }
+            >
+
               <div className="mgmt-modal-header">
+
                 <div className="mgmt-modal-title-group">
-                  <FaPlus className="modal-title-icon" />
-                  <h3>Add New Team</h3>
+                  <FaPlus />
+                  <h3>
+                    Add New Team
+                  </h3>
                 </div>
+
                 <button
                   type="button"
                   className="mgmt-modal-close"
-                  onClick={() => setShowAddTeamModal(false)}
+                  onClick={() =>
+                    setShowTeamModal(
+                      false
+                    )
+                  }
                 >
                   <FaTimes />
                 </button>
+
               </div>
 
-              <form onSubmit={handleAddTeamSubmit} className="mgmt-modal-form">
+              <form
+                className="mgmt-modal-form"
+                onSubmit={
+                  handleAddTeam
+                }
+              >
+
                 <div className="modal-grid-2col">
+
                   <div className="form-field-group">
                     <label className="field-label">
                       Team Name <span className="req-star">*</span>
                     </label>
+
                     <input
-                      id="teamNameInput"
-                      name="name"
-                      type="text"
                       className="form-control-input"
-                      placeholder="e.g. HPEL, CKPL, STANCO, TEST"
-                      value={newTeam.name || ""}
-                      onChange={(e) =>
-                        setNewTeam((prev) => ({ ...prev, name: e.target.value }))
-                      }
-                      required
+                      name="name"
+                      value={newTeam.name}
+                      onChange={handleTeamChange}
+                      placeholder="CKPL"
                       autoFocus
                     />
                   </div>
+
+                  <div className="form-field-group">
+                    <label className="field-label">
+                      Status <span className="req-star">*</span>
+                    </label>
+
+                    <select
+                      className="form-control-select"
+                      name="status"
+                      value={String(newTeam.status)}
+                      onChange={handleTeamChange}
+                    >
+                      <option value="1">Active</option>
+                      <option value="0">Inactive</option>
+                    </select>
+                  </div>
+
                 </div>
 
                 <div className="mgmt-modal-actions">
+
                   <button
                     type="button"
                     className="btn-modal-cancel"
-                    onClick={() => setShowAddTeamModal(false)}
+                    onClick={() =>
+                      setShowTeamModal(
+                        false
+                      )
+                    }
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn-modal-save">
+
+                  <button
+                    type="submit"
+                    className="btn-modal-save"
+                  >
                     <FaCheck />
-                    <span>OK</span>
+                    Add Team
                   </button>
+
                 </div>
+
               </form>
+
             </div>
+
           </div>
         )}
+
+        {/* =================================================
+            UPDATE TEAM MODAL
+        ================================================= */}
+
+        {editingTeam && (
+          <div
+            className="mgmt-modal-backdrop"
+            onClick={() =>
+              setEditingTeam(null)
+            }
+          >
+
+            <div
+              className="mgmt-modal-card"
+              onClick={(event) =>
+                event.stopPropagation()
+              }
+            >
+
+              <div className="mgmt-modal-header">
+
+                <div className="mgmt-modal-title-group">
+                  <FaEdit />
+                  <h3>
+                    Update Team
+                  </h3>
+                </div>
+
+                <button
+                  type="button"
+                  className="mgmt-modal-close"
+                  onClick={() =>
+                    setEditingTeam(
+                      null
+                    )
+                  }
+                >
+                  <FaTimes />
+                </button>
+
+              </div>
+
+              <form
+                className="mgmt-modal-form"
+                onSubmit={
+                  handleUpdateTeam
+                }
+              >
+
+                <div className="modal-grid-2col">
+
+                  <div className="form-field-group">
+                    <label className="field-label">
+                      Team Name <span className="req-star">*</span>
+                    </label>
+
+                    <input
+                      className="form-control-input"
+                      value={editingTeam.name || ""}
+                      onChange={(event) =>
+                        setEditingTeam({
+                          ...editingTeam,
+                          name: event.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-field-group">
+                    <label className="field-label">
+                      Status <span className="req-star">*</span>
+                    </label>
+
+                    <select
+                      className="form-control-select"
+                      value={String(
+                        editingTeam.status ?? 1
+                      )}
+                      onChange={(event) =>
+                        setEditingTeam({
+                          ...editingTeam,
+                          status: Number(
+                            event.target.value
+                          ),
+                        })
+                      }
+                    >
+                      <option value="1">Active</option>
+                      <option value="0">Inactive</option>
+                    </select>
+                  </div>
+
+                </div>
+
+                <div className="mgmt-modal-actions">
+
+                  <button
+                    type="button"
+                    className="btn-modal-cancel"
+                    onClick={() =>
+                      setEditingTeam(
+                        null
+                      )
+                    }
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="btn-modal-save"
+                  >
+                    <FaSave />
+                    Update Team
+                  </button>
+
+                </div>
+
+              </form>
+
+            </div>
+
+          </div>
+        )}
+
       </main>
     </div>
   );
