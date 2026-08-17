@@ -62,8 +62,7 @@ const EMPTY_USER = {
 
 const EMPTY_TEAM = {
   name: "",
-  code: "",
-  status: "Active",
+  status: 1,
 };
 
 function UserManagement({ initialTab = "users" }) {
@@ -98,6 +97,7 @@ function UserManagement({ initialTab = "users" }) {
   ========================= */
 
   const [teams, setTeams] = useState([]);
+  const [activeTeams, setActiveTeams] = useState([]);
   const [newTeam, setNewTeam] = useState(EMPTY_TEAM);
   const [editingTeam, setEditingTeam] = useState(null);
 
@@ -193,48 +193,8 @@ function UserManagement({ initialTab = "users" }) {
         : [];
 
       setUsers(data);
-
-      /*
-       * Build teams from user.team values.
-       *
-       * Your current backend does not have
-       * a Team API, so teams are derived
-       * from users for now.
-       */
-      const teamMap = new Map();
-
-      data.forEach((user) => {
-        if (!user.team) {
-          return;
-        }
-
-        const teamName = user.team.trim();
-
-        if (!teamName) {
-          return;
-        }
-
-        if (!teamMap.has(teamName)) {
-          teamMap.set(teamName, {
-            id: teamName,
-            name: teamName,
-            code: `TEAM-${teamName.toUpperCase()}`,
-            memberCount: 0,
-            status: "Active",
-          });
-        }
-
-        const team = teamMap.get(teamName);
-
-        team.memberCount += 1;
-      });
-
-      setTeams(Array.from(teamMap.values()));
     } catch (error) {
-      console.error(
-        "Failed to load users:",
-        error
-      );
+      console.error("Failed to load users:", error);
 
       const message =
         error?.response?.data?.message ||
@@ -246,8 +206,37 @@ function UserManagement({ initialTab = "users" }) {
     }
   };
 
+  const fetchTeams = async () => {
+    try {
+      const [allResponse, activeResponse] = await Promise.all([
+        api.get("/teams"),
+        api.get("/teams/active"),
+      ]);
+
+      const allTeams = Array.isArray(allResponse.data)
+        ? allResponse.data
+        : [];
+
+      const activeTeamData = Array.isArray(activeResponse.data)
+        ? activeResponse.data
+        : [];
+
+      setTeams(allTeams);
+      setActiveTeams(activeTeamData);
+    } catch (error) {
+      console.error("Failed to load teams:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        "Unable to load teams";
+
+      showToast("error", message);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchTeams();
   }, []);
 
   /* =========================
@@ -317,6 +306,14 @@ function UserManagement({ initialTab = "users" }) {
       showToast(
         "error",
         "Role type is required"
+      );
+      return;
+    }
+
+    if (!newUser.team.trim()) {
+      showToast(
+        "error",
+        "Active team is required"
       );
       return;
     }
@@ -442,7 +439,8 @@ function UserManagement({ initialTab = "users" }) {
       !editingUser.designation?.trim() ||
       !editingUser.email?.trim() ||
       !editingUser.mobileNo?.trim() ||
-      !editingUser.roleType
+      !editingUser.roleType ||
+      !editingUser.team?.trim()
     ) {
       showToast("error", "Please fill all required fields");
       return;
@@ -581,117 +579,120 @@ function UserManagement({ initialTab = "users" }) {
   ========================= */
 
   const handleTeamChange = (event) => {
-    const {
-      name,
-      value,
-    } = event.target;
+    const { name, value } = event.target;
 
     setNewTeam((previous) => ({
       ...previous,
-      [name]: value,
+      [name]: name === "status" ? Number(value) : value,
     }));
   };
 
-  const handleAddTeam = (event) => {
+  const handleAddTeam = async (event) => {
     event.preventDefault();
 
-    const name =
-      newTeam.name
-        .trim()
-        .toUpperCase();
+    const name = newTeam.name.trim();
 
     if (!name) {
-      showToast(
-        "error",
-        "Team name is required"
-      );
+      showToast("error", "Team name is required");
       return;
     }
 
-    const exists = teams.some(
-      (team) =>
-        team.name.toLowerCase() ===
-        name.toLowerCase()
-    );
+    try {
+      const response = await api.post("/teams", {
+        name,
+        status: Number(newTeam.status ?? 1),
+      });
 
-    if (exists) {
+      setTeams((previous) => [
+        response.data,
+        ...previous,
+      ]);
+
+      await fetchTeams();
+
+      setNewTeam(EMPTY_TEAM);
+      setShowTeamModal(false);
+
+      showToast(
+        "success",
+        `Team "${name}" added successfully`
+      );
+    } catch (error) {
+      console.error("Create team error:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        "Failed to create team";
+
       showToast(
         "error",
-        `Team "${name}" already exists`
+        typeof message === "string"
+          ? message
+          : "Failed to create team"
       );
-      return;
     }
-
-    const team = {
-      id: Date.now(),
-      name,
-      code:
-        newTeam.code.trim().toUpperCase() ||
-        `TEAM-${name}`,
-      memberCount: 0,
-      status:
-        newTeam.status || "Active",
-    };
-
-    setTeams((previous) => [
-      team,
-      ...previous,
-    ]);
-
-    setNewTeam(EMPTY_TEAM);
-    setShowTeamModal(false);
-
-    showToast(
-      "success",
-      `Team "${name}" added`
-    );
   };
 
-  const handleUpdateTeam = (event) => {
+  const handleUpdateTeam = async (event) => {
     event.preventDefault();
 
-    if (!editingTeam) {
+    if (!editingTeam?.id) {
+      showToast("error", "Team ID is missing");
       return;
     }
 
-    const updatedName =
-      editingTeam.name
-        .trim()
-        .toUpperCase();
+    const name = editingTeam.name?.trim();
 
-    if (!updatedName) {
+    if (!name) {
+      showToast("error", "Team name is required");
+      return;
+    }
+
+    try {
+      const response = await api.put(
+        `/teams/${editingTeam.id}`,
+        {
+          name,
+          status: Number(editingTeam.status ?? 1),
+        }
+      );
+
+      setTeams((previous) =>
+        previous.map((team) =>
+          team.id === editingTeam.id
+            ? response.data
+            : team
+        )
+      );
+
+      setEditingTeam(null);
+
+      await fetchTeams();
+      await fetchUsers();
+
+      showToast(
+        "success",
+        "Team updated successfully"
+      );
+    } catch (error) {
+      console.error("Update team error:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        "Failed to update team";
+
       showToast(
         "error",
-        "Team name is required"
+        typeof message === "string"
+          ? message
+          : "Failed to update team"
       );
-      return;
     }
-
-    setTeams((previous) =>
-      previous.map((team) =>
-        team.id === editingTeam.id
-          ? {
-              ...team,
-              name: updatedName,
-              code:
-                editingTeam.code
-                  ?.trim()
-                  .toUpperCase() ||
-                `TEAM-${updatedName}`,
-            }
-          : team
-      )
-    );
-
-    setEditingTeam(null);
-
-    showToast(
-      "success",
-      "Team updated locally"
-    );
   };
 
-  const handleDeleteTeam = (team) => {
+  const handleDeleteTeam = async (team) => {
     const confirmed = window.confirm(
       `Are you sure you want to delete team "${team.name}"?`
     );
@@ -700,21 +701,31 @@ function UserManagement({ initialTab = "users" }) {
       return;
     }
 
-    /*
-     * Since Team API does not exist,
-     * this only changes frontend state.
-     */
+    try {
+      await api.delete(`/teams/${team.id}`);
 
-    setTeams((previous) =>
-      previous.filter(
-        (item) => item.id !== team.id
-      )
-    );
+      await fetchTeams();
+      await fetchUsers();
 
-    showToast(
-      "success",
-      `Team "${team.name}" removed locally`
-    );
+      showToast(
+        "success",
+        `Team "${team.name}" deleted successfully`
+      );
+    } catch (error) {
+      console.error("Delete team error:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        "Failed to delete team";
+
+      showToast(
+        "error",
+        typeof message === "string"
+          ? message
+          : "Failed to delete team"
+      );
+    }
   };
 
   /* =========================
@@ -814,7 +825,6 @@ function UserManagement({ initialTab = "users" }) {
     return teams.filter((team) =>
       [
         team.name,
-        team.code,
         team.status,
       ].some((value) =>
         String(value || "")
@@ -1103,6 +1113,7 @@ function UserManagement({ initialTab = "users" }) {
                         <th>ROLE</th>
                         <th>TEAM</th>
                         <th>STATUS</th>
+                        <th>CREATED BY</th>
                         <th>ACTION</th>
                       </tr>
                     </thead>
@@ -1113,7 +1124,7 @@ function UserManagement({ initialTab = "users" }) {
                       0 ? (
                         <tr>
                           <td
-                            colSpan="11"
+                            colSpan="12"
                             style={{
                               textAlign:
                                 "center",
@@ -1234,14 +1245,29 @@ function UserManagement({ initialTab = "users" }) {
                                 </td>
 
                                 <td>
-                                  <span className="status-btn active-btn">
+                                  <span
+                                    className={`status-btn ${
+                                      String(
+                                        user.profileStatus ||
+                                          "active"
+                                      ).toLowerCase() === "active"
+                                        ? "active-btn"
+                                        : "inactive-btn"
+                                    }`}
+                                  >
                                     <span className="status-dot" />
 
                                     {String(
                                       user.profileStatus ||
                                         "active"
-                                    )}
+                                    ).toLowerCase() === "active"
+                                      ? "Active"
+                                      : "Inactive"}
                                   </span>
+                                </td>
+
+                                <td>
+                                  {user.createdBy || user.supervisor || "-"}
                                 </td>
 
                                 <td>
@@ -1485,9 +1511,8 @@ function UserManagement({ initialTab = "users" }) {
                     <tr>
                       <th>S.No</th>
                       <th>TEAM NAME</th>
-                      <th>CODE</th>
-                      <th>MEMBERS</th>
                       <th>STATUS</th>
+                      <th>CREATED BY</th>
                       <th>ACTION</th>
                     </tr>
                   </thead>
@@ -1498,7 +1523,7 @@ function UserManagement({ initialTab = "users" }) {
                     0 ? (
                       <tr>
                         <td
-                          colSpan="6"
+                          colSpan="5"
                           style={{
                             textAlign:
                               "center",
@@ -1546,30 +1571,26 @@ function UserManagement({ initialTab = "users" }) {
                             </td>
 
                             <td>
-                              {
-                                team.code
-                              }
-                            </td>
-
-                            <td>
-                              {
-                                team.memberCount ??
-                                0
-                              }
-                            </td>
-
-                            <td>
-                              <span className="status-btn active-btn">
+                              <span
+                                className={`status-btn ${
+                                  Number(team.status) === 1
+                                    ? "active-btn"
+                                    : "inactive-btn"
+                                }`}
+                              >
                                 <span className="status-dot" />
-                                {
-                                  team.status ||
-                                  "Active"
-                                }
+                                {Number(team.status) === 1
+                                  ? "Active"
+                                  : "Inactive"}
                               </span>
                             </td>
 
+        
                             <td>
+                              {team.createdBy || "-"}
+                            </td>
 
+                            <td>
                               <div className="business-style-actions">
                                 <button
                                   type="button"
@@ -1900,7 +1921,7 @@ function UserManagement({ initialTab = "users" }) {
                         Select Team
                       </option>
 
-                      {teams.map(
+                      {activeTeams.map(
                         (team) => (
                           <option
                             key={
@@ -2238,9 +2259,9 @@ function UserManagement({ initialTab = "users" }) {
                   </div>
 
                   <div className="form-field-group">
-                    <label className="field-label">Team</label>
-                    <input
-                      className="form-control-input"
+                    <label className="field-label">Team *</label>
+                    <select
+                      className="form-control-select"
                       value={editingUser.team || ""}
                       onChange={(e) =>
                         setEditingUser({
@@ -2248,7 +2269,20 @@ function UserManagement({ initialTab = "users" }) {
                           team: e.target.value,
                         })
                       }
-                    />
+                    >
+                      <option value="">
+                        Select Team
+                      </option>
+
+                      {activeTeams.map((team) => (
+                        <option
+                          key={team.id}
+                          value={team.name}
+                        >
+                          {team.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="form-field-group">
@@ -2371,12 +2405,8 @@ function UserManagement({ initialTab = "users" }) {
                     <input
                       className="form-control-input"
                       name="name"
-                      value={
-                        newTeam.name
-                      }
-                      onChange={
-                        handleTeamChange
-                      }
+                      value={newTeam.name}
+                      onChange={handleTeamChange}
                       placeholder="CKPL"
                       autoFocus
                     />
@@ -2384,20 +2414,18 @@ function UserManagement({ initialTab = "users" }) {
 
                   <div className="form-field-group">
                     <label className="field-label">
-                      Team Code
+                      Status *
                     </label>
 
-                    <input
-                      className="form-control-input"
-                      name="code"
-                      value={
-                        newTeam.code
-                      }
-                      onChange={
-                        handleTeamChange
-                      }
-                      placeholder="TEAM-CKPL"
-                    />
+                    <select
+                      className="form-control-select"
+                      name="status"
+                      value={String(newTeam.status)}
+                      onChange={handleTeamChange}
+                    >
+                      <option value="1">Active</option>
+                      <option value="0">Inactive</option>
+                    </select>
                   </div>
 
                 </div>
@@ -2491,47 +2519,38 @@ function UserManagement({ initialTab = "users" }) {
 
                     <input
                       className="form-control-input"
-                      value={
-                        editingTeam.name ||
-                        ""
-                      }
+                      value={editingTeam.name || ""}
                       onChange={(event) =>
-                        setEditingTeam(
-                          {
-                            ...editingTeam,
-                            name:
-                              event
-                                .target
-                                .value,
-                          }
-                        )
+                        setEditingTeam({
+                          ...editingTeam,
+                          name: event.target.value,
+                        })
                       }
                     />
                   </div>
 
                   <div className="form-field-group">
                     <label className="field-label">
-                      Team Code
+                      Status *
                     </label>
 
-                    <input
-                      className="form-control-input"
-                      value={
-                        editingTeam.code ||
-                        ""
-                      }
+                    <select
+                      className="form-control-select"
+                      value={String(
+                        editingTeam.status ?? 1
+                      )}
                       onChange={(event) =>
-                        setEditingTeam(
-                          {
-                            ...editingTeam,
-                            code:
-                              event
-                                .target
-                                .value,
-                          }
-                        )
+                        setEditingTeam({
+                          ...editingTeam,
+                          status: Number(
+                            event.target.value
+                          ),
+                        })
                       }
-                    />
+                    >
+                      <option value="1">Active</option>
+                      <option value="0">Inactive</option>
+                    </select>
                   </div>
 
                 </div>

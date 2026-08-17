@@ -407,7 +407,6 @@ function Department() {
                     <th>Department Name</th>
                     <th>Status</th>
                     <th>Created By</th>
-                    <th>Created At</th>
                     <th>Actions</th>
                   </tr>
 
@@ -453,14 +452,7 @@ function Department() {
                           {department.createdBy || "-"}
                         </td>
 
-                        <td>
-                          {department.createdAt
-                            ? new Date(
-                              department.createdAt
-                            ).toLocaleDateString()
-                            : "-"}
-                        </td>
-
+                    
                         <td>
 
                           <div className="department-actions">

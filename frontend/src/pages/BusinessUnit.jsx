@@ -719,9 +719,6 @@ function BusinessUnit() {
                           Created By
                         </th>
 
-                        <th>
-                          Created At
-                        </th>
 
                         <th>
                           Actions
@@ -813,15 +810,7 @@ function BusinessUnit() {
                             </td>
 
 
-                            {/* CREATED AT */}
-
-                            <td data-label="Created At">
-
-                              {formatDate(
-                                business.createdAt
-                              )}
-
-                            </td>
+                           
 
 
                             {/* ACTIONS */}
