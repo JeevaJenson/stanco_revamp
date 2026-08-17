@@ -6,7 +6,8 @@ import {
   FaTrash,
   FaTimes,
   FaSearch,
-  FaSyncAlt
+  FaChevronLeft,
+  FaChevronRight
 } from "react-icons/fa";
 
 import api from "../services/api";
@@ -25,13 +26,25 @@ function BusinessUnit() {
 
   const [loading, setLoading] = useState(false);
 
+  const [saving, setSaving] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
 
-  const [editingId, setEditingId] = useState(null);
+  const [editId, setEditId] = useState(null);
 
   const [search, setSearch] = useState("");
 
-  const [toast, setToast] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 5;
+
+  const [toast, setToast] = useState({
+    show: false,
+    type: "",
+    message: ""
+  });
 
 
   const [formData, setFormData] = useState({
@@ -48,20 +61,44 @@ function BusinessUnit() {
   const showToast = (type, message) => {
 
     setToast({
+      show: true,
       type,
       message
     });
 
     setTimeout(() => {
 
-      setToast(null);
+      setToast({
+        show: false,
+        type: "",
+        message: ""
+      });
 
     }, 3000);
   };
 
 
   // =====================================================
-  // GET ALL BUSINESS UNITS
+  // NORMALIZE STATUS
+  // =====================================================
+
+  const normalizeStatus = (status) => {
+
+    if (
+      status === "active" ||
+      status === "ACTIVE" ||
+      status === "1" ||
+      status === 1
+    ) {
+      return "active";
+    }
+
+    return "inactive";
+  };
+
+
+  // =====================================================
+  // FETCH BUSINESS UNITS
   // =====================================================
 
   const fetchBusinessUnits = async () => {
@@ -74,13 +111,18 @@ function BusinessUnit() {
         await api.get("/business-masters");
 
       console.log(
-        "Business Units:",
+        "Business Unit response:",
         response.data
       );
 
-      setBusinessUnits(
-        response.data || []
-      );
+      const data =
+        Array.isArray(response.data)
+          ? response.data
+          : [];
+
+      setBusinessUnits(data);
+
+      setCurrentPage(1);
 
     } catch (error) {
 
@@ -89,15 +131,36 @@ function BusinessUnit() {
         error
       );
 
+      if (error.response?.status === 401) {
+
+        showToast(
+          "error",
+          "Session expired. Please login again."
+        );
+
+        return;
+      }
+
+      if (error.response?.status === 403) {
+
+        showToast(
+          "error",
+          "You don't have permission to access Business Units"
+        );
+
+        return;
+      }
+
       showToast(
         "error",
         error.response?.data?.message ||
-        "Failed to load business units"
+        "Failed to load Business Units"
       );
 
     } finally {
 
       setLoading(false);
+
     }
   };
 
@@ -124,13 +187,14 @@ function BusinessUnit() {
       value
     } = e.target;
 
-    setFormData((prev) => ({
+    setFormData((previous) => ({
 
-      ...prev,
+      ...previous,
 
       [name]: value
 
     }));
+
   };
 
 
@@ -140,19 +204,16 @@ function BusinessUnit() {
 
   const openAddModal = () => {
 
-    setEditingId(null);
+    setEditId(null);
 
     setFormData({
-
       buId: "",
-
       businessName: "",
-
       status: "active"
-
     });
 
     setShowModal(true);
+
   };
 
 
@@ -162,9 +223,7 @@ function BusinessUnit() {
 
   const openEditModal = (business) => {
 
-    setEditingId(
-      business.id
-    );
+    setEditId(business.id);
 
     setFormData({
 
@@ -175,11 +234,14 @@ function BusinessUnit() {
         business.businessName || "",
 
       status:
-        business.status || "active"
+        normalizeStatus(
+          business.status
+        )
 
     });
 
     setShowModal(true);
+
   };
 
 
@@ -189,19 +251,20 @@ function BusinessUnit() {
 
   const closeModal = () => {
 
+    if (saving) {
+      return;
+    }
+
     setShowModal(false);
 
-    setEditingId(null);
+    setEditId(null);
 
     setFormData({
-
       buId: "",
-
       businessName: "",
-
       status: "active"
-
     });
+
   };
 
 
@@ -213,12 +276,14 @@ function BusinessUnit() {
 
     e.preventDefault();
 
+    const buId =
+      formData.buId.trim();
 
-    // -----------------------------
-    // VALIDATION
-    // -----------------------------
+    const businessName =
+      formData.businessName.trim();
 
-    if (!formData.businessName.trim()) {
+
+    if (!businessName) {
 
       showToast(
         "error",
@@ -231,39 +296,50 @@ function BusinessUnit() {
 
     try {
 
-      setLoading(true);
+      setSaving(true);
 
 
-      const payload = {
+      const requestData = {
 
         buId:
-          formData.buId.trim()
-            ? formData.buId.trim()
-            : null,
+          buId || null,
 
         businessName:
-          formData.businessName.trim(),
+          businessName,
 
         status:
-          formData.status
+          normalizeStatus(
+            formData.status
+          )
 
       };
+
+
+      console.log(
+        "Business Unit request:",
+        requestData
+      );
 
 
       // =================================================
       // UPDATE
       // =================================================
 
-      if (editingId) {
+      if (editId !== null) {
 
-        await api.put(
+        const response =
+          await api.put(
 
-          `/business-masters/${editingId}`,
+            `/business-masters/${editId}`,
 
-          payload
+            requestData
 
+          );
+
+        console.log(
+          "Business Unit updated:",
+          response.data
         );
-
 
         showToast(
           "success",
@@ -279,27 +355,40 @@ function BusinessUnit() {
 
       else {
 
-        await api.post(
+        const response =
+          await api.post(
 
-          "/business-masters",
+            "/business-masters",
 
-          payload
+            requestData
 
+          );
+
+        console.log(
+          "Business Unit created:",
+          response.data
         );
-
 
         showToast(
           "success",
           "Business Unit created successfully"
         );
+
       }
 
 
-      closeModal();
+      setShowModal(false);
+
+      setEditId(null);
+
+      setFormData({
+        buId: "",
+        businessName: "",
+        status: "active"
+      });
 
 
       await fetchBusinessUnits();
-
 
     } catch (error) {
 
@@ -309,36 +398,68 @@ function BusinessUnit() {
       );
 
 
+      if (error.response?.status === 400) {
+
+        showToast(
+          "error",
+          error.response?.data?.message ||
+          "Invalid Business Unit data"
+        );
+
+        return;
+      }
+
+
+      if (error.response?.status === 401) {
+
+        showToast(
+          "error",
+          "Session expired. Please login again."
+        );
+
+        return;
+      }
+
+
+      if (error.response?.status === 403) {
+
+        showToast(
+          "error",
+          "You don't have permission to perform this action"
+        );
+
+        return;
+      }
+
+
       showToast(
-
         "error",
-
         error.response?.data?.message ||
-        "Operation failed"
-
+        "Failed to save Business Unit"
       );
 
     } finally {
 
-      setLoading(false);
+      setSaving(false);
+
     }
+
   };
 
 
   // =====================================================
-  // DELETE
+  // DELETE - SOFT DELETE
   // =====================================================
 
   const handleDelete = async (id) => {
 
     const confirmed =
       window.confirm(
-        "Are you sure you want to delete this Business Unit?"
+        "Are you sure you want to deactivate this Business Unit?"
       );
 
 
     if (!confirmed) {
-
       return;
     }
 
@@ -347,22 +468,18 @@ function BusinessUnit() {
 
       setLoading(true);
 
-
       await api.delete(
-
         `/business-masters/${id}`
-
       );
 
 
       showToast(
         "success",
-        "Business Unit deleted successfully"
+        "Business Unit deactivated successfully"
       );
 
 
       await fetchBusinessUnits();
-
 
     } catch (error) {
 
@@ -372,93 +489,221 @@ function BusinessUnit() {
       );
 
 
+      if (error.response?.status === 401) {
+
+        showToast(
+          "error",
+          "Session expired. Please login again."
+        );
+
+        return;
+      }
+
+
+      if (error.response?.status === 403) {
+
+        showToast(
+          "error",
+          "You don't have permission to deactivate Business Units"
+        );
+
+        return;
+      }
+
+
       showToast(
-
         "error",
-
         error.response?.data?.message ||
-        "Failed to delete Business Unit"
-
+        "Failed to deactivate Business Unit"
       );
 
     } finally {
 
       setLoading(false);
+
     }
+
   };
 
 
   // =====================================================
-  // SEARCH
+  // FILTER
   // =====================================================
+
+  const searchValue =
+    search.trim().toLowerCase();
+
 
   const filteredBusinessUnits =
     businessUnits.filter(
       (business) => {
 
-        const searchText =
-          search.toLowerCase().trim();
+        const status =
+          normalizeStatus(
+            business.status
+          );
 
 
-        if (!searchText) {
+        if (
+          statusFilter !== "all" &&
+          status !== statusFilter
+        ) {
+
+          return false;
+
+        }
+
+
+        if (!searchValue) {
 
           return true;
+
         }
+
+
+        const buId =
+          String(
+            business.buId || ""
+          ).toLowerCase();
+
+
+        const businessName =
+          String(
+            business.businessName || ""
+          ).toLowerCase();
+
+
+        const createdBy =
+          String(
+            business.createdBy || ""
+          ).toLowerCase();
+
+
+        const updatedBy =
+          String(
+            business.updatedBy || ""
+          ).toLowerCase();
 
 
         return (
 
-          business.buId
-            ?.toLowerCase()
-            .includes(searchText)
+          buId.includes(searchValue)
 
           ||
 
-          business.businessName
-            ?.toLowerCase()
-            .includes(searchText)
+          businessName.includes(searchValue)
 
           ||
 
-          business.status
-            ?.toLowerCase()
-            .includes(searchText)
+          status.includes(searchValue)
 
           ||
 
-          business.createdBy
-            ?.toLowerCase()
-            .includes(searchText)
+          createdBy.includes(searchValue)
+
+          ||
+
+          updatedBy.includes(searchValue)
 
         );
+
       }
     );
 
 
   // =====================================================
-  // DATE FORMAT
+  // PAGINATION
+  // =====================================================
+
+  const totalPages =
+    Math.ceil(
+      filteredBusinessUnits.length /
+      itemsPerPage
+    );
+
+
+  const startIndex =
+    (currentPage - 1) *
+    itemsPerPage;
+
+
+  const currentBusinessUnits =
+    filteredBusinessUnits.slice(
+      startIndex,
+      startIndex + itemsPerPage
+    );
+
+
+  useEffect(() => {
+
+    if (
+      totalPages > 0 &&
+      currentPage > totalPages
+    ) {
+
+      setCurrentPage(totalPages);
+
+    }
+
+    if (
+      totalPages === 0 &&
+      currentPage !== 1
+    ) {
+
+      setCurrentPage(1);
+
+    }
+
+  }, [
+    totalPages,
+    currentPage
+  ]);
+
+
+  // =====================================================
+  // DATE
   // =====================================================
 
   const formatDate = (date) => {
 
     if (!date) {
-
       return "-";
     }
-
 
     try {
 
       return new Date(
         date
       ).toLocaleDateString(
-        "en-IN"
+        "en-IN",
+        {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric"
+        }
       );
 
     } catch {
 
       return "-";
+
     }
+
+  };
+
+
+  // =====================================================
+  // STATUS CLASS
+  // =====================================================
+
+  const getStatusClass = (status) => {
+
+    return normalizeStatus(status) === "active"
+
+      ? "status-badge active"
+
+      : "status-badge inactive";
+
   };
 
 
@@ -470,7 +715,6 @@ function BusinessUnit() {
 
     <div className="business-page">
 
-
       {/* =================================================
           SIDEBAR
       ================================================= */}
@@ -478,408 +722,472 @@ function BusinessUnit() {
       <Sidebar />
 
 
-      {/* =================================================
-          MAIN CONTENT
-      ================================================= */}
-
       <div className="business-content">
 
 
-        {/* =================================================
-            HEADER
-        ================================================= */}
+        {/* HEADER */}
 
         <div className="business-header">
 
           <div>
 
             <h2>
-              Business Unit
+              Business Unit Management
             </h2>
 
             <p>
-              Manage your business units
+              Manage business units and business information
             </p>
 
           </div>
 
 
           <button
+            type="button"
             className="add-business-btn"
             onClick={openAddModal}
           >
 
             <FaPlus />
 
-            <span>
-              Add Business Unit
-            </span>
+            Add Business Unit
 
           </button>
 
         </div>
 
 
-        {/* =================================================
-            TOAST
-        ================================================= */}
+        {/* TOOLBAR */}
 
-        {toast && (
+        <div className="business-toolbar">
 
-          <div
-            className={`business-toast ${toast.type}`}
-          >
+          <div className="business-search">
 
-            <span>
-              {toast.message}
-            </span>
+            <FaSearch />
+
+            <input
+              type="text"
+              placeholder="Search business unit..."
+              value={search}
+              onChange={(e) => {
+
+                setSearch(
+                  e.target.value
+                );
+
+                setCurrentPage(1);
+
+              }}
+            />
 
 
-            <button
-              type="button"
-              onClick={() =>
-                setToast(null)
-              }
-            >
+            {search && (
 
-              <FaTimes />
+              <button
+                type="button"
+                className="clear-business-search"
+                onClick={() => {
 
-            </button>
+                  setSearch("");
+
+                  setCurrentPage(1);
+
+                }}
+              >
+
+                <FaTimes />
+
+              </button>
+
+            )}
 
           </div>
 
-        )}
+
+          <select
+            className="business-status-filter"
+            value={statusFilter}
+            onChange={(e) => {
+
+              setStatusFilter(
+                e.target.value
+              );
+
+              setCurrentPage(1);
+
+            }}
+          >
+
+            <option value="all">
+              All
+            </option>
+
+            <option value="active">
+              Active
+            </option>
+
+            <option value="inactive">
+              Inactive
+            </option>
+
+          </select>
 
 
-        {/* =================================================
-            TABLE CARD
-        ================================================= */}
+          <div className="business-count">
+
+            Total:{" "}
+
+            <strong>
+              {filteredBusinessUnits.length}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        {/* TABLE */}
 
         <div className="business-table-card">
 
 
-          {/* =================================================
-              TABLE HEADER
-          ================================================= */}
-
-          <div className="table-header">
-
-            <div className="table-title">
-
-              <h3>
-                Business Units
-              </h3>
-
-              <span>
-
-                {filteredBusinessUnits.length}
-
-                {" "}records
-
-              </span>
-
-            </div>
-
-
-            {/* SEARCH */}
-
-            <div className="business-search">
-
-              <FaSearch />
-
-              <input
-                type="text"
-                placeholder="Search business units..."
-                value={search}
-                onChange={(e) =>
-                  setSearch(
-                    e.target.value
-                  )
-                }
-              />
-
-
-              {search && (
-
-                <button
-                  type="button"
-                  className="clear-search"
-                  onClick={() =>
-                    setSearch("")
-                  }
-                >
-
-                  <FaTimes />
-
-                </button>
-
-              )}
-
-            </div>
-
-
-            {/* REFRESH */}
-
-            <button
-              type="button"
-              className="refresh-btn"
-              onClick={
-                fetchBusinessUnits
-              }
-              disabled={loading}
-              title="Refresh"
-            >
-
-              <FaSyncAlt />
-
-            </button>
-
-          </div>
-
-
-          {/* =================================================
-              LOADING
-          ================================================= */}
-
-          {loading &&
-            businessUnits.length === 0 ? (
+          {loading ? (
 
             <div className="business-loading">
+              Loading Business Units...
+            </div>
 
-              <div className="loading-spinner"></div>
+          ) : filteredBusinessUnits.length === 0 ? (
 
-              <span>
-                Loading business units...
-              </span>
+            <div className="business-empty">
+
+              <h3>
+                No Business Units found
+              </h3>
+
+              <p>
+                Try changing your search or add a new Business Unit.
+              </p>
 
             </div>
 
-          )
+          ) : (
+
+            <>
+
+              <div className="business-table-wrapper">
+
+                <table className="business-table">
+
+                  <thead>
+
+                    <tr>
+
+                      <th>S.No</th>
+
+                      <th>BU ID</th>
+
+                      <th>Business Name</th>
+
+                      <th>Status</th>
+
+                      <th>Created By</th>
+
+                      <th>Created At</th>
+
+                      <th>Updated By</th>
+
+                      <th>Updated At</th>
+
+                      <th>Deleted At</th>
+
+                      <th>Actions</th>
+
+                    </tr>
+
+                  </thead>
 
 
-            /* =================================================
-               EMPTY
-            ================================================= */
+                  <tbody>
 
-            : filteredBusinessUnits.length === 0 ? (
+                    {currentBusinessUnits.map(
+                      (business, index) => (
 
-              <div className="business-empty">
+                        <tr
+                          key={
+                            business.id
+                          }
+                        >
 
-                <FaSearch />
+                          <td data-label="S.No">
 
-                <h3>
-                  No Business Units found
-                </h3>
+                            {startIndex +
+                              index +
+                              1}
 
-                <p>
-
-                  {search
-                    ? "Try a different search term."
-                    : "Add a Business Unit to get started."}
-
-                </p>
-
-              </div>
-
-            )
+                          </td>
 
 
-              /* =================================================
-                 TABLE
-              ================================================= */
+                          <td data-label="BU ID">
 
-              : (
+                            <strong>
+                              {business.buId ||
+                                "-"}
+                            </strong>
 
-                <div className="business-table-wrapper">
-
-                  <table className="business-table">
-
-
-                    <thead>
-
-                      <tr>
-
-                        <th>
-                          S.No
-                        </th>
-
-                        <th>
-                          BU ID
-                        </th>
-
-                        <th>
-                          Business Name
-                        </th>
-
-                        <th>
-                          Status
-                        </th>
-
-                        <th>
-                          Created By
-                        </th>
-
-                        <th>
-                          Created At
-                        </th>
-
-                        <th>
-                          Actions
-                        </th>
-
-                      </tr>
-
-                    </thead>
+                          </td>
 
 
-                    <tbody>
+                          <td data-label="Business Name">
 
-                      {filteredBusinessUnits.map(
+                            {business.businessName ||
+                              "-"}
 
-                        (business, index) => (
+                          </td>
 
-                          <tr
-                            key={
-                              business.id
+
+                          <td data-label="Status">
+
+                            <span
+                              className={
+                                getStatusClass(
+                                  business.status
+                                )
+                              }
+                            >
+
+                              {
+                                normalizeStatus(
+                                  business.status
+                                )
+                              }
+
+                            </span>
+
+                          </td>
+
+
+                          <td data-label="Created By">
+
+                            {
+                              business.createdBy ||
+                              "-"
                             }
-                          >
+
+                          </td>
 
 
-                            {/* S.NO */}
+                          <td data-label="Created At">
 
-                            <td data-label="S.No">
+                            {
+                              formatDate(
+                                business.createdAt
+                              )
+                            }
 
-                              {index + 1}
-
-                            </td>
-
-
-                            {/* BU ID */}
-
-                            <td data-label="BU ID">
-
-                              <strong>
-
-                                {business.buId ||
-                                  "-"}
-
-                              </strong>
-
-                            </td>
+                          </td>
 
 
-                            {/* BUSINESS NAME */}
+                          <td data-label="Updated By">
 
-                            <td data-label="Business Name">
+                            {
+                              business.updatedBy ||
+                              "-"
+                            }
 
-                              <span className="business-name">
-
-                                {business.businessName}
-
-                              </span>
-
-                            </td>
+                          </td>
 
 
-                            {/* STATUS */}
+                          <td data-label="Updated At">
 
-                            <td data-label="Status">
+                            {
+                              formatDate(
+                                business.updatedAt
+                              )
+                            }
 
-                              <span
-                                className={
-                                  `status-badge ${business.status
-                                    ?.toLowerCase() ===
-                                    "active"
-                                    ? "active"
-                                    : "inactive"
-                                  }`
+                          </td>
+
+
+                          <td data-label="Deleted At">
+
+                            {
+                              formatDate(
+                                business.deletedAt
+                              )
+                            }
+
+                          </td>
+
+
+                          <td data-label="Actions">
+
+                            <div className="action-buttons">
+
+
+                              <button
+                                type="button"
+                                className="edit-btn"
+                                title="Edit"
+                                onClick={() =>
+                                  openEditModal(
+                                    business
+                                  )
                                 }
                               >
 
-                                {business.status}
+                                <FaEdit />
 
-                              </span>
+                              </button>
 
-                            </td>
+                              <button
+                                type="button"
+                                className="delete-btn"
+                                title={
+                                  normalizeStatus(
+                                    business.status
+                                  ) === "inactive"
+                                    ? "Already inactive"
+                                    : "Deactivate"
+                                }
+                                disabled={
+                                  normalizeStatus(
+                                    business.status
+                                  ) === "inactive"
+                                }
+                                onClick={() =>
+                                  handleDelete(
+                                    business.id
+                                  )
+                                }
+                              >
 
+                                <FaTrash />
 
-                            {/* CREATED BY */}
+                              </button>
 
-                            <td data-label="Created By">
+                            </div>
 
-                              {business.createdBy ||
-                                "-"}
+                          </td>
 
-                            </td>
+                        </tr>
 
+                      )
+                    )}
 
-                            {/* CREATED AT */}
+                  </tbody>
 
-                            <td data-label="Created At">
+                </table>
 
-                              {formatDate(
-                                business.createdAt
-                              )}
-
-                            </td>
-
-
-                            {/* ACTIONS */}
-
-                            <td data-label="Actions">
-
-                              <div className="action-buttons">
-
-
-                                <button
-                                  type="button"
-                                  className="edit-btn"
-                                  title="Edit"
-                                  onClick={() =>
-                                    openEditModal(
-                                      business
-                                    )
-                                  }
-                                >
-
-                                  <FaEdit />
-
-                                </button>
+              </div>
 
 
-                                <button
-                                  type="button"
-                                  className="delete-btn"
-                                  title="Delete"
-                                  onClick={() =>
-                                    handleDelete(
-                                      business.id
-                                    )
-                                  }
-                                >
+              {/* PAGINATION */}
 
-                                  <FaTrash />
+              <div className="business-pagination">
 
-                                </button>
+                <div className="business-pagination-info">
 
+                  Showing{" "}
 
-                              </div>
+                  <strong>
+                    {startIndex + 1}
+                  </strong>
 
-                            </td>
+                  {" - "}
 
-                          </tr>
+                  <strong>
+                    {Math.min(
+                      startIndex +
+                        itemsPerPage,
+                      filteredBusinessUnits.length
+                    )}
+                  </strong>
 
-                        )
+                  {" of "}
 
-                      )}
-
-                    </tbody>
-
-                  </table>
+                  <strong>
+                    {filteredBusinessUnits.length}
+                  </strong>
 
                 </div>
 
-              )}
+
+                <div className="business-pagination-buttons">
+
+
+                  <button
+                    type="button"
+                    disabled={
+                      currentPage === 1
+                    }
+                    onClick={() =>
+                      setCurrentPage(
+                        (previous) =>
+                          previous - 1
+                      )
+                    }
+                  >
+
+                    <FaChevronLeft />
+
+                  </button>
+
+
+                  {Array.from(
+                    {
+                      length: totalPages
+                    },
+                    (_, index) =>
+                      index + 1
+                  ).map((page) => (
+
+                    <button
+                      type="button"
+                      key={page}
+                      className={
+                        currentPage === page
+                          ? "active"
+                          : ""
+                      }
+                      onClick={() =>
+                        setCurrentPage(
+                          page
+                        )
+                      }
+                    >
+
+                      {page}
+
+                    </button>
+
+                  ))}
+
+
+                  <button
+                    type="button"
+                    disabled={
+                      currentPage ===
+                      totalPages
+                    }
+                    onClick={() =>
+                      setCurrentPage(
+                        (previous) =>
+                          previous + 1
+                      )
+                    }
+                  >
+
+                    <FaChevronRight />
+
+                  </button>
+
+                </div>
+
+              </div>
+
+            </>
+          )}
 
         </div>
 
@@ -887,14 +1195,14 @@ function BusinessUnit() {
 
 
       {/* =================================================
-          ADD / EDIT MODAL
+          MODAL
       ================================================= */}
 
       {showModal && (
 
         <div
           className="business-modal-overlay"
-          onClick={(e) => {
+          onMouseDown={(e) => {
 
             if (
               e.target ===
@@ -911,28 +1219,23 @@ function BusinessUnit() {
           <div className="business-modal">
 
 
-            {/* MODAL HEADER */}
-
             <div className="modal-header">
 
               <div>
 
                 <h3>
 
-                  {editingId
+                  {editId !== null
                     ? "Edit Business Unit"
                     : "Add Business Unit"}
 
                 </h3>
 
-
                 <p>
 
-                  {editingId
-
+                  {editId !== null
                     ? "Update business unit details"
-
-                    : "Enter business unit details"}
+                    : "Create a new business unit"}
 
                 </p>
 
@@ -943,6 +1246,7 @@ function BusinessUnit() {
                 type="button"
                 className="modal-close"
                 onClick={closeModal}
+                disabled={saving}
               >
 
                 <FaTimes />
@@ -952,15 +1256,11 @@ function BusinessUnit() {
             </div>
 
 
-            {/* FORM */}
-
             <form
-              onSubmit={handleSubmit}
               className="business-form"
+              onSubmit={handleSubmit}
             >
 
-
-              {/* BU ID */}
 
               <div className="form-group">
 
@@ -968,23 +1268,24 @@ function BusinessUnit() {
                   BU ID
                 </label>
 
-
                 <input
                   type="text"
                   name="buId"
+                  placeholder="Example: BU001"
                   value={
                     formData.buId
                   }
                   onChange={
                     handleChange
                   }
-                  placeholder="Enter BU ID"
+                  disabled={
+                    saving
+                  }
+                  maxLength={50}
                 />
 
               </div>
 
-
-              {/* BUSINESS NAME */}
 
               <div className="form-group">
 
@@ -998,31 +1299,31 @@ function BusinessUnit() {
 
                 </label>
 
-
                 <input
                   type="text"
                   name="businessName"
+                  placeholder="Enter business name"
                   value={
                     formData.businessName
                   }
                   onChange={
                     handleChange
                   }
-                  placeholder="Enter business name"
+                  disabled={
+                    saving
+                  }
+                  maxLength={100}
                   required
                 />
 
               </div>
 
 
-              {/* STATUS */}
-
               <div className="form-group">
 
                 <label>
                   Status
                 </label>
-
 
                 <select
                   name="status"
@@ -1031,6 +1332,9 @@ function BusinessUnit() {
                   }
                   onChange={
                     handleChange
+                  }
+                  disabled={
+                    saving
                   }
                 >
 
@@ -1047,10 +1351,7 @@ function BusinessUnit() {
               </div>
 
 
-              {/* MODAL BUTTONS */}
-
               <div className="modal-actions">
-
 
                 <button
                   type="button"
@@ -1058,7 +1359,9 @@ function BusinessUnit() {
                   onClick={
                     closeModal
                   }
-                  disabled={loading}
+                  disabled={
+                    saving
+                  }
                 >
 
                   Cancel
@@ -1069,18 +1372,16 @@ function BusinessUnit() {
                 <button
                   type="submit"
                   className="save-btn"
-                  disabled={loading}
+                  disabled={
+                    saving
+                  }
                 >
 
-                  {loading
-
+                  {saving
                     ? "Saving..."
-
-                    : editingId
-
-                      ? "Update"
-
-                      : "Save"}
+                    : editId !== null
+                    ? "Update"
+                    : "Save"}
 
                 </button>
 
@@ -1094,8 +1395,27 @@ function BusinessUnit() {
 
       )}
 
+
+      {/* TOAST */}
+
+      {toast.show && (
+
+        <div
+          className={
+            `business-toast ${toast.type}`
+          }
+        >
+
+          {toast.message}
+
+        </div>
+
+      )}
+
     </div>
+
   );
+
 }
 
 

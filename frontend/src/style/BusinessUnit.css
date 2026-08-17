@@ -1,7 +1,3 @@
-/* =========================================
-   MAIN PAGE
-========================================= */
-
 .business-page {
   min-height: 100vh;
   display: flex;
@@ -40,23 +36,23 @@
   font-size: 14px;
 }
 
-
-/* =========================================
-   ADD BUTTON
-========================================= */
-
 .add-business-btn {
   border: none;
   background: #134e4a;
   color: #5eead4;
   padding: 12px 18px;
+
   border-radius: 8px;
+
   display: flex;
   align-items: center;
   gap: 8px;
+
   font-size: 14px;
   font-weight: 600;
+
   cursor: pointer;
+
   transition: 0.2s;
   box-shadow: 0 2px 6px rgba(19, 78, 74, 0.2);
 }
@@ -70,87 +66,122 @@
 
 
 /* =========================================
-   TOAST
+   TOOLBAR
 ========================================= */
 
-.business-toast {
-  position: fixed;
-  top: 25px;
-  right: 25px;
-  z-index: 9999;
-
-  min-width: 280px;
-  max-width: 420px;
-
-  padding: 14px 18px;
-
-  border-radius: 8px;
-
+.business-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
 
   gap: 15px;
 
+  margin-bottom: 20px;
+}
+
+.business-search {
+  width: 350px;
+  max-width: 100%;
+
+  height: 44px;
+
+  background: white;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 8px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 13px;
+
+  gap: 10px;
+
+  color: #718096;
+}
+
+.business-search input {
+  border: none;
+  outline: none;
+
+  width: 100%;
+
   font-size: 14px;
-  font-weight: 500;
 
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  color: #2d3748;
 }
 
-.business-toast.success {
-  background: #ecfdf3;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-}
-
-.business-toast.error {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-}
-
-.business-toast button {
+.clear-business-search {
   border: none;
   background: transparent;
+
+  color: #94a3b8;
+
   cursor: pointer;
-  color: inherit;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.clear-business-search:hover {
+  color: #475569;
+}
 
-/* =========================================
-   TABLE CARD
-========================================= */
+.business-status-filter {
+  height: 44px;
 
-.business-table-card {
+  min-width: 130px;
+
+  padding: 0 12px;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 8px;
+
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 3px 15px rgba(15, 23, 42, 0.06);
-  overflow: hidden;
+
+  color: #334155;
+
+  font-size: 14px;
+
+  outline: none;
+
+  cursor: pointer;
 }
 
-.table-header {
-  padding: 20px 22px;
-  border-bottom: 1px solid #edf0f5;
+.business-status-filter:focus {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(37, 99, 235, 0.1);
 }
 
-.table-header h3 {
-  margin: 0;
-  font-size: 18px;
-  color: #172033;
+.business-count {
+  font-size: 14px;
+  color: #718096;
 }
 
-.table-header span {
-  display: block;
-  margin-top: 5px;
-  font-size: 13px;
-  color: #8a93a5;
+.business-count strong {
+  color: #1e293b;
 }
 
 
 /* =========================================
    TABLE
 ========================================= */
+
+.business-table-card {
+  background: white;
+
+  border-radius: 12px;
+
+  border: 1px solid #e5e7eb;
+
+  overflow: hidden;
+}
 
 .business-table-wrapper {
   width: 100%;
@@ -159,8 +190,9 @@
 
 .business-table {
   width: 100%;
+  min-width: 1000px;
+
   border-collapse: collapse;
-  min-width: 850px;
 }
 
 .business-table th {
@@ -171,21 +203,34 @@
   font-weight: 700;
   letter-spacing: 0.5px;
   text-align: left;
-  padding: 15px 18px;
-  border-bottom: 1px solid #e5e7eb;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
   text-transform: uppercase;
+
+  padding: 15px 18px;
+
+  border-bottom: 1px solid #e5e7eb;
+
   white-space: nowrap;
 }
 
 .business-table td {
-  padding: 16px 18px;
-  border-bottom: 1px solid #eef1f5;
+  padding: 15px 18px;
+
+  border-bottom: 1px solid #edf2f7;
+
   font-size: 14px;
-  color: #374151;
+
+  color: #334155;
+
+  white-space: nowrap;
 }
 
 .business-table tbody tr:hover {
-  background: #fafcff;
+  background: #f8fafc;
 }
 
 .business-table td strong {
@@ -199,11 +244,17 @@
 
 .status-badge {
   display: inline-flex;
+
   align-items: center;
+
   padding: 5px 11px;
+
   border-radius: 20px;
+
   font-size: 12px;
+
   font-weight: 600;
+
   text-transform: capitalize;
 }
 
@@ -219,7 +270,7 @@
 
 
 /* =========================================
-   ACTION BUTTONS
+   ACTIONS
 ========================================= */
 
 .action-buttons {
@@ -230,7 +281,9 @@
 .action-buttons button {
   width: 34px;
   height: 34px;
+
   border: none;
+
   border-radius: 7px;
 
   display: flex;
@@ -238,6 +291,7 @@
   justify-content: center;
 
   cursor: pointer;
+
   transition: 0.2s;
 }
 
@@ -255,8 +309,13 @@
   color: #dc2626;
 }
 
-.delete-btn:hover {
+.delete-btn:hover:not(:disabled) {
   background: #fee2e2;
+}
+
+.action-buttons button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 
@@ -266,34 +325,118 @@
 
 .business-loading,
 .business-empty {
-  min-height: 200px;
+  min-height: 220px;
 
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
 
   color: #7b8497;
   font-size: 14px;
 }
 
+.business-empty h3 {
+  margin: 0 0 8px;
+  color: #334155;
+}
+
+.business-empty p {
+  margin: 0;
+  color: #94a3b8;
+}
+
 
 /* =========================================
-   MODAL OVERLAY
+   PAGINATION
 ========================================= */
 
-.business-modal-overlay {
-  position: fixed;
-  inset: 0;
+.business-pagination {
+  display: flex;
 
-  background: rgba(15, 23, 42, 0.55);
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 15px 20px;
+
+  border-top: 1px solid #e5e7eb;
+
+  background: white;
+}
+
+.business-pagination-info {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.business-pagination-info strong {
+  color: #334155;
+}
+
+.business-pagination-buttons {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-end;
+
+  gap: 6px;
+}
+
+.business-pagination-buttons button {
+  min-width: 34px;
+  height: 34px;
+
+  padding: 0 10px;
+
+  border: 1px solid #dbe2ea;
+
+  border-radius: 6px;
+
+  background: white;
+
+  color: #475569;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
-  padding: 20px;
+  font-size: 13px;
 
-  z-index: 5000;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.business-pagination-buttons button:hover:not(:disabled) {
+  background: #eff6ff;
+
+  border-color: #2563eb;
+
+  color: #2563eb;
+}
+
+.business-pagination-buttons button.active {
+  background: #2563eb;
+
+  border-color: #2563eb;
+
+  color: white;
+}
+
+.business-pagination-buttons button:disabled {
+  background: #f8fafc;
+
+  color: #cbd5e1;
+
+  border-color: #e2e8f0;
+
+  cursor: not-allowed;
 }
 
 
@@ -301,15 +444,36 @@
    MODAL
 ========================================= */
 
+.business-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(15, 23, 42, 0.55);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  z-index: 5000;
+}
+
 .business-modal {
   width: 100%;
+
   max-width: 520px;
 
   background: white;
 
   border-radius: 14px;
 
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 20px 60px
+    rgba(0, 0, 0, 0.2);
 
   overflow: hidden;
 }
@@ -318,7 +482,9 @@
   padding: 20px 22px;
 
   display: flex;
+
   justify-content: space-between;
+
   align-items: flex-start;
 
   border-bottom: 1px solid #edf0f5;
@@ -328,6 +494,7 @@
   margin: 0;
 
   font-size: 19px;
+
   color: #172033;
 }
 
@@ -335,6 +502,7 @@
   margin: 5px 0 0;
 
   font-size: 13px;
+
   color: #8a93a5;
 }
 
@@ -343,15 +511,19 @@
   height: 34px;
 
   border: none;
+
   border-radius: 7px;
 
   background: #f1f5f9;
+
   color: #64748b;
 
   cursor: pointer;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 }
 
@@ -380,22 +552,26 @@
   color: #374151;
 
   font-size: 13px;
+
   font-weight: 600;
 }
 
 .form-group label span {
   color: #dc2626;
+
   margin-left: 3px;
 }
 
 .form-group input,
 .form-group select {
   width: 100%;
+
   height: 44px;
 
   box-sizing: border-box;
 
   border: 1px solid #d8dee9;
+
   border-radius: 7px;
 
   padding: 0 13px;
@@ -414,11 +590,8 @@
   border-color: #2563eb;
 
   box-shadow:
-    0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.form-group input::placeholder {
-  color: #a0a8b7;
+    0 0 0 3px
+    rgba(37, 99, 235, 0.1);
 }
 
 
@@ -428,7 +601,9 @@
 
 .modal-actions {
   display: flex;
+
   justify-content: flex-end;
+
   gap: 10px;
 
   margin-top: 25px;
@@ -445,6 +620,7 @@
   border: none;
 
   font-size: 14px;
+
   font-weight: 600;
 
   cursor: pointer;
@@ -475,6 +651,53 @@
 
 
 /* =========================================
+   TOAST
+========================================= */
+
+.business-toast {
+  position: fixed;
+
+  top: 25px;
+
+  right: 25px;
+
+  z-index: 9999;
+
+  min-width: 280px;
+
+  max-width: 420px;
+
+  padding: 14px 18px;
+
+  border-radius: 8px;
+
+  font-size: 14px;
+
+  font-weight: 500;
+
+  box-shadow:
+    0 8px 25px
+    rgba(0, 0, 0, 0.12);
+}
+
+.business-toast.success {
+  background: #ecfdf3;
+
+  color: #15803d;
+
+  border: 1px solid #bbf7d0;
+}
+
+.business-toast.error {
+  background: #fef2f2;
+
+  color: #dc2626;
+
+  border: 1px solid #fecaca;
+}
+
+
+/* =========================================
    TABLET
 ========================================= */
 
@@ -499,11 +722,13 @@
 
   .business-content {
     padding: 15px;
+
     padding-bottom: 80px;
   }
 
   .business-header {
     align-items: flex-start;
+
     flex-direction: column;
   }
 
@@ -517,11 +742,30 @@
 
   .add-business-btn {
     width: 100%;
+
     justify-content: center;
   }
 
+  .business-toolbar {
+    flex-direction: column;
 
-  /* Mobile table → cards */
+    align-items: stretch;
+  }
+
+  .business-search {
+    width: 100%;
+  }
+
+  .business-status-filter {
+    width: 100%;
+  }
+
+  .business-count {
+    text-align: right;
+  }
+
+
+  /* MOBILE TABLE → CARDS */
 
   .business-table-wrapper {
     overflow-x: visible;
@@ -540,7 +784,9 @@
   .business-table tr,
   .business-table td {
     display: block;
+
     width: 100%;
+
     box-sizing: border-box;
   }
 
@@ -548,6 +794,7 @@
     margin-bottom: 12px;
 
     border: 1px solid #e5e7eb;
+
     border-radius: 9px;
 
     padding: 8px 0;
@@ -559,6 +806,7 @@
     display: flex;
 
     align-items: center;
+
     justify-content: space-between;
 
     gap: 15px;
@@ -568,12 +816,15 @@
     padding: 10px 15px;
 
     font-size: 13px;
+
+    white-space: normal;
   }
 
   .business-table td::before {
     content: attr(data-label);
 
     font-weight: 600;
+
     color: #64748b;
 
     flex-shrink: 0;
@@ -583,6 +834,7 @@
     border-top: 1px solid #eef1f5;
 
     margin-top: 5px;
+
     padding-top: 12px;
   }
 
@@ -591,19 +843,49 @@
   }
 
 
-  /* Modal */
+  /* PAGINATION */
+
+  .business-pagination {
+    flex-direction: column;
+
+    align-items: flex-end;
+
+    gap: 12px;
+
+    padding: 15px;
+  }
+
+  .business-pagination-info {
+    width: 100%;
+
+    text-align: left;
+  }
+
+  .business-pagination-buttons {
+    width: 100%;
+
+    justify-content: flex-end;
+
+    flex-wrap: wrap;
+  }
+
+
+  /* MODAL */
 
   .business-modal-overlay {
     align-items: flex-end;
+
     padding: 0;
   }
 
   .business-modal {
     max-width: none;
 
-    border-radius: 16px 16px 0 0;
+    border-radius:
+      16px 16px 0 0;
 
     max-height: 90vh;
+
     overflow-y: auto;
   }
 
@@ -625,188 +907,20 @@
   }
 
 
-  /* Toast */
+  /* TOAST */
 
   .business-toast {
     top: 15px;
+
     left: 15px;
+
     right: 15px;
 
     min-width: 0;
+
     max-width: none;
-  }
 
-}
-
-/* =========================================
-   TABLE HEADER CONTENT
-========================================= */
-
-.table-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  padding: 20px 22px;
-  border-bottom: 1px solid #edf0f5;
-}
-
-.table-title {
-  flex: 1;
-}
-
-.table-title h3 {
-  margin: 0;
-  font-size: 18px;
-  color: #172033;
-}
-
-.table-title span {
-  display: block;
-  margin-top: 5px;
-  font-size: 13px;
-  color: #8a93a5;
-}
-
-
-/* =========================================
-   SEARCH BOX
-========================================= */
-
-.business-search {
-  width: 280px;
-  height: 40px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 9px;
-
-  padding: 0 12px;
-
-  border: 1px solid #d8dee9;
-  border-radius: 7px;
-
-  background: white;
-
-  box-sizing: border-box;
-}
-
-.business-search > svg {
-  color: #8a93a5;
-  font-size: 13px;
-  flex-shrink: 0;
-}
-
-.business-search input {
-  width: 100%;
-  height: 100%;
-
-  border: none;
-  outline: none;
-
-  background: transparent;
-
-  font-size: 13px;
-  color: #374151;
-}
-
-.business-search input::placeholder {
-  color: #a0a8b7;
-}
-
-.business-search:focus-within {
-  border-color: #2563eb;
-
-  box-shadow:
-    0 0 0 3px rgba(37, 99, 235, 0.08);
-}
-
-
-/* =========================================
-   CLEAR SEARCH
-========================================= */
-
-.clear-search {
-  border: none;
-  background: transparent;
-
-  color: #94a3b8;
-
-  cursor: pointer;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 3px;
-}
-
-.clear-search:hover {
-  color: #dc2626;
-}
-
-
-/* =========================================
-   REFRESH BUTTON
-========================================= */
-
-.refresh-btn {
-  width: 40px;
-  height: 40px;
-
-  border: 1px solid #d8dee9;
-  border-radius: 7px;
-
-  background: white;
-
-  color: #64748b;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-
-  transition: 0.2s;
-}
-
-.refresh-btn:hover {
-  background: #eff6ff;
-  color: #2563eb;
-  border-color: #bfdbfe;
-}
-
-.refresh-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-
-/* =========================================
-   LOADING SPINNER
-========================================= */
-
-.loading-spinner {
-  width: 20px;
-  height: 20px;
-
-  border: 2px solid #dbe4f0;
-  border-top-color: #2563eb;
-
-  border-radius: 50%;
-
-  animation: businessSpin 0.8s linear infinite;
-}
-
-@keyframes businessSpin {
-
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
+    text-align: center;
   }
 
 }
