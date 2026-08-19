@@ -652,16 +652,7 @@ function BusinessUnit() {
                 <option value="oldest">Oldest</option>
               </select>
 
-              <button
-                type="button"
-                className="refresh-btn"
-                onClick={fetchBusinessUnits}
-                disabled={loading}
-                title="Refresh"
-                style={{ height: "40px", border: "1px solid #cbd5e1", borderRadius: "8px", background: "#ffffff", padding: "0 14px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b" }}
-              >
-                <FaSyncAlt />
-              </button>
+          
 
             </div>
 

@@ -7,6 +7,7 @@ import AllocationList from "./pages/AllocationList";
 import UserManagement from "./pages/UserManagement";
 import BusinessUnit from "./pages/BusinessUnit";
 import Department from "./pages/Department";
+import DepartmentVertical from "./pages/DepartmentVertical";
 
 function App() {
   return (
@@ -23,7 +24,9 @@ function App() {
         <Route path="/user-management" element={<UserManagement initialTab="users" />} />
         <Route path="/teams" element={<UserManagement initialTab="teams" />} />
        <Route  path="/business-units" element={<BusinessUnit />} />
-        <Route path="/departments" element={<Department />} /> 
+        <Route path="/departments" element={<Department />} />
+        <Route path="/departments/vertical" element={<DepartmentVertical />}/>
+
      </Routes>
     </BrowserRouter>
   );

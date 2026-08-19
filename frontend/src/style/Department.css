@@ -809,3 +809,485 @@
   }
 
 }
+
+.department-name-link {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: #0f766e;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+
+.department-name-link:hover {
+  color: #0d9488;
+  text-decoration: underline;
+}
+
+/* =====================================================
+   DEPARTMENT NAME CLICKABLE
+===================================================== */
+
+.department-name-link {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+
+  color: #0f766e;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition: 0.2s;
+}
+
+.department-name-link:hover {
+  color: #0d9488;
+  text-decoration: underline;
+}
+
+
+/* =====================================================
+   VERTICAL COUNT
+===================================================== */
+
+.vertical-count-badge {
+  display: inline-flex;
+
+  min-width: 32px;
+  height: 28px;
+
+  padding: 0 9px;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background: #ecfeff;
+
+  color: #0f766e;
+
+  border: 1px solid #99f6e4;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+
+/* =====================================================
+   BACK BUTTON
+===================================================== */
+
+.back-department-btn {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  border: none;
+
+  background: transparent;
+
+  padding: 0;
+
+  margin-bottom: 10px;
+
+  color: #0f766e;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.back-department-btn:hover {
+  color: #0d9488;
+
+  transform: translateX(-2px);
+}
+
+
+/* =====================================================
+   VERTICAL DELETE BUTTON
+===================================================== */
+
+.vertical-delete-btn {
+  width: 34px;
+  height: 34px;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 7px;
+
+  background: #fef2f2;
+
+  color: #dc2626;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.vertical-delete-btn:hover {
+  background: #dc2626;
+
+  color: white;
+
+  border-color: #dc2626;
+
+  transform: translateY(-1px);
+}
+
+
+/* =====================================================
+   VERTICAL TABLE
+===================================================== */
+
+.department-table td strong {
+  font-weight: 600;
+}
+
+
+/* =====================================================
+   MODAL SELECT
+===================================================== */
+
+.department-form select {
+  cursor: pointer;
+}
+
+
+/* =====================================================
+   DISABLED BUTTON
+===================================================== */
+
+.save-btn:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 600px) {
+
+  .department-header {
+    gap: 15px;
+  }
+
+  .back-department-btn {
+    font-size: 13px;
+  }
+
+}
+
+.vertical-delete-btn {
+  width: 34px;
+  height: 34px;
+
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+
+  background: #fef2f2;
+  color: #dc2626;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.vertical-delete-btn:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+}
+
+.vertical-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =====================================================
+   THREE DOT ACTION MENU
+===================================================== */
+
+.action-cell {
+  position: relative;
+  width: 80px;
+}
+
+.three-dot-btn {
+  width: 34px;
+  height: 34px;
+
+  border: none;
+  background: transparent;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 6px;
+
+  cursor: pointer;
+
+  color: #475569;
+
+  font-size: 16px;
+
+  transition: 0.2s;
+}
+
+.three-dot-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+
+/* =====================================================
+   ACTION DROPDOWN
+===================================================== */
+
+.action-menu {
+  position: absolute;
+
+  right: 15px;
+  top: 40px;
+
+  width: 130px;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 8px;
+
+  box-shadow:
+    0 5px 15px rgba(0, 0, 0, 0.12);
+
+  z-index: 1000;
+
+  overflow: hidden;
+}
+
+.action-menu button {
+  width: 100%;
+
+  border: none;
+
+  background: #ffffff;
+
+  padding: 10px 12px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  color: #334155;
+}
+
+.action-menu button:hover {
+  background: #f8fafc;
+}
+
+.action-menu .delete-menu-item {
+  color: #dc2626;
+}
+
+.action-menu .delete-menu-item:hover {
+  background: #fef2f2;
+}
+
+
+/* =====================================================
+   DELETE BUTTON
+===================================================== */
+
+.vertical-delete-btn {
+  width: 34px;
+  height: 34px;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 7px;
+
+  background: #fef2f2;
+
+  color: #dc2626;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+.vertical-delete-btn:hover {
+  background: #dc2626;
+  color: white;
+}
+
+.sort-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-wrapper label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.sort-wrapper select {
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  background: #fff;
+  color: #334155;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.sort-wrapper select:focus {
+  border-color: #64748b;
+}
+
+
+/* ===============================
+   THREE DOT ACTION
+================================ */
+
+.table-actions-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-dots-action {
+  width: 36px;
+  height: 36px;
+
+  border: none;
+  background: transparent;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #64748b;
+}
+
+.btn-dots-action:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+
+/* ===============================
+   ACTION DROPDOWN
+================================ */
+
+.action-dropdown-menu {
+  position: absolute;
+
+  right: 0;
+  top: 42px;
+
+  min-width: 140px;
+
+  background: #fff;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 8px;
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.12);
+
+  z-index: 1000;
+
+  overflow: hidden;
+}
+
+.action-dropdown-menu.table-menu {
+  right: 0;
+}
+
+.action-menu-item {
+  width: 100%;
+
+  border: none;
+
+  background: #fff;
+
+  padding: 10px 14px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  cursor: pointer;
+
+  font-size: 14px;
+
+  color: #334155;
+
+  text-align: left;
+}
+
+.action-menu-item:hover {
+  background: #f8fafc;
+}
+
+.action-menu-item.delete {
+  color: #dc2626;
+}
+
+.action-menu-item.delete:hover {
+  background: #fef2f2;
+}

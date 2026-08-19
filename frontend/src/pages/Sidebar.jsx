@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState} from "react";
+
+import { useNavigate,useLocation} from "react-router-dom";
 
 import {
   FaHome,
@@ -16,86 +17,165 @@ import {
   FaChevronDown,
   FaChevronRight,
   FaBars,
-  FaTimes,
-} from "react-icons/fa";
+  FaTimes} from "react-icons/fa";
 
 import LogoutModal from "./LogoutModal";
+
 import "../style/Sidebar.css";
 
+
 function Sidebar() {
+
   const navigate = useNavigate();
+
   const location = useLocation();
 
-  /* =====================================================
-     USER MANAGEMENT ROUTES
-  ===================================================== */
+
+  // =====================================================
+  // USER MANAGEMENT ROUTES
+  // =====================================================
 
   const userManagementRoutes = [
+
     "/users",
+
     "/teams",
+
     "/business-units",
+
     "/departments",
+
     "/user-management",
+
+    "/verticals"
+
   ];
 
+
+  // =====================================================
+  // CHECK USER MANAGEMENT ACTIVE
+  // =====================================================
+
   const isUserMgmtActive =
-    userManagementRoutes.includes(
-      location.pathname
+    userManagementRoutes.some(
+      (route) =>
+
+        location.pathname === route ||
+
+        location.pathname.startsWith(
+          `${route}/`
+        )
     );
 
-  /* =====================================================
-     STATE
-  ===================================================== */
+
+  // =====================================================
+  // STATES
+  // =====================================================
 
   const [userMgmtOpen, setUserMgmtOpen] =
     useState(isUserMgmtActive);
 
+
   const [mobileOpen, setMobileOpen] =
     useState(false);
+
 
   const [showLogoutModal, setShowLogoutModal] =
     useState(false);
 
-  /* =====================================================
-     NAVIGATION HELPER
-  ===================================================== */
+
+  // =====================================================
+  // KEEP USER MANAGEMENT OPEN
+  // =====================================================
+
+  useEffect(() => {
+
+    if (isUserMgmtActive) {
+
+      setUserMgmtOpen(true);
+
+    }
+
+  }, [isUserMgmtActive]);
+
+
+  // =====================================================
+  // NAVIGATION
+  // =====================================================
 
   const handleNavigate = (path) => {
+
     navigate(path);
+
     setMobileOpen(false);
+
   };
 
-  /* =====================================================
-     LOGOUT
-  ===================================================== */
+
+  // =====================================================
+  // LOGOUT
+  // =====================================================
 
   const handleSignOut = () => {
+
     setShowLogoutModal(true);
+
   };
 
+
   const handleLogoutConfirm = () => {
+
     localStorage.removeItem("user");
+
     localStorage.removeItem("token");
 
     setShowLogoutModal(false);
 
     navigate("/");
+
   };
 
-  /* =====================================================
-     ACTIVE ROUTE HELPER
-  ===================================================== */
+
+  // =====================================================
+  // EXACT ACTIVE ROUTE
+  // =====================================================
 
   const isActive = (path) => {
+
     return location.pathname === path;
+
   };
 
-  /* =====================================================
-     COMPONENT
-  ===================================================== */
+
+  // =====================================================
+  // DEPARTMENT ACTIVE
+  // =====================================================
+
+  const isDepartmentActive =
+
+    location.pathname === "/departments"
+
+    ||
+
+    location.pathname.startsWith(
+      "/departments/"
+    )
+
+    ||
+
+    location.pathname.startsWith(
+      "/verticals/"
+    );
+
+
+  // =====================================================
+  // COMPONENT
+  // =====================================================
 
   return (
+
     <>
+
       {/* =================================================
           MOBILE MENU BUTTON
       ================================================= */}
@@ -104,29 +184,41 @@ function Sidebar() {
         type="button"
         className="sidebar-mobile-toggle"
         onClick={() =>
-          setMobileOpen((previous) => !previous)
+          setMobileOpen(
+            (previous) => !previous
+          )
         }
         aria-label="Toggle Sidebar Navigation"
       >
+
         {mobileOpen ? (
+
           <FaTimes size={18} />
+
         ) : (
+
           <FaBars size={18} />
+
         )}
+
       </button>
+
 
       {/* =================================================
           MOBILE OVERLAY
       ================================================= */}
 
       {mobileOpen && (
+
         <div
           className="sidebar-mobile-overlay"
           onClick={() =>
             setMobileOpen(false)
           }
         />
+
       )}
+
 
       {/* =================================================
           SIDEBAR
@@ -134,14 +226,19 @@ function Sidebar() {
 
       <aside
         className={`dm-sidebar ${
-          mobileOpen ? "mobile-open" : ""
+          mobileOpen
+            ? "mobile-open"
+            : ""
         }`}
       >
+
+
         {/* =================================================
             TOP SECTION
         ================================================= */}
 
         <div className="sidebar-top-section">
+
 
           {/* =================================================
               BRAND
@@ -154,7 +251,9 @@ function Sidebar() {
             }
             title="proHire"
           >
+
             <div className="brand-logo-icon">
+
               <svg
                 width="26"
                 height="26"
@@ -162,6 +261,7 @@ function Sidebar() {
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
+
                 <rect
                   x="3"
                   y="6"
@@ -185,10 +285,14 @@ function Sidebar() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
+
               </svg>
+
             </div>
 
+
             <div className="brand-name-styled">
+
               <span className="brand-pro">
                 pro
               </span>
@@ -196,14 +300,18 @@ function Sidebar() {
               <span className="brand-hire">
                 Hire
               </span>
+
             </div>
+
           </div>
+
 
           {/* =================================================
               NAVIGATION
           ================================================= */}
 
           <nav className="sidebar-nav-menu">
+
 
             {/* =================================================
                 DASHBOARD
@@ -219,18 +327,24 @@ function Sidebar() {
                 handleNavigate("/dashboard")
               }
             >
+
               <FaHome className="nav-icon" />
 
               <span>
                 Dashboard
               </span>
+
             </div>
+
 
             {/* =================================================
                 USER MANAGEMENT
             ================================================= */}
 
             <div className="sidebar-accordion-group">
+
+
+              {/* USER MANAGEMENT HEADER */}
 
               <div
                 className={`sidebar-menu-item has-submenu ${
@@ -240,10 +354,12 @@ function Sidebar() {
                 }`}
                 onClick={() =>
                   setUserMgmtOpen(
-                    (previous) => !previous
+                    (previous) =>
+                      !previous
                   )
                 }
               >
+
                 <div className="item-label-content">
 
                   <FaUsers className="nav-icon" />
@@ -254,23 +370,40 @@ function Sidebar() {
 
                 </div>
 
+
                 <span className="accordion-chevron">
+
                   {userMgmtOpen ? (
-                    <FaChevronDown size={11} />
+
+                    <FaChevronDown
+                      size={11}
+                    />
+
                   ) : (
-                    <FaChevronRight size={11} />
+
+                    <FaChevronRight
+                      size={11}
+                    />
+
                   )}
+
                 </span>
+
               </div>
+
 
               {/* =================================================
                   USER MANAGEMENT SUBMENU
               ================================================= */}
 
               {userMgmtOpen && (
+
                 <div className="sidebar-submenu-list">
 
-                  {/* USERS */}
+
+                  {/* =================================================
+                      USERS
+                  ================================================= */}
 
                   <div
                     className={`sidebar-submenu-item ${
@@ -287,14 +420,19 @@ function Sidebar() {
                       )
                     }
                   >
+
                     <FaUser className="sub-nav-icon" />
 
                     <span>
                       Users
                     </span>
+
                   </div>
 
-                  {/* TEAMS */}
+
+                  {/* =================================================
+                      TEAMS
+                  ================================================= */}
 
                   <div
                     className={`sidebar-submenu-item ${
@@ -308,14 +446,19 @@ function Sidebar() {
                       )
                     }
                   >
+
                     <FaUserFriends className="sub-nav-icon" />
 
                     <span>
                       Teams
                     </span>
+
                   </div>
 
-                  {/* BUSINESS UNIT */}
+
+                  {/* =================================================
+                      BUSINESS UNIT
+                  ================================================= */}
 
                   <div
                     className={`sidebar-submenu-item ${
@@ -331,20 +474,23 @@ function Sidebar() {
                       )
                     }
                   >
+
                     <FaBuilding className="sub-nav-icon" />
 
                     <span>
                       Business Unit
                     </span>
+
                   </div>
 
-                  {/* DEPARTMENT */}
+
+                  {/* =================================================
+                      DEPARTMENT
+                  ================================================= */}
 
                   <div
                     className={`sidebar-submenu-item ${
-                      isActive(
-                        "/departments"
-                      )
+                      isDepartmentActive
                         ? "sub-active"
                         : ""
                     }`}
@@ -354,17 +500,22 @@ function Sidebar() {
                       )
                     }
                   >
+
                     <FaSitemap className="sub-nav-icon" />
 
                     <span>
                       Department
                     </span>
+
                   </div>
 
+
                 </div>
+
               )}
 
             </div>
+
 
             {/* =================================================
                 ALLOCATION LIST
@@ -384,12 +535,15 @@ function Sidebar() {
                 )
               }
             >
+
               <FaListAlt className="nav-icon" />
 
               <span>
                 Allocation List
               </span>
+
             </div>
+
 
             {/* =================================================
                 CANDIDATE DATABASE
@@ -409,12 +563,15 @@ function Sidebar() {
                 )
               }
             >
+
               <FaDatabase className="nav-icon" />
 
               <span>
                 Candidate Database
               </span>
+
             </div>
+
 
             {/* =================================================
                 ALLOCATION REPORT
@@ -434,12 +591,15 @@ function Sidebar() {
                 )
               }
             >
+
               <FaChartPie className="nav-icon" />
 
               <span>
                 Allocation Report
               </span>
+
             </div>
+
 
             {/* =================================================
                 RECRUITER REPORT
@@ -459,15 +619,20 @@ function Sidebar() {
                 )
               }
             >
+
               <FaChartLine className="nav-icon" />
 
               <span>
                 Recruiter Report
               </span>
+
             </div>
 
+
           </nav>
+
         </div>
+
 
         {/* =================================================
             SIGN OUT
@@ -481,32 +646,44 @@ function Sidebar() {
               handleSignOut
             }
           >
+
             <FaSignOutAlt className="nav-icon" />
 
             <span>
               Sign Out
             </span>
+
           </div>
 
         </div>
 
+
       </aside>
+
 
       {/* =================================================
           LOGOUT MODAL
       ================================================= */}
 
       <LogoutModal
-        isOpen={showLogoutModal}
+        isOpen={
+          showLogoutModal
+        }
         onClose={() =>
-          setShowLogoutModal(false)
+          setShowLogoutModal(
+            false
+          )
         }
         onConfirm={
           handleLogoutConfirm
         }
       />
+
     </>
+
   );
+
 }
+
 
 export default Sidebar;
