@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import {
   FaUserPlus,
   FaTrash,
@@ -22,26 +22,13 @@ import "../style/UserManagement.css";
 
 const ROLE_OPTIONS = {
   super_admin: [
-    {
-      label: "Admin",
-      roleType: "admin",
-    },
+    { label: "Hiring Manager", roleType: "hiring_manager" },
   ],
-
-  admin: [
-    {
-      label: "Hiring Manager",
-      roleType: "delivery_lead",
-    },
+  hiring_manager: [
+    { label: "Admin", roleType: "admin" },
+    { label: "Recruiter", roleType: "recruiter" },
   ],
-
-  delivery_lead: [
-    {
-      label: "Recruiter",
-      roleType: "recruiter",
-    },
-  ],
-
+  admin: [],
   recruiter: [],
 };
 
@@ -52,7 +39,7 @@ const ALL_ROLE_OPTIONS = [
   },
   {
     label: "Hiring Manager",
-    roleType: "delivery_lead",
+    roleType: "hiring_manager",
   },
   {
     label: "Recruiter",
@@ -98,10 +85,6 @@ function UserManagement({ initialTab = "users" }) {
   const [activeTab, setActiveTab] = useState(
     routeTab || initialTab
   );
-
-  useEffect(() => {
-    setActiveTab(routeTab);
-  }, [routeTab]);
 
   /* =========================
      USER STATE
@@ -196,6 +179,59 @@ function UserManagement({ initialTab = "users" }) {
     { label: "Business", value: "Business" }
   ]);
 
+
+  /* =========================
+     CURRENT USER
+  ========================= */
+
+  const [currentUserData, setCurrentUserData] = useState({});
+
+  const currentUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  }, []);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await api.get("/users/me");
+
+      if (response.data) {
+        setCurrentUserData(response.data);
+        localStorage.setItem("user", JSON.stringify(response.data));
+      }
+    } catch (error) {
+      console.error("Failed to load current user:", error);
+      setCurrentUserData(currentUser);
+    }
+  };
+
+  const creatorRole = (
+    currentUserData?.roleType ||
+    currentUser?.roleType ||
+    ""
+  ).toLowerCase() === "delivery_lead"
+    ? "hiring_manager"
+    : (
+        currentUserData?.roleType ||
+        currentUser?.roleType ||
+        ""
+      ).toLowerCase();
+
+  const currentUserTeam = String(
+    currentUserData?.team ||
+    currentUser?.team ||
+    ""
+  ).trim();
+
+  const isSuperAdmin = creatorRole === "super_admin";
+  const isHiringManager = creatorRole === "hiring_manager";
+  const isAdmin = creatorRole === "admin";
+  const isRecruiter = creatorRole === "recruiter";
+  const canCreateUsers = isSuperAdmin || isHiringManager;
+
   useEffect(() => {
     const loadDropdownData = async () => {
       try {
@@ -217,25 +253,32 @@ function UserManagement({ initialTab = "users" }) {
         console.error("Error loading dropdown data:", err);
       }
     };
-    loadDropdownData();
-  }, []);
-
-  /* =========================
-     CURRENT USER
-  ========================= */
-
-  const currentUser = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem("user") || "{}");
-    } catch {
-      return {};
+    if (isHiringManager || isAdmin || isRecruiter) {
+      return;
     }
-  }, []);
 
-  const creatorRole = (
-    currentUser?.roleType ||
-    ""
-  ).toLowerCase();
+    loadDropdownData();
+  }, [isHiringManager, isAdmin, isRecruiter]);
+
+
+  useEffect(() => {
+    if (creatorRole === "hiring_manager") {
+      setActiveTab("users");
+      return;
+    }
+
+    setActiveTab(routeTab);
+  }, [routeTab, creatorRole]);
+
+  const visibleUsers = useMemo(() => {
+    if (isSuperAdmin) return users;
+    if (!currentUserTeam) return [];
+    return users.filter(
+      (user) =>
+        String(user?.team || "").trim().toLowerCase() ===
+        currentUserTeam.toLowerCase()
+    );
+  }, [users, isSuperAdmin, currentUserTeam]);
 
   /* =========================
      ROLE OPTIONS
@@ -243,6 +286,13 @@ function UserManagement({ initialTab = "users" }) {
 
   const roleOptions =
     ROLE_OPTIONS[creatorRole] || [];
+
+  if (isAdmin || isRecruiter) {
+    return <Navigate to="/" replace />;
+  }
+
+  const safeActiveTab =
+    isHiringManager ? "users" : activeTab;
 
   /* =========================
      LOAD USERS
@@ -301,9 +351,13 @@ function UserManagement({ initialTab = "users" }) {
   };
 
   useEffect(() => {
+    fetchCurrentUser();
     fetchUsers();
-    fetchTeams();
-  }, []);
+
+    if (isSuperAdmin) {
+      fetchTeams();
+    }
+  }, [isSuperAdmin]);
 
   /* =========================
      USER FORM CHANGE
@@ -329,50 +383,53 @@ function UserManagement({ initialTab = "users" }) {
     event.preventDefault();
 
     if (!newUser.empID.trim()) {
-      showToast(
-        "error",
-        "Employee ID is required"
-      );
+      showToast("error", "Employee ID is required");
       return;
     }
 
     if (!newUser.name.trim()) {
-      showToast(
-        "error",
-        "Name is required"
-      );
+      showToast("error", "Name is required");
       return;
     }
 
     if (!newUser.designation.trim()) {
-      showToast(
-        "error",
-        "Designation is required"
-      );
+      showToast("error", "Designation is required");
       return;
     }
 
     if (!newUser.email.trim()) {
-      showToast(
-        "error",
-        "Email is required"
-      );
+      showToast("error", "Email is required");
       return;
     }
 
-    if (!newUser.team.trim()) {
-      showToast(
-        "error",
-        "Active team is required"
-      );
+    if (isHiringManager && !currentUserTeam) {
+      showToast("error", "Your team is not assigned");
       return;
     }
 
-    const derivedMobile = newUser.mobileNo?.trim() || "0000000000";
-    const derivedPassword = newUser.password || "Stanco@123";
+    const selectedTeam = isHiringManager
+      ? currentUserTeam
+      : newUser.team.trim();
+
+    if (!selectedTeam) {
+      showToast("error", "Active team is required");
+      return;
+    }
+
+    const derivedMobile =
+      newUser.mobileNo?.trim() || "0000000000";
+
+    // Every newly created user gets the default password.
+    // Backend should BCrypt-hash this value before saving.
+    const derivedPassword = "123456";
+
     let derivedRole = "recruiter";
-    if (newUser.designation === "Admin") derivedRole = "admin";
-    else if (newUser.designation === "Hiring Manager") derivedRole = "delivery_lead";
+
+    if (newUser.designation === "Admin") {
+      derivedRole = "admin";
+    } else if (newUser.designation === "Hiring Manager") {
+      derivedRole = "hiring_manager";
+    }
 
     try {
       setCreatingUser(true);
@@ -381,52 +438,28 @@ function UserManagement({ initialTab = "users" }) {
         empID: newUser.empID.trim(),
         name: newUser.name.trim(),
         designation: newUser.designation.trim(),
-
-        business:
-          newUser.business?.trim() || null,
-
-        department:
-          newUser.department?.trim() || null,
-
-        lobDivision:
-          newUser.lobDivision?.trim() || null,
-
-        email:
-          newUser.email
-            .trim()
-            .toLowerCase(),
-
+        business: newUser.business?.trim() || null,
+        department: newUser.department?.trim() || null,
+        lobDivision: newUser.lobDivision?.trim() || null,
+        email: newUser.email.trim().toLowerCase(),
         mobileNo: derivedMobile,
-
         roleType: derivedRole,
-
-        profileStatus:
-          newUser.profileStatus || "active",
-
+        profileStatus: newUser.profileStatus || "active",
         password: derivedPassword,
 
-        team:
-          newUser.team.trim() || "",
+        // Hiring Manager can only create users in own team.
+        team: selectedTeam,
 
-        colorCode:
-          newUser.colorCode.trim() || "",
+        colorCode: newUser.colorCode?.trim() || "",
       };
 
-      const response = await api.post(
-        "/users",
-        payload
-      );
-
-      const createdUser = response.data;
+      const response = await api.post("/users", payload);
 
       setUsers((previous) => [
-        createdUser,
+        response.data,
         ...previous,
       ]);
 
-      /*
-       * Refresh teams from users
-       */
       await fetchUsers();
 
       setNewUser(EMPTY_USER);
@@ -437,10 +470,7 @@ function UserManagement({ initialTab = "users" }) {
         "User created successfully"
       );
     } catch (error) {
-      console.error(
-        "Create user error:",
-        error
-      );
+      console.error("Create user error:", error);
 
       const message =
         error?.response?.data?.message ||
@@ -474,17 +504,54 @@ function UserManagement({ initialTab = "users" }) {
       !editingUser.empID?.trim() ||
       !editingUser.name?.trim() ||
       !editingUser.designation?.trim() ||
-      !editingUser.email?.trim() ||
-      !editingUser.team?.trim()
+      !editingUser.email?.trim()
     ) {
       showToast("error", "Please fill all required fields");
       return;
     }
 
+    // Non-super-admin users can only update users in their own team.
+    if (
+      !isSuperAdmin &&
+      currentUserTeam &&
+      String(editingUser.team || "").trim().toLowerCase() !==
+        currentUserTeam.toLowerCase()
+    ) {
+      showToast(
+        "error",
+        "You can update users only from your own team"
+      );
+      return;
+    }
+
+    if (isHiringManager && !currentUserTeam) {
+      showToast(
+        "error",
+        "Your team is not assigned. Please contact administrator."
+      );
+      return;
+    }
+
     let derivedRole = editingUser.roleType || "recruiter";
-    if (editingUser.designation === "Admin") derivedRole = "admin";
-    else if (editingUser.designation === "Hiring Manager") derivedRole = "delivery_lead";
-    else if (editingUser.designation === "Recruiter") derivedRole = "recruiter";
+
+    if (editingUser.designation === "Admin") {
+      derivedRole = "admin";
+    } else if (editingUser.designation === "Hiring Manager") {
+      derivedRole = "hiring_manager";
+    } else if (editingUser.designation === "Recruiter") {
+      derivedRole = "recruiter";
+    }
+
+    // Super Admin may change team.
+    // Hiring Manager must always keep the logged-in user's team.
+    const updateTeam = isHiringManager
+      ? currentUserTeam
+      : editingUser.team?.trim() || "";
+
+    if (!updateTeam) {
+      showToast("error", "Team is required");
+      return;
+    }
 
     try {
       setCreatingUser(true);
@@ -497,13 +564,16 @@ function UserManagement({ initialTab = "users" }) {
         department: editingUser.department?.trim() || null,
         lobDivision: editingUser.lobDivision?.trim() || null,
         email: editingUser.email.trim().toLowerCase(),
-        mobileNo: editingUser.mobileNo?.trim() || "0000000000",
+        mobileNo:
+          editingUser.mobileNo?.trim() || "0000000000",
         roleType: derivedRole,
-        profileStatus: editingUser.profileStatus || "active",
-        team: editingUser.team?.trim() || "",
+        profileStatus:
+          editingUser.profileStatus || "active",
+        team: updateTeam,
         colorCode: editingUser.colorCode?.trim() || "",
       };
 
+      // Only send password when the update form actually contains one.
       if (editingUser.password?.trim()) {
         payload.password = editingUser.password.trim();
       }
@@ -515,13 +585,20 @@ function UserManagement({ initialTab = "users" }) {
 
       setUsers((previous) =>
         previous.map((user) =>
-          user.id === editingUser.id ? response.data : user
+          user.id === editingUser.id
+            ? response.data
+            : user
         )
       );
 
       setEditingUser(null);
+
       await fetchUsers();
-      showToast("success", "User updated successfully");
+
+      showToast(
+        "success",
+        "User updated successfully"
+      );
     } catch (error) {
       console.error("Update user error:", error);
 
@@ -590,10 +667,10 @@ function UserManagement({ initialTab = "users" }) {
   ========================= */
 
   const openCreateUser = () => {
-    if (creatorRole === "recruiter") {
+    if (!canCreateUsers) {
       showToast(
         "error",
-        "Recruiter cannot create users"
+        "You are not authorized to create users"
       );
       return;
     }
@@ -606,9 +683,18 @@ function UserManagement({ initialTab = "users" }) {
       return;
     }
 
+    if (isHiringManager && !currentUserTeam) {
+      showToast(
+        "error",
+        "Your team is not assigned. Please contact administrator."
+      );
+      return;
+    }
+
     setNewUser({
       ...EMPTY_USER,
       roleType: roleOptions[0]?.roleType || "",
+      team: isHiringManager ? currentUserTeam : "",
     });
 
     setShowUserModal(true);
@@ -779,10 +865,10 @@ function UserManagement({ initialTab = "users" }) {
         .toLowerCase();
 
     if (!query) {
-      return users;
+      return visibleUsers;
     }
 
-    return users.filter((user) =>
+    return visibleUsers.filter((user) =>
       [
         user.name,
         user.empID,
@@ -797,7 +883,7 @@ function UserManagement({ initialTab = "users" }) {
           .includes(query)
       )
     );
-  }, [users, userSearch]);
+  }, [visibleUsers, userSearch]);
 
   /* =========================
      USER SORT
@@ -1025,7 +1111,7 @@ function UserManagement({ initialTab = "users" }) {
             USERS
         ================================================= */}
 
-        {activeTab === "users" && (
+        {safeActiveTab === "users" && (
           <>
             <div className="user-mgmt-header">
               <div>
@@ -1039,8 +1125,7 @@ function UserManagement({ initialTab = "users" }) {
                 </p>
               </div>
 
-              {creatorRole !==
-                "recruiter" &&
+              {canCreateUsers &&
                 roleOptions.length >
                   0 && (
                   <button
@@ -1158,7 +1243,7 @@ function UserManagement({ initialTab = "users" }) {
                         <th>NAME</th>
                         <th>DESIGNATION</th>
                         <th>EMAIL</th>
-                        <th>TEAM</th>
+                        {!isHiringManager && <th>TEAM</th>}
                         <th>STATUS</th>
                         <th>ACTION</th>
                       </tr>
@@ -1170,7 +1255,7 @@ function UserManagement({ initialTab = "users" }) {
                       0 ? (
                         <tr>
                           <td
-                            colSpan="8"
+                            colSpan={isHiringManager ? 7 : 8}
                             style={{
                               textAlign:
                                 "center",
@@ -1258,12 +1343,11 @@ function UserManagement({ initialTab = "users" }) {
                                   </a>
                                 </td>
 
-                                <td>
-                                  {
-                                    user.team ||
-                                    "-"
-                                  }
-                                </td>
+                                {!isHiringManager && (
+                                  <td>
+                                    {user.team || "-"}
+                                  </td>
+                                )}
 
                                 <td>
                                   <span
@@ -1416,7 +1500,7 @@ function UserManagement({ initialTab = "users" }) {
             TEAMS
         ================================================= */}
 
-        {activeTab === "teams" && (
+        {safeActiveTab === "teams" && (
           <>
             <div className="user-mgmt-header">
 
@@ -1875,49 +1959,39 @@ function UserManagement({ initialTab = "users" }) {
 
                 </div>
 
-                <div className="modal-grid-2col">
+                {!isHiringManager && (
+                  <div className="modal-grid-2col">
 
-                  <div className="form-field-group">
-                    <label className="field-label">
-                      Team <span className="req-star">*</span>
-                    </label>
+                    <div className="form-field-group">
+                      <label className="field-label">
+                        Team <span className="req-star">*</span>
+                      </label>
 
-                    <select
-                      className="form-control-select"
-                      name="team"
-                      value={
-                        newUser.team
-                      }
-                      onChange={
-                        handleUserChange
-                      }
-                    >
-                      <option value="">
-                        Select Team
-                      </option>
+                      <select
+                        className="form-control-select"
+                        name="team"
+                        value={newUser.team}
+                        onChange={handleUserChange}
+                      >
+                        <option value="">
+                          Select Team
+                        </option>
 
-                      {activeTeams.map(
-                        (team) => (
+                        {activeTeams.map((team) => (
                           <option
-                            key={
-                              team.id
-                            }
-                            value={
-                              team.name
-                            }
+                            key={team.id}
+                            value={team.name}
                           >
-                            {
-                              team.name
-                            }
+                            {team.name}
                           </option>
-                        )
-                      )}
-                    </select>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="form-field-group"></div>
+
                   </div>
-
-                  <div className="form-field-group"></div>
-
-                </div>
+                )}
 
                 <div className="mgmt-modal-actions">
 
@@ -2076,29 +2150,42 @@ function UserManagement({ initialTab = "users" }) {
 
                   <div className="form-field-group">
                     <label className="field-label">Team <span className="req-star">*</span></label>
-                    <select
-                      className="form-control-select"
-                      value={editingUser.team || ""}
-                      onChange={(e) =>
-                        setEditingUser({
-                          ...editingUser,
-                          team: e.target.value,
-                        })
-                      }
-                    >
-                      <option value="">
-                        Select Team
-                      </option>
-
-                      {activeTeams.map((team) => (
-                        <option
-                          key={team.id}
-                          value={team.name}
-                        >
-                          {team.name}
+                    {isSuperAdmin ? (
+                      <select
+                        className="form-control-select"
+                        value={editingUser.team || ""}
+                        onChange={(e) =>
+                          setEditingUser({
+                            ...editingUser,
+                            team: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="">
+                          Select Team
                         </option>
-                      ))}
-                    </select>
+
+                        {activeTeams.map((team) => (
+                          <option
+                            key={team.id}
+                            value={team.name}
+                          >
+                            {team.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        className="form-control-input"
+                        value={
+                          isHiringManager
+                            ? currentUserTeam
+                            : editingUser.team || ""
+                        }
+                        readOnly
+                      />
+                    )}
                   </div>
 
                   <div className="form-field-group">
