@@ -104,18 +104,6 @@ function Dashboard() {
 
         {/* Dashboard Body */}
         <main className="dashboard-body">
-          {/* Top Actions Row */}
-          <div className="top-section">
-            <button className="create-rfh" onClick={() => navigate("/rfh/create")}>
-              <FaPlus style={{ marginRight: "8px" }} /> Create Temp RFH
-            </button>
-
-            <div className="last-rfh">
-              <span>Last Allocated Form No</span>
-              <strong>{getLastAllocatedFormNo()}</strong>
-            </div>
-          </div>
-
           {/* Metric Cards Row (5 columns) */}
           <div className="dashboard-metrics-container">
             <div className="metrics-row row-five">

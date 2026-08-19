@@ -28,6 +28,7 @@ function Department() {
   const [formData, setFormData] = useState({
     depId: "",
     name: "",
+    vertical: "",
     status: "active",
   });
 
@@ -127,6 +128,7 @@ function Department() {
     setFormData({
       depId: "",
       name: "",
+      vertical: "",
       status: "active",
     });
 
@@ -143,6 +145,7 @@ function Department() {
     setFormData({
       depId: department.depId || "",
       name: department.name || "",
+      vertical: department.vertical || "",
       status: department.status || "active",
     });
 
@@ -164,6 +167,7 @@ function Department() {
     setFormData({
       depId: "",
       name: "",
+      vertical: "",
       status: "active",
     });
   };
@@ -191,6 +195,7 @@ function Department() {
       const requestData = {
         depId: formData.depId.trim(),
         name: formData.name.trim(),
+        vertical: (formData.vertical || "").trim(),
         status: formData.status,
       };
 
@@ -471,6 +476,7 @@ function Department() {
                     <th>S.No</th>
                     <th>Department ID</th>
                     <th>Department Name</th>
+                    <th>Vertical</th>
                     <th>Status</th>
                     <th>Created By</th>
                     <th>Actions</th>
@@ -497,6 +503,10 @@ function Department() {
 
                         <td>
                           {department.name}
+                        </td>
+
+                        <td>
+                          {department.vertical || "-"}
                         </td>
 
                         <td>
@@ -704,6 +714,25 @@ function Department() {
                   onChange={handleChange}
                   disabled={saving}
                   required
+                />
+
+              </div>
+
+              {/* Vertical */}
+
+              <div className="form-field">
+
+                <label>
+                  Vertical
+                </label>
+
+                <input
+                  type="text"
+                  name="vertical"
+                  placeholder="Example: IT Services"
+                  value={formData.vertical || ""}
+                  onChange={handleChange}
+                  disabled={saving}
                 />
 
               </div>
