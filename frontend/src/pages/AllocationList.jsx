@@ -86,14 +86,16 @@ function AllocationList() {
 
       <div className="alloc-content">
         {/* Top Header */}
-        <header className="alloc-header">
+        <header className="page-header">
           <div className="header-title">
             <h2>Allocation List</h2>
             <p>Manage and track all recruitment requests (RFHs)</p>
           </div>
-          <button className="logout-btn" onClick={() => setShowLogoutModal(true)}>
-            Sign Out
-          </button>
+          <div className="header-actions">
+            <button className="logout-btn" onClick={() => setShowLogoutModal(true)}>
+              Sign Out
+            </button>
+          </div>
         </header>
 
         {/* List Body */}

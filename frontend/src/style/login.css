@@ -171,8 +171,8 @@ html, body {
 }
 
 .modern-input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3.5px rgba(37, 99, 235, 0.14);
+  border-color: #0D9488;
+  box-shadow: 0 0 0 3.5px rgba(13, 148, 136, 0.18);
 }
 
 .field-icon {
@@ -226,14 +226,14 @@ html, body {
   width: 16px;
   height: 16px;
   cursor: pointer;
-  accent-color: #2563eb;
+  accent-color: #0D9488;
   border-radius: 4px;
 }
 
 .forgot-password-link {
   background: transparent;
   border: none;
-  color: #2563eb;
+  color: #0D9488;
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
@@ -243,7 +243,7 @@ html, body {
 }
 
 .forgot-password-link:hover {
-  color: #1d4ed8;
+  color: #0B7A70;
   text-decoration: underline;
 }
 
@@ -252,7 +252,7 @@ html, body {
   width: 100%;
   height: 44px;
   margin-top: 4px;
-  background: #2563eb;
+  background: #0D9488;
   border: none;
   border-radius: 9px;
   color: #ffffff;
@@ -265,14 +265,14 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 5px 16px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 5px 16px rgba(13, 148, 136, 0.35);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-submit-btn:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: #0B7A70;
   transform: translateY(-1px);
-  box-shadow: 0 7px 20px rgba(37, 99, 235, 0.45);
+  box-shadow: 0 7px 20px rgba(13, 148, 136, 0.45);
 }
 
 .login-submit-btn:active:not(:disabled) {
@@ -314,14 +314,14 @@ html, body {
 }
 
 .create-account-text a {
-  color: #2563eb;
+  color: #0D9488;
   font-weight: 600;
   text-decoration: none;
   transition: color 0.15s;
 }
 
 .create-account-text a:hover {
-  color: #1d4ed8;
+  color: #0B7A70;
   text-decoration: underline;
 }
 

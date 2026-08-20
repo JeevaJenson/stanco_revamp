@@ -740,68 +740,26 @@ function DepartmentVertical() {
       <div className="department-content">
 
 
-        {/* =================================================
-            HEADER
-        ================================================= */}
+        {/* HEADER */}
+        <header className="page-header">
 
-        <div className="department-header">
-
-
-          <div>
-
-
-            {/* <button
-              type="button"
-              className="back-department-btn"
-              onClick={() =>
-                navigate("/departments")
-              }
-            >
-
-              <FaArrowLeft />
-
-              Back to Departments
-
-            </button> */}
-
-
-            <h1>
-              Department Verticals
-            </h1>
-
-
-            <p>
-
-              Verticals mapped to{" "}
-
-              <strong>
-                {department.name}
-              </strong>
-
-            </p>
-
-
+          <div className="header-title">
+            <h2>Department Verticals</h2>
+            <p>Verticals mapped to <strong>{department.name}</strong></p>
           </div>
 
+          <div className="header-actions">
+            <button
+              type="button"
+              className="add-department-btn"
+              onClick={openAddModal}
+            >
+              <FaPlus />
+              <span>Add Vertical</span>
+            </button>
+          </div>
 
-          {/* ADD VERTICAL */}
-
-          <button
-            type="button"
-            className="add-department-btn"
-            onClick={openAddModal}
-          >
-
-            <FaPlus />
-
-            <span>
-              Add Vertical
-            </span>
-
-          </button>
-
-
-        </div>
+        </header>
 
 
         {/* =================================================
