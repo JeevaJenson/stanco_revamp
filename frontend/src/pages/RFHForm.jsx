@@ -2,11 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
 import Sidebar from "./Sidebar";
-import {
-  InputField,
-  SelectField,
-  TextAreaField,
-} from "../components/FormFields";
+import { InputField, SelectField, TextAreaField,} from "./FormFields";
 import "../style/RFHForm.css";
 
 /* =========================================================
@@ -135,6 +131,9 @@ function RFHForm() {
     },
   ]);
 
+  const [rawDepartments, setRawDepartments] = useState([]);
+  const [verticalList, setVerticalList] = useState([]);
+
   const [teamList, setTeamList] = useState([
     {
       label: "CKPL",
@@ -181,14 +180,17 @@ function RFHForm() {
           .filter(
             (d) =>
               String(d.status || "active").toLowerCase() === "active"
-          )
-          .map((d) => ({
+          );
+
+        setRawDepartments(activeDepts);
+
+        const mappedDepts = activeDepts.map((d) => ({
             label: d.name,
             value: d.name,
           }));
 
-        if (activeDepts.length > 0) {
-          setDepartmentList(activeDepts);
+        if (mappedDepts.length > 0) {
+          setDepartmentList(mappedDepts);
         }
 
         /* TEAM */
@@ -214,6 +216,42 @@ function RFHForm() {
 
     loadDropdownData();
   }, []);
+
+  /* =========================================================
+     FETCH VERTICALS BASED ON DEPARTMENT
+     ========================================================= */
+
+  useEffect(() => {
+    const fetchVerticals = async () => {
+      if (!formData.department) {
+        setVerticalList([]);
+        return;
+      }
+      const dept = rawDepartments.find(
+        (d) => d.name === formData.department
+      );
+      if (dept && dept.id) {
+        try {
+          const res = await api.get(`/departments/${dept.id}/verticals`);
+          const activeVerticals = (res.data || [])
+            .filter(
+              (v) => String(v.status || "active").toLowerCase() === "active"
+            )
+            .map((v) => ({
+              label: v.verticalName,
+              value: v.verticalName,
+            }));
+          setVerticalList(activeVerticals);
+        } catch (error) {
+          console.error("Error loading verticals:", error);
+          setVerticalList([]);
+        }
+      } else {
+        setVerticalList([]);
+      }
+    };
+    fetchVerticals();
+  }, [formData.department, rawDepartments]);
 
   /* =========================================================
      LOAD EDIT DATA / LOGGED-IN USER
@@ -314,10 +352,20 @@ function RFHForm() {
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setFormData((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
+    setFormData((previous) => {
+      const updated = { ...previous, [name]: value };
+
+      if (name === "salaryRange") {
+        const monthly = parseFloat(value);
+        if (!isNaN(monthly)) {
+          updated.salaryRangeAnnual = String(monthly * 12);
+        } else if (value === "") {
+          updated.salaryRangeAnnual = "";
+        }
+      }
+
+      return updated;
+    });
   };
 
   /* =========================================================
@@ -498,7 +546,7 @@ function RFHForm() {
        */
 
       setTimeout(() => {
-        navigate("/rfh");
+        navigate("/allocation-list");
       }, 1200);
     } catch (error) {
       console.error("RFH save error:", error);
@@ -970,7 +1018,7 @@ function RFHForm() {
                     name="vertical"
                     value={formData.vertical}
                     onChange={handleChange}
-                    options={departmentList}
+                    options={verticalList}
                   />
                 </div>
 
