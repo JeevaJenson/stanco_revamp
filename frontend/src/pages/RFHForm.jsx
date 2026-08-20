@@ -1,22 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import {
-  FaTimes,
-  FaFileAlt,
-  FaCalendarAlt,
-  FaUser,
-  FaBuilding,
-  FaBriefcase,
-  FaUsers,
-  FaPaperPlane,
-  FaBold,
-  FaItalic,
-  FaUnderline,
-  FaListUl,
-  FaListOl,
-} from "react-icons/fa";
-
 import api from "../services/api";
 import Sidebar from "./Sidebar";
 
@@ -34,7 +18,11 @@ import "../style/RFHForm.css";
 // ============================================================
 
 const initialFormData = {
+  // Backend generated RFH number
   resId: "",
+
+  // User manually enters this from UI
+  ticketNumber: "",
 
   rollsOption: "",
 
@@ -50,8 +38,6 @@ const initialFormData = {
 
   requestType: "NEW",
 
-  // Backend has @NotBlank
-  // So don't keep this empty for NEW request
   replacementOf: "NA",
 
   approvalHire: "YES",
@@ -119,6 +105,7 @@ const initialFormData = {
 // ============================================================
 
 function RFHForm() {
+
   const navigate = useNavigate();
 
   const { id } = useParams();
@@ -216,21 +203,16 @@ function RFHForm() {
 
         const activeBusinesses =
           businessData
-
             .filter(
               (business) =>
                 String(
                   business.status ?? 1
                 ) === "1" ||
-
                 String(
                   business.status || ""
-                ).toLowerCase() ===
-                  "active"
+                ).toLowerCase() === "active"
             )
-
             .map((business) => ({
-
               label:
                 business.businessName ||
                 business.name,
@@ -238,9 +220,7 @@ function RFHForm() {
               value:
                 business.businessName ||
                 business.name,
-
             }))
-
             .filter(
               (business) =>
                 business.label
@@ -265,17 +245,14 @@ function RFHForm() {
         const departmentDataResponse =
           departmentResponse.data || [];
 
-
         const activeDepartments =
           departmentDataResponse.filter(
             (department) =>
-
               String(
                 department.status ??
-                  "active"
+                "active"
               ).toLowerCase() ===
                 "active" ||
-
               String(
                 department.status ?? 1
               ) === "1"
@@ -288,24 +265,20 @@ function RFHForm() {
 
 
         setDepartmentList(
-
           activeDepartments
-
             .map((department) => ({
-
               label:
-                department.name,
+                department.name ||
+                department.departmentName,
 
               value:
-                department.name,
-
+                department.name ||
+                department.departmentName,
             }))
-
             .filter(
               (department) =>
                 department.label
             )
-
         );
 
 
@@ -316,27 +289,20 @@ function RFHForm() {
         const verticalData =
           verticalResponse.data || [];
 
-
         const activeVerticals =
           verticalData
-
             .filter(
               (vertical) =>
-
                 String(
                   vertical.status ?? 1
                 ) === "1" ||
-
                 String(
                   vertical.status || ""
                 ).toLowerCase() ===
                   "active"
             )
-
             .map((vertical) => ({
-
-              id:
-                vertical.id,
+              id: vertical.id,
 
               label:
                 vertical.name ||
@@ -345,9 +311,7 @@ function RFHForm() {
               value:
                 vertical.name ||
                 vertical.verticalName,
-
             }))
-
             .filter(
               (vertical) =>
                 vertical.label
@@ -366,33 +330,22 @@ function RFHForm() {
         const teamData =
           teamResponse.data || [];
 
-
         const activeTeams =
           teamData
-
             .filter(
               (team) =>
-
                 String(
                   team.status ?? 1
                 ) === "1" ||
-
                 String(
                   team.status || ""
                 ).toLowerCase() ===
                   "active"
             )
-
             .map((team) => ({
-
-              label:
-                team.name,
-
-              value:
-                team.name,
-
+              label: team.name,
+              value: team.name,
             }))
-
             .filter(
               (team) =>
                 team.label
@@ -437,7 +390,6 @@ function RFHForm() {
       fetchRfhById(id);
 
       return;
-
     }
 
 
@@ -508,8 +460,18 @@ function RFHForm() {
 
         ...rfh,
 
-        // Backend response has ticketNumber
-        // but we don't send it during update
+        /*
+         * Backend generated RFH number.
+         * Example: RFH001
+         */
+        resId:
+          rfh.resId || "",
+
+        /*
+         * User entered ticket number.
+         */
+        ticketNumber:
+          rfh.ticketNumber || "",
 
         replacementOf:
           rfh.replacementOf ||
@@ -532,16 +494,11 @@ function RFHForm() {
         error
       );
 
-
       showToast(
-
         "error",
-
         error?.response?.data
           ?.message ||
-
         "Failed to load RFH details"
-
       );
 
     } finally {
@@ -563,26 +520,18 @@ function RFHForm() {
   ) => {
 
     setToast({
-
       show: true,
-
       type,
-
       message,
-
     });
 
 
     setTimeout(() => {
 
       setToast({
-
         show: false,
-
         type: "",
-
         message: "",
-
       });
 
     }, 3500);
@@ -616,8 +565,7 @@ function RFHForm() {
 
 
     // ========================================================
-    // If Request Type = NEW
-    // replacementOf is not required from user
+    // REQUEST TYPE
     // ========================================================
 
     if (
@@ -649,77 +597,165 @@ function RFHForm() {
   // DEPARTMENT CHANGE
   // ==========================================================
 
-  const handleDepartmentChange = (event) => {
-    const departmentName = event.target.value;
+  const handleDepartmentChange = (
+    event
+  ) => {
 
-    const selectedDepartment = departmentData.find((department) =>
-      String(department?.name || department?.departmentName || "")
-        .trim()
-        .toLowerCase() ===
-      String(departmentName || "")
-        .trim()
-        .toLowerCase()
+    const departmentName =
+      event.target.value;
+
+
+    const selectedDepartment =
+      departmentData.find(
+        (department) =>
+          String(
+            department?.name ||
+            department?.departmentName ||
+            ""
+          )
+            .trim()
+            .toLowerCase() ===
+          String(
+            departmentName || ""
+          )
+            .trim()
+            .toLowerCase()
+      );
+
+
+    console.log(
+      "Selected Department:",
+      selectedDepartment
     );
 
-    console.log("Selected Department:", selectedDepartment);
 
     let mappedVertical = "";
 
+
     if (selectedDepartment) {
-      // 1. Department API returns verticalName
-      if (selectedDepartment.verticalName) {
-        mappedVertical = String(selectedDepartment.verticalName).trim();
+
+      // 1. verticalName
+      if (
+        selectedDepartment.verticalName
+      ) {
+
+        mappedVertical =
+          String(
+            selectedDepartment.verticalName
+          ).trim();
+
       }
 
-      // 2. Department API returns vertical / vertical object
-      else if (selectedDepartment.vertical) {
-        if (typeof selectedDepartment.vertical === "object") {
-          mappedVertical = String(
-            selectedDepartment.vertical?.name ||
-            selectedDepartment.vertical?.verticalName ||
-            selectedDepartment.vertical?.value ||
+      // 2. vertical
+      else if (
+        selectedDepartment.vertical
+      ) {
+
+        if (
+          typeof selectedDepartment.vertical ===
+          "object"
+        ) {
+
+          mappedVertical =
+            String(
+              selectedDepartment.vertical?.name ||
+              selectedDepartment.vertical?.verticalName ||
+              selectedDepartment.vertical?.value ||
+              ""
+            ).trim();
+
+        } else {
+
+          mappedVertical =
+            String(
+              selectedDepartment.vertical
+            ).trim();
+
+        }
+
+      }
+
+      // 3. verticalId
+      else if (
+        selectedDepartment.verticalId !==
+          undefined &&
+        selectedDepartment.verticalId !==
+          null
+      ) {
+
+        const matchedVertical =
+          verticalList.find(
+            (vertical) =>
+              String(
+                vertical?.id
+              ) ===
+              String(
+                selectedDepartment.verticalId
+              )
+          );
+
+
+        mappedVertical =
+          String(
+            matchedVertical?.value ||
             ""
           ).trim();
-        } else {
-          mappedVertical = String(selectedDepartment.vertical).trim();
-        }
+
       }
 
-      // 3. Department API returns verticalId
+      // 4. vertical_id
       else if (
-        selectedDepartment.verticalId !== undefined &&
-        selectedDepartment.verticalId !== null
+        selectedDepartment.vertical_id !==
+          undefined &&
+        selectedDepartment.vertical_id !==
+          null
       ) {
-        const matchedVertical = verticalList.find(
-          (vertical) =>
-            String(vertical?.id) === String(selectedDepartment.verticalId)
-        );
 
-        mappedVertical = String(matchedVertical?.value || "").trim();
+        const matchedVertical =
+          verticalList.find(
+            (vertical) =>
+              String(
+                vertical?.id
+              ) ===
+              String(
+                selectedDepartment.vertical_id
+              )
+          );
+
+
+        mappedVertical =
+          String(
+            matchedVertical?.value ||
+            ""
+          ).trim();
+
       }
 
-      // 4. Department API returns vertical_id
-      else if (
-        selectedDepartment.vertical_id !== undefined &&
-        selectedDepartment.vertical_id !== null
-      ) {
-        const matchedVertical = verticalList.find(
-          (vertical) =>
-            String(vertical?.id) === String(selectedDepartment.vertical_id)
-        );
-
-        mappedVertical = String(matchedVertical?.value || "").trim();
-      }
     }
 
-    console.log("Auto Selected Vertical:", mappedVertical);
 
-    setFormData((previous) => ({
-      ...previous,
-      department: departmentName,
-      vertical: mappedVertical,
-    }));
+    console.log(
+      "Auto Selected Vertical:",
+      mappedVertical
+    );
+
+
+    setFormData(
+      (previous) => ({
+
+        ...previous,
+
+        department:
+          departmentName,
+
+        vertical:
+          mappedVertical,
+
+      })
+    );
+
   };
+
 
   // ==========================================================
   // CANCEL
@@ -747,6 +783,20 @@ function RFHForm() {
   // ==========================================================
 
   const validateForm = () => {
+
+    if (
+      !formData.ticketNumber?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "Ticket Number is required"
+      );
+
+      return false;
+
+    }
+
 
     if (
       !formData.requestDate?.trim()
@@ -919,7 +969,6 @@ function RFHForm() {
     }
 
 
-    // Backend has @NotBlank replacementOf
     if (
       !formData.replacementOf?.trim()
     ) {
@@ -964,10 +1013,6 @@ function RFHForm() {
     event.preventDefault();
 
 
-    // ------------------------------------------
-    // Validate
-    // ------------------------------------------
-
     if (
       !validateForm()
     ) {
@@ -982,25 +1027,47 @@ function RFHForm() {
       setLoading(true);
 
 
-      // ====================================================
-      // IMPORTANT
-      //
-      // Do NOT send ticketNumber.
-      //
-      // Backend generates:
-      //
-      // RFH-000001
-      // RFH-000002
-      // RFH-000003
-      //
-      // after saving the record.
-      // ====================================================
+      /*
+       * IMPORTANT
+       *
+       * resId:
+       * Do NOT generate from React.
+       *
+       * Backend generates:
+       *
+       * RFH001
+       * RFH002
+       * RFH003
+       *
+       *
+       * ticketNumber:
+       * User manually enters in UI.
+       *
+       * Example:
+       *
+       * TKT-1001
+       */
+
 
       const payload = {
 
+        /*
+         * Keep resId only for update/reference.
+         * Backend CREATE will ignore/generate it.
+         */
         resId:
-          formData.resId?.trim() ||
-          null,
+          id
+            ? formData.resId?.trim() || null
+            : null,
+
+
+        /*
+         * USER ENTERED TICKET NUMBER
+         */
+        ticketNumber:
+          formData.ticketNumber?.trim() ||
+          "",
+
 
         rollsOption:
           formData.rollsOption?.trim() ||
@@ -1080,7 +1147,8 @@ function RFHForm() {
 
         noOfPositions:
           String(
-            formData.noOfPositions || ""
+            formData.noOfPositions ||
+            ""
           ).trim(),
 
         jdRoles:
@@ -1120,12 +1188,9 @@ function RFHForm() {
           "",
 
         approvalHirePath:
-          formData.approvalHirePath ===
-            "" ||
-          formData.approvalHirePath ===
-            null ||
-          formData.approvalHirePath ===
-            undefined
+          formData.approvalHirePath === "" ||
+          formData.approvalHirePath === null ||
+          formData.approvalHirePath === undefined
 
             ? 0
 
@@ -1196,10 +1261,6 @@ function RFHForm() {
       };
 
 
-      // ====================================================
-      // DEBUG
-      // ====================================================
-
       console.log(
         "================================"
       );
@@ -1236,6 +1297,7 @@ function RFHForm() {
 
       }
 
+
       // ====================================================
       // CREATE
       // ====================================================
@@ -1257,34 +1319,51 @@ function RFHForm() {
       );
 
 
-      // ====================================================
-      // SUCCESS MESSAGE
-      // ====================================================
+      /*
+       * Backend generated RFH number
+       *
+       * Example:
+       * RFH001
+       */
+      const generatedRfhNumber =
+        response?.data?.resId ||
+        "";
 
-      const ticketNumber =
-        response?.data?.ticketNumber;
+
+      /*
+       * UI entered ticket number
+       */
+      const savedTicketNumber =
+        response?.data?.ticketNumber ||
+        formData.ticketNumber ||
+        "";
 
 
       showToast(
-
         "success",
 
         id
 
-          ? `RFH ${
-              ticketNumber || ""
-            } updated successfully`
+          ? `RFH ${generatedRfhNumber} updated successfully | Ticket: ${savedTicketNumber}`
 
-          : `RFH ${
-              ticketNumber || ""
-            } created successfully`
-
+          : `RFH ${generatedRfhNumber} created successfully | Ticket: ${savedTicketNumber}`
       );
 
 
-      // ====================================================
-      // NAVIGATE
-      // ====================================================
+      /*
+       * Optional:
+       * Show generated RFH number in console
+       */
+      console.log(
+        "Generated RFH Number:",
+        generatedRfhNumber
+      );
+
+      console.log(
+        "Ticket Number:",
+        savedTicketNumber
+      );
+
 
       setTimeout(() => {
 
@@ -1321,10 +1400,6 @@ function RFHForm() {
         "================================"
       );
 
-
-      // ====================================================
-      // SHOW ACTUAL BACKEND ERROR
-      // ====================================================
 
       const backendData =
         error?.response?.data;
@@ -1369,8 +1444,7 @@ function RFHForm() {
         message =
           Object.values(
             backendData.errors
-          )
-            .join(", ");
+          ).join(", ");
 
       }
 
@@ -1411,10 +1485,8 @@ function RFHForm() {
         >
 
           <div>
-
             Loading RFH Form
             details...
-
           </div>
 
         </main>
@@ -1543,6 +1615,52 @@ function RFHForm() {
                 </div>
 
 
+                {/* =================================================
+                    TICKET NUMBER
+                ================================================= */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="Ticket Number"
+                    name="ticketNumber"
+                    value={
+                      formData.ticketNumber
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    placeholder="Enter Ticket Number"
+                    required
+                  />
+
+                </div>
+
+
+                {/* =================================================
+                    RFH NUMBER
+                ================================================= */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="RFH Number"
+                    name="resId"
+                    value={
+                      formData.resId ||
+                      "Generated after submit"
+                    }
+                    onChange={() => {}}
+                    readOnly
+                  />
+
+                </div>
+
+
+                <div className="col-span-6">
+                </div>
+
+
                 <div className="col-span-12">
 
                   <div className="rfh-field">
@@ -1580,8 +1698,6 @@ function RFHForm() {
                     <div className="rfh-radio-group">
 
 
-                      {/* Activity Outsourcing */}
-
                       <label className="rfh-radio-item">
 
                         <input
@@ -1604,8 +1720,6 @@ function RFHForm() {
                       </label>
 
 
-                      {/* Manpower Outsourcing */}
-
                       <label className="rfh-radio-item">
 
                         <input
@@ -1627,8 +1741,6 @@ function RFHForm() {
 
                       </label>
 
-
-                      {/* On Client Roll */}
 
                       <label className="rfh-radio-item">
 
@@ -1707,8 +1819,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* NAME */}
-
                 <div className="col-span-3">
 
                   <InputField
@@ -1724,8 +1834,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* MOBILE */}
 
                 <div className="col-span-3">
 
@@ -1743,8 +1851,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* EMAIL */}
-
                 <div className="col-span-3">
 
                   <InputField
@@ -1760,8 +1866,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* REPORTS TO */}
 
                 <div className="col-span-3">
 
@@ -1782,8 +1886,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* REPORT EMAIL */}
-
                 <div className="col-span-3">
 
                   <InputField
@@ -1799,8 +1901,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* REQUEST DATE */}
 
                 <div className="col-span-3">
 
@@ -1819,8 +1919,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* REQUEST TYPE */}
 
                 <div className="col-span-3">
 
@@ -1851,8 +1949,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* APPROVAL DATE */}
-
                 <div className="col-span-3">
 
                   <InputField
@@ -1869,8 +1965,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* APPROVED BY */}
 
                 <div className="col-span-3">
 
@@ -1891,8 +1985,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* APPROVAL TYPE */}
 
                 <div className="col-span-3">
 
@@ -1925,8 +2017,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* POSITION TITLE */}
-
                 <div className="col-span-3">
 
                   <InputField
@@ -1943,8 +2033,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* LOCATION */}
 
                 <div className="col-span-3">
 
@@ -1983,8 +2071,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* LOCATION PREFERRED */}
-
                 <div className="col-span-3">
 
                   <TextAreaField
@@ -2000,8 +2086,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* BAND */}
 
                 <div className="col-span-3">
 
@@ -2034,8 +2118,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* DEPARTMENT */}
-
                 <div className="col-span-3">
 
                   <SelectField
@@ -2056,8 +2138,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* VERTICAL */}
-
                 <div className="col-span-3">
 
                   <InputField
@@ -2073,8 +2153,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* FUNCTION */}
 
                 <div className="col-span-3">
 
@@ -2093,8 +2171,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* POSITIONS */}
-
                 <div className="col-span-3">
 
                   <InputField
@@ -2111,8 +2187,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* JD */}
 
                 <div className="col-span-3">
 
@@ -2132,8 +2206,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* QUALIFICATION */}
-
                 <div className="col-span-3">
 
                   <InputField
@@ -2150,8 +2222,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* ESSENTIAL SKILLS */}
 
                 <div className="col-span-3">
 
@@ -2170,8 +2240,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* GOOD SKILLS */}
-
                 <div className="col-span-3">
 
                   <TextAreaField
@@ -2187,8 +2255,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* EMP CATEGORY */}
 
                 <div className="col-span-3">
 
@@ -2219,8 +2285,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* ATTENDANCE */}
 
                 <div className="col-span-3">
 
@@ -2258,8 +2322,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* WEEK OFF */}
-
                 <div className="col-span-3">
 
                   <SelectField
@@ -2289,8 +2351,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* EXPERIENCE */}
 
                 <div className="col-span-3">
 
@@ -2335,8 +2395,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* MONTHLY CTC */}
-
                 <div className="col-span-3">
 
                   <InputField
@@ -2354,8 +2412,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* ANNUAL CTC */}
 
                 <div className="col-span-3">
 
@@ -2375,8 +2431,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* OTHER */}
-
                 <div className="col-span-3">
 
                   <TextAreaField
@@ -2393,8 +2447,6 @@ function RFHForm() {
                 </div>
 
 
-                {/* SUPERVISOR */}
-
                 <div className="col-span-3">
 
                   <InputField
@@ -2410,8 +2462,6 @@ function RFHForm() {
 
                 </div>
 
-
-                {/* SUPERVISOR EMAIL */}
 
                 <div className="col-span-3">
 
@@ -2448,7 +2498,6 @@ function RFHForm() {
                   "30px",
               }}
             >
-
 
               <button
                 type="button"
