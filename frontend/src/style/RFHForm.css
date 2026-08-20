@@ -91,13 +91,62 @@
 }
 
 /* =========================================================
-   FORM GRID (3 COLUMNS)
+   FORM GRID (FLEXIBLE)
 ========================================================= */
 
 .rfh-form-grid-3col {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px 25px;
+}
+
+.rfh-grid-container {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px 25px;
+}
+
+.col-span-2 { grid-column: span 2; }
+.col-span-3 { grid-column: span 3; }
+.col-span-4 { grid-column: span 4; }
+.col-span-6 { grid-column: span 6; }
+.col-span-12 { grid-column: span 12; }
+
+/* Custom for 5 columns */
+.col-span-fifth { grid-column: span 12; }
+@media (min-width: 900px) {
+  .col-span-fifth { grid-column: span 2; } /* Approximating 5 columns, total 10 out of 12. Or just use flex */
+}
+
+/* Radio Group styling */
+.rfh-radio-group {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-top: 8px;
+}
+.rfh-radio-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: #334155;
+  cursor: pointer;
+}
+.rfh-radio-item input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.rfh-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #134e4a;
+  margin-bottom: 10px;
+  grid-column: span 12;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 5px;
 }
 
 /* =========================================================
@@ -163,8 +212,9 @@
 }
 
 .rfh-field textarea {
-  min-height: 100px;
-  padding: 12px 14px;
+  height: 44px;
+  min-height: 44px;
+  padding: 11px 14px;
   resize: vertical;
 }
 

@@ -314,263 +314,172 @@ function RFHForm() {
         <div className="rfh-card-container">
           
           {/* HEADER TITLE BAR */}
-          <div className="rfh-card-header-bar">
-            <FaFileAlt className="header-bar-icon" />
-            <h2>{id ? "Update RFH" : "Create RFH"}</h2>
+          <div className="rfh-card-header-bar" style={{ justifyContent: 'center' }}>
+            <h2 style={{ textTransform: 'uppercase', color: '#134e4a' }}>REQUEST FOR HIRE (RFH - HEPL)</h2>
           </div>
 
-          <form onSubmit={handleSubmit} className="rfh-single-form">
+          <form onSubmit={handleSubmit} className="rfh-single-form" style={{ padding: '0', background: 'transparent' }}>
             
-            {/* 1. RFH DETAILS */}
-            <div className="rfh-form-card">
-              <div className="rfh-form-card-title">
-                <FaFileAlt className="card-title-icon" />
-                <h3>RFH DETAILS</h3>
-              </div>
-              <div className="rfh-form-grid-3col">
-                <InputField
-                  label="RFH Number"
-                  name="ticketNumber"
-                  value={formData.ticketNumber}
-                  onChange={handleChange}
-                  placeholder="RFH-2026-0001"
-                  required
-                  icon={FaFileAlt}
-                />
-                <InputField
-                  label="RFH Date"
-                  name="requestDate"
-                  value={formData.requestDate}
-                  onChange={handleChange}
-                  type="date"
-                  required
-                  icon={FaCalendarAlt}
-                />
-                <SelectField
-                  label="Requested By"
-                  name="requestBy"
-                  value={formData.requestBy}
-                  onChange={handleChange}
-                  options={[
-                    { label: formData.requestBy || "Admin", value: formData.requestBy || "Admin" },
-                    { label: "Admin", value: "Admin" },
-                    { label: "Hiring Manager", value: "Hiring Manager" },
-                    { label: "Recruiter", value: "Recruiter" }
-                  ]}
-                  icon={FaUser}
-                />
-                <SelectField
-                  label="Business Unit"
-                  name="business"
-                  value={formData.business}
-                  onChange={handleChange}
-                  options={businessList}
-                  required
-                  icon={FaBuilding}
-                />
-                <SelectField
-                  label="Department"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  options={departmentList}
-                  required
-                  icon={FaBriefcase}
-                />
-                <InputField
-                  label="Vertical"
-                  name="vertical"
-                  value={formData.vertical}
-                  onChange={handleChange}
-                  placeholder="Enter vertical"
-                  icon={FaBuilding}
-                />
-                <SelectField
-                  label="Team"
-                  name="rollsOption"
-                  value={formData.rollsOption}
-                  onChange={handleChange}
-                  options={teamList}
-                  required
-                  icon={FaUsers}
-                />
-              </div>
-            </div>
-
-            {/* 2. JOB DETAILS */}
-            <div className="rfh-form-card">
-              <div className="rfh-form-card-title">
-                <FaBriefcase className="card-title-icon" />
-                <h3>JOB DETAILS</h3>
-              </div>
-              <div className="rfh-form-grid-3col">
-                <InputField
-                  label="Job Title"
-                  name="positionTitle"
-                  value={formData.positionTitle}
-                  onChange={handleChange}
-                  placeholder="Enter job title"
-                  required
-                />
-                <SelectField
-                  label="Job Type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  options={[
-                    { label: "Full Time", value: "Full Time" },
-                    { label: "Contract", value: "Contract" },
-                    { label: "Part Time", value: "Part Time" }
-                  ]}
-                  required
-                />
-                <InputField
-                  label="Positions"
-                  name="noOfPositions"
-                  value={formData.noOfPositions}
-                  onChange={handleChange}
-                  placeholder="Enter number of positions"
-                  required
-                />
-                <InputField
-                  label="Experience"
-                  name="experience"
-                  value={formData.experience}
-                  onChange={handleChange}
-                  placeholder="Enter experience (e.g., 2-5 years)"
-                  required
-                />
-                <InputField
-                  label="Qualification"
-                  name="qualification"
-                  value={formData.qualification}
-                  onChange={handleChange}
-                  placeholder="Enter qualification"
-                  required
-                />
-                <InputField
-                  label="Location"
-                  name="locationPreferred"
-                  value={formData.locationPreferred}
-                  onChange={handleChange}
-                  placeholder="Enter location"
-                  required
-                />
-                <SelectField
-                  label="Work Mode"
-                  name="attendanceFormat"
-                  value={formData.attendanceFormat}
-                  onChange={handleChange}
-                  options={[
-                    { label: "Hybrid", value: "HYBRID" },
-                    { label: "Work From Office", value: "OFFICE" },
-                    { label: "Work From Home", value: "REMOTE" }
-                  ]}
-                  required
-                />
-                <SelectField
-                  label="Priority"
-                  name="band"
-                  value={formData.band}
-                  onChange={handleChange}
-                  options={[
-                    { label: "High", value: "High" },
-                    { label: "Medium", value: "Medium" },
-                    { label: "Low", value: "Low" }
-                  ]}
-                  required
-                />
-                <InputField
-                  label="Joining Date"
-                  name="tenDoj"
-                  value={formData.tenDoj}
-                  onChange={handleChange}
-                  type="date"
-                  icon={FaCalendarAlt}
-                />
-              </div>
-            </div>
-
-            {/* 3. SKILLS */}
-            <div className="rfh-form-card">
-              <div className="rfh-form-card-title">
-                <FaUsers className="card-title-icon" />
-                <h3>SKILLS</h3>
-              </div>
-              <TextAreaField
-                label="Required Skills"
-                name="essentialSkill"
-                value={formData.essentialSkill}
-                onChange={handleChange}
-                placeholder="Enter required skills (e.g., Java, React, SQL, ...)"
-                helperText="Separate skills with comma"
-              />
-            </div>
-
-            {/* 4. JOB DESCRIPTION */}
-            <div className="rfh-form-card">
-              <div className="rfh-form-card-title">
-                <FaFileAlt className="card-title-icon" />
-                <h3>JOB DESCRIPTION</h3>
-              </div>
-              
-              {/* Rich Text Editor Mockup / Styled Area */}
-              <div className="rfh-field rfh-full-field">
-                <label>Job Description</label>
-                <div className="rfh-editor-wrapper">
-                  <div className="rfh-editor-toolbar">
-                    <button type="button" className="toolbar-btn"><FaBold /></button>
-                    <button type="button" className="toolbar-btn"><FaItalic /></button>
-                    <button type="button" className="toolbar-btn"><FaUnderline /></button>
-                    <span className="toolbar-separator">|</span>
-                    <button type="button" className="toolbar-btn"><FaListUl /></button>
-                    <button type="button" className="toolbar-btn"><FaListOl /></button>
-                  </div>
-                  <textarea
-                    name="jdRoles"
-                    value={formData.jdRoles ?? ""}
+            {/* CARD 1: REQUEST FOR HIRE */}
+            <div className="rfh-form-card" style={{ marginBottom: '20px' }}>
+              <div className="rfh-grid-container">
+                <div className="col-span-3">
+                  <SelectField
+                    label="Business"
+                    name="business"
+                    value={formData.business}
                     onChange={handleChange}
-                    placeholder="Enter job description..."
-                    maxLength={2000}
-                    className="rfh-editor-textarea"
+                    options={businessList}
+                    required
                   />
-                  <div className="rfh-editor-footer">
-                    <span className="rfh-char-counter">
-                      {(formData.jdRoles || "").length} / 2000
-                    </span>
+                </div>
+                <div className="col-span-9"></div> {/* Empty space */}
+
+                <div className="col-span-12">
+                  <div className="rfh-field">
+                    <label>
+                      Request for hire: <br />
+                      <span style={{fontWeight:'normal', fontSize:'11.5px', color:'#64748b'}}>Please select On Role option. If this RFH is for hiring on your roles</span>
+                    </label>
+                    <div className="rfh-radio-group">
+                      <label className="rfh-radio-item">
+                        <input type="radio" name="rollsOption" value="Activity Outsourcing to HEPL" checked={formData.rollsOption === "Activity Outsourcing to HEPL"} onChange={handleChange} />
+                        Activity Outsourcing to HEPL
+                      </label>
+                      <label className="rfh-radio-item">
+                        <input type="radio" name="rollsOption" value="Manpower Outsourcing to HEPL" checked={formData.rollsOption === "Manpower Outsourcing to HEPL"} onChange={handleChange} />
+                        Manpower Outsourcing to HEPL
+                      </label>
+                      <label className="rfh-radio-item">
+                        <input type="radio" name="rollsOption" value="On Client Roll" checked={formData.rollsOption === "On Client Roll"} onChange={handleChange} />
+                        On Client Roll
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <TextAreaField
-                label="Additional Notes (Optional)"
-                name="anySpecific"
-                value={formData.anySpecific}
-                onChange={handleChange}
-                placeholder="Enter any additional notes..."
-              />
+            {/* CARD 2: MAIN FORM DETAILS */}
+            <div className="rfh-form-card">
+              <div className="rfh-grid-container">
+
+                {/* Row: Request raised by group */}
+                <div className="col-span-12">
+                  <label style={{ fontSize: '12.5px', fontWeight: '600', color: '#475569', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px', display: 'block' }}>
+                    Request raised by: <span className="required-star">*</span>
+                  </label>
+                </div>
+                
+                <div className="col-span-3">
+                  <InputField label="Name" name="name" value={formData.name} onChange={handleChange} />
+                </div>
+                <div className="col-span-3">
+                  <InputField label="Mobile number" name="mobile" value={formData.mobile} onChange={handleChange} />
+                </div>
+                <div className="col-span-3">
+                  <InputField label="Email address" name="email" value={formData.email} onChange={handleChange} />
+                </div>
+                <div className="col-span-3">
+                  <SelectField label="Position reports to" name="positionReports" value={formData.positionReports} onChange={handleChange} options={teamList} />
+                </div>
+
+                <div className="col-span-3">
+                  <InputField label="Position reports Email" name="reportEmail" value={formData.reportEmail} onChange={handleChange} />
+                </div>
+                <div className="col-span-3">
+                  <InputField label="Request Date" name="requestDate" value={formData.requestDate} onChange={handleChange} type="date" required />
+                </div>
+                <div className="col-span-3">
+                  <SelectField label="Request Type" name="requestType" value={formData.requestType} onChange={handleChange} options={[{label:'NEW', value:'NEW'}, {label:'REPLACEMENT', value:'REPLACEMENT'}]} required />
+                </div>
+                <div className="col-span-3">
+                  <InputField label="Approval Date" name="approveDate" value={formData.approveDate} onChange={handleChange} type="date" required />
+                </div>
+
+                <div className="col-span-3">
+                  <SelectField label="Approved by" name="approvedBy" value={formData.approvedBy} onChange={handleChange} options={teamList} required />
+                </div>
+                <div className="col-span-3">
+                  <SelectField label="Approval Type" name="approvalHire" value={formData.approvalHire} onChange={handleChange} options={[{label:'YES', value:'YES'}, {label:'NO', value:'NO'}]} required />
+                </div>
+                <div className="col-span-3">
+                  <InputField label="Position Title" name="positionTitle" value={formData.positionTitle} onChange={handleChange} required />
+                </div>
+                <div className="col-span-3">
+                  <SelectField label="Work Location" name="location" value={formData.location} onChange={handleChange} options={[{label:'Remote', value:'Remote'}, {label:'Onsite', value:'Onsite'}, {label:'Hybrid', value:'Hybrid'}]} required />
+                </div>
+
+                <div className="col-span-3">
+                  <TextAreaField label="Please mention location / Onsite Location preferred" name="locationPreferred" value={formData.locationPreferred} onChange={handleChange} />
+                </div>
+                <div className="col-span-3">
+                  <SelectField label="Grade/Band" name="band" value={formData.band} onChange={handleChange} options={[{label:'A', value:'A'}, {label:'B', value:'B'}, {label:'C', value:'C'}]} required />
+                </div>
+                <div className="col-span-3">
+                  <SelectField label="Department" name="department" value={formData.department} onChange={handleChange} options={departmentList} required />
+                </div>
+                <div className="col-span-3">
+                  <SelectField label="Vertical" name="vertical" value={formData.vertical} onChange={handleChange} options={departmentList} />
+                </div>
+
+                <div className="col-span-3">
+                  <InputField label="Function" name="function" value={formData.function} onChange={handleChange} required />
+                </div>
+                <div className="col-span-3">
+                  <InputField label="No. of Positions" name="noOfPositions" value={formData.noOfPositions} onChange={handleChange} required />
+                </div>
+                <div className="col-span-3">
+                  <TextAreaField label="JD / Roles & Responsibilities" name="jdRoles" value={formData.jdRoles} onChange={handleChange} helperText="(Please list as bullet points)" required />
+                </div>
+                <div className="col-span-3">
+                  <InputField label="Qualification" name="qualification" value={formData.qualification} onChange={handleChange} required />
+                </div>
+
+                <div className="col-span-3">
+                  <TextAreaField label="Essential Skill sets" name="essentialSkill" value={formData.essentialSkill} onChange={handleChange} required />
+                </div>
+                <div className="col-span-3">
+                  <TextAreaField label="Good to have Skill sets(If any)" name="goodSkill" value={formData.goodSkill} onChange={handleChange} />
+                </div>
+                <div className="col-span-3">
+                  <SelectField label="Employment Category" name="empCategory" value={formData.empCategory} onChange={handleChange} options={[{label:'Full Time', value:'Full Time'}, {label:'Contract', value:'Contract'}]} />
+                </div>
+                <div className="col-span-3">
+                  <SelectField label="Attendance Format" name="attendanceFormat" value={formData.attendanceFormat} onChange={handleChange} options={[{label:'Biometric', value:'Biometric'}, {label:'Manual', value:'Manual'}, {label:'App Based', value:'App Based'}]} />
+                </div>
+
+                <div className="col-span-3">
+                  <SelectField label="Week Off" name="weekOff" value={formData.weekOff} onChange={handleChange} options={[{label:'Saturday/Sunday', value:'Saturday/Sunday'}, {label:'Sunday', value:'Sunday'}]} />
+                </div>
+                <div className="col-span-3">
+                  <SelectField label="Experience (in yrs)" name="experience" value={formData.experience} onChange={handleChange} options={[{label:'0-2', value:'0-2'}, {label:'3-5', value:'3-5'}, {label:'6-10', value:'6-10'}, {label:'10+', value:'10+'}]} required />
+                </div>
+                <div className="col-span-3">
+                  <InputField label="Budgeted CTC (per month)" name="salaryRange" value={formData.salaryRange} onChange={handleChange} placeholder="Enter Month & CTC" required />
+                </div>
+                <div className="col-span-3">
+                  <InputField label="Budgeted CTC (per annum)" name="salaryRangeAnnual" value={formData.salaryRangeAnnual} onChange={handleChange} placeholder="Enter Annual CTC" required />
+                </div>
+
+                <div className="col-span-3">
+                  <TextAreaField label="Any other specific considerations/Add-on Share list" name="anySpecific" value={formData.anySpecific} onChange={handleChange} />
+                </div>
+                <div className="col-span-3">
+                  <InputField label="CKPL Reporting Manager (only for people outsourcing)" name="ckSupervisior" value={formData.ckSupervisior} onChange={handleChange} />
+                </div>
+                <div className="col-span-3">
+                  <InputField label="CKPL Reporting Manager's Email ID" name="ckMail" value={formData.ckMail} onChange={handleChange} />
+                </div>
+              </div>
             </div>
 
             {/* BOTTOM ACTIONS BAR */}
-            <div className="rfh-single-form-actions">
-              <button
-                type="button"
-                className="btn-rfh-cancel"
-                onClick={handleCancel}
-              >
-                <FaTimes />
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn-rfh-submit"
-                disabled={loading}
-              >
-                <FaPaperPlane />
-                {loading ? "Submitting..." : id ? "Update RFH" : "Submit RFH"}
+            <div className="rfh-single-form-actions" style={{ justifyContent: 'center', marginTop: '30px' }}>
+              <button type="submit" className="btn-rfh-submit" style={{ padding: '0 40px', background: '#3b82f6', borderRadius: '4px' }} disabled={loading}>
+                {loading ? "Submitting..." : "Submit"}
               </button>
             </div>
-
           </form>
 
         </div>
