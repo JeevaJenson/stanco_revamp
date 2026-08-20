@@ -233,117 +233,118 @@ function Department() {
 
   const handleSubmit = async (e) => {
 
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!formData.depId.trim()) {
+  if (!formData.depId.trim()) {
 
-      showToast(
-        "error",
-        "Department ID is required"
-      );
+    showToast(
+      "error",
+      "Department ID is required"
+    );
 
-      return;
-    }
+    return;
+  }
 
-    if (!formData.name.trim()) {
+  if (!formData.name.trim()) {
 
-      showToast(
-        "error",
-        "Department name is required"
-      );
+    showToast(
+      "error",
+      "Department name is required"
+    );
 
-      return;
-    }
+    return;
+  }
 
-    /*
-      IMPORTANT:
+  // Vertical required ONLY for CREATE
+  if (!editId && !formData.verticalId) {
 
-      Backend DepartmentRequest expects:
+    showToast(
+      "error",
+      "Vertical is required"
+    );
 
-      depId
-      name
-      status
-      verticalId
-    */
+    return;
+  }
 
-    if (!formData.verticalId) {
+  try {
 
-      showToast(
-        "error",
-        "Vertical is required"
-      );
+    setSaving(true);
 
-      return;
-    }
+    const requestData = {
 
-    try {
+      depId: formData.depId.trim(),
 
-      setSaving(true);
+      name: formData.name.trim(),
 
-      const requestData = {
+      status: formData.status
 
-        depId: formData.depId.trim(),
+    };
 
-        name: formData.name.trim(),
+    // CREATE only
+    if (!editId) {
 
-        status: formData.status,
-
-        verticalId: Number(
-          formData.verticalId
-        )
-
-      };
-
-      if (editId) {
-
-        await api.put(
-          `/departments/${editId}`,
-          requestData
-        );
-
-        showToast(
-          "success",
-          "Department updated successfully"
-        );
-
-      } else {
-
-        await api.post(
-          "/departments",
-          requestData
-        );
-
-        showToast(
-          "success",
-          "Department created successfully"
-        );
-
-      }
-
-      closeModal();
-
-      fetchDepartments();
-
-    } catch (error) {
-
-      console.error(
-        "Department save error:",
-        error
-      );
-
-      showToast(
-        "error",
-        error.response?.data?.message ||
-        "Failed to save department"
-      );
-
-    } finally {
-
-      setSaving(false);
+      requestData.verticalId =
+        Number(formData.verticalId);
 
     }
 
-  };
+    console.log(
+      "Department request:",
+      requestData
+    );
+
+    if (editId) {
+
+      await api.put(
+        `/departments/${editId}`,
+        requestData
+      );
+
+      showToast(
+        "success",
+        "Department updated successfully"
+      );
+
+    } else {
+
+      await api.post(
+        "/departments",
+        requestData
+      );
+
+      showToast(
+        "success",
+        "Department created successfully"
+      );
+    }
+
+    closeModal();
+
+    await fetchDepartments();
+
+  } catch (error) {
+
+    console.error(
+      "Department save error:",
+      error
+    );
+
+    console.error(
+      "Backend response:",
+      error.response?.data
+    );
+
+    showToast(
+      "error",
+      error.response?.data?.message ||
+      "Failed to save department"
+    );
+
+  } finally {
+
+    setSaving(false);
+  }
+};
 
   // =====================================================
   // DELETE
