@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
 import {
   FaTimes,
   FaFileAlt,
@@ -15,38 +16,56 @@ import {
   FaListUl,
   FaListOl,
 } from "react-icons/fa";
+
 import api from "../services/api";
 import Sidebar from "./Sidebar";
-import { InputField, SelectField, TextAreaField } from "../components/FormFields";
+
+import {
+  InputField,
+  SelectField,
+  TextAreaField,
+} from "../components/FormFields";
+
 import "../style/RFHForm.css";
 
-/* =========================================================
-   INITIAL FORM DATA
-========================================================= */
+
+// ============================================================
+// INITIAL FORM DATA
+// ============================================================
 
 const initialFormData = {
   resId: "",
+
   rollsOption: "",
+
   name: "",
   mobile: "",
   email: "",
+
   positionReports: "",
   reportEmail: "",
+
   costCenter: "",
   approvedBy: "",
 
   requestType: "NEW",
-  replacementOf: "",
+
+  // Backend has @NotBlank
+  // So don't keep this empty for NEW request
+  replacementOf: "NA",
+
   approvalHire: "YES",
-  ticketNumber: "",
 
   positionTitle: "",
   location: "",
   locationPreferred: "",
+
   business: "",
+
   band: "",
   division: "",
   function: "",
+
   noOfPositions: "",
 
   jdRoles: "",
@@ -57,12 +76,17 @@ const initialFormData = {
 
   salaryRange: "",
   salaryRangeAnnual: "",
+
   anySpecific: "",
 
   deleteRemark: "",
+
   approvalHirePath: 0,
 
-  requestDate: new Date().toISOString().split("T")[0],
+  requestDate: new Date()
+    .toISOString()
+    .split("T")[0],
+
   approveDate: "",
 
   department: "",
@@ -70,29 +94,46 @@ const initialFormData = {
   vertical: "",
 
   tenDoj: "",
+
   empCategory: "",
+
   type: "",
+
   attendanceFormat: "",
   weekOff: "",
 
   ckSupervisior: "",
   ckMail: "",
+
   approverId: "",
   reporterId: "",
 
   clientName: "STANCO",
+
+  requestBy: "",
 };
 
-/* =========================================================
-   MAIN FORM COMPONENT
-========================================================= */
+
+// ============================================================
+// COMPONENT
+// ============================================================
 
 function RFHForm() {
   const navigate = useNavigate();
+
   const { id } = useParams();
 
-  const [formData, setFormData] = useState(initialFormData);
+
+  // ==========================================================
+  // STATES
+  // ==========================================================
+
+  const [formData, setFormData] = useState(
+    initialFormData
+  );
+
   const [loading, setLoading] = useState(false);
+
   const [loadingData, setLoadingData] = useState(false);
 
   const [toast, setToast] = useState({
@@ -101,482 +142,2376 @@ function RFHForm() {
     message: "",
   });
 
+
+  // ==========================================================
+  // DROPDOWN STATES
+  // ==========================================================
+
   const [businessList, setBusinessList] = useState([
-    { label: "CKLP", value: "CKLP" },
-    { label: "STANCO", value: "STANCO" }
+    {
+      label: "CKPL",
+      value: "CKPL",
+    },
+    {
+      label: "STANCO",
+      value: "STANCO",
+    },
   ]);
-  const [departmentList, setDepartmentList] = useState([
-    { label: "BUSINESS", value: "BUSINESS" },
-    { label: "Human Resources", value: "Human Resources" },
-    { label: "IT", value: "IT" }
-  ]);
+
+  const [departmentList, setDepartmentList] =
+    useState([]);
+
+  const [departmentData, setDepartmentData] =
+    useState([]);
+
+  const [verticalList, setVerticalList] =
+    useState([]);
+
   const [teamList, setTeamList] = useState([
-    { label: "CKPL", value: "CKPL" },
-    { label: "STANCO", value: "STANCO" }
+    {
+      label: "CKPL",
+      value: "CKPL",
+    },
+    {
+      label: "STANCO",
+      value: "STANCO",
+    },
   ]);
 
-  // Load dropdown lists and set default values
+
+  // ==========================================================
+  // LOAD DROPDOWN DATA
+  // ==========================================================
+
   useEffect(() => {
+
     const loadDropdownData = async () => {
+
       try {
-        const [busRes, deptRes, teamRes] = await Promise.all([
+
+        const [
+          businessResponse,
+          departmentResponse,
+          teamResponse,
+          verticalResponse,
+        ] = await Promise.all([
+
           api.get("/business-masters"),
+
           api.get("/departments"),
-          api.get("/teams")
+
+          api.get("/teams"),
+
+          api.get("/verticals"),
+
         ]);
-        
-        const activeBuses = (busRes.data || [])
-          .filter(b => String(b.status || "active").toLowerCase() === "active")
-          .map(b => ({ label: b.businessName, value: b.businessName }));
-        if (activeBuses.length > 0) setBusinessList(activeBuses);
 
-        const activeDepts = (deptRes.data || [])
-          .filter(d => String(d.status || "active").toLowerCase() === "active")
-          .map(d => ({ label: d.name, value: d.name }));
-        if (activeDepts.length > 0) setDepartmentList(activeDepts);
 
-        const activeTeams = (teamRes.data || [])
-          .filter(t => String(t.status ?? 1) === "1" || String(t.status || "").toLowerCase() === "active")
-          .map(t => ({ label: t.name, value: t.name }));
-        if (activeTeams.length > 0) setTeamList(activeTeams);
-      } catch (err) {
-        console.error("Error loading dropdown data:", err);
+        // ====================================================
+        // BUSINESS
+        // ====================================================
+
+        const businessData =
+          businessResponse.data || [];
+
+        const activeBusinesses =
+          businessData
+
+            .filter(
+              (business) =>
+                String(
+                  business.status ?? 1
+                ) === "1" ||
+
+                String(
+                  business.status || ""
+                ).toLowerCase() ===
+                  "active"
+            )
+
+            .map((business) => ({
+
+              label:
+                business.businessName ||
+                business.name,
+
+              value:
+                business.businessName ||
+                business.name,
+
+            }))
+
+            .filter(
+              (business) =>
+                business.label
+            );
+
+
+        if (
+          activeBusinesses.length > 0
+        ) {
+
+          setBusinessList(
+            activeBusinesses
+          );
+
+        }
+
+
+        // ====================================================
+        // DEPARTMENT
+        // ====================================================
+
+        const departmentDataResponse =
+          departmentResponse.data || [];
+
+
+        const activeDepartments =
+          departmentDataResponse.filter(
+            (department) =>
+
+              String(
+                department.status ??
+                  "active"
+              ).toLowerCase() ===
+                "active" ||
+
+              String(
+                department.status ?? 1
+              ) === "1"
+          );
+
+
+        setDepartmentData(
+          activeDepartments
+        );
+
+
+        setDepartmentList(
+
+          activeDepartments
+
+            .map((department) => ({
+
+              label:
+                department.name,
+
+              value:
+                department.name,
+
+            }))
+
+            .filter(
+              (department) =>
+                department.label
+            )
+
+        );
+
+
+        // ====================================================
+        // VERTICAL
+        // ====================================================
+
+        const verticalData =
+          verticalResponse.data || [];
+
+
+        const activeVerticals =
+          verticalData
+
+            .filter(
+              (vertical) =>
+
+                String(
+                  vertical.status ?? 1
+                ) === "1" ||
+
+                String(
+                  vertical.status || ""
+                ).toLowerCase() ===
+                  "active"
+            )
+
+            .map((vertical) => ({
+
+              id:
+                vertical.id,
+
+              label:
+                vertical.name ||
+                vertical.verticalName,
+
+              value:
+                vertical.name ||
+                vertical.verticalName,
+
+            }))
+
+            .filter(
+              (vertical) =>
+                vertical.label
+            );
+
+
+        setVerticalList(
+          activeVerticals
+        );
+
+
+        // ====================================================
+        // TEAM
+        // ====================================================
+
+        const teamData =
+          teamResponse.data || [];
+
+
+        const activeTeams =
+          teamData
+
+            .filter(
+              (team) =>
+
+                String(
+                  team.status ?? 1
+                ) === "1" ||
+
+                String(
+                  team.status || ""
+                ).toLowerCase() ===
+                  "active"
+            )
+
+            .map((team) => ({
+
+              label:
+                team.name,
+
+              value:
+                team.name,
+
+            }))
+
+            .filter(
+              (team) =>
+                team.label
+            );
+
+
+        if (
+          activeTeams.length > 0
+        ) {
+
+          setTeamList(
+            activeTeams
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Error loading dropdown data:",
+          error
+        );
+
       }
+
     };
+
+
     loadDropdownData();
+
   }, []);
 
-  // Fetch RFH details on edit mode
+
+  // ==========================================================
+  // LOAD CURRENT USER / EDIT DATA
+  // ==========================================================
+
   useEffect(() => {
+
     if (id) {
+
       fetchRfhById(id);
-    } else {
-      // Auto-set the requestBy field to the logged-in user name
-      const currentUserStr = localStorage.getItem("user");
-      const currentUserObj = currentUserStr ? JSON.parse(currentUserStr) : null;
-      setFormData(prev => ({
-        ...prev,
-        requestBy: currentUserObj?.name || "Admin",
-      }));
+
+      return;
+
     }
+
+
+    const currentUserString =
+      localStorage.getItem("user");
+
+
+    const currentUser =
+      currentUserString
+        ? JSON.parse(
+            currentUserString
+          )
+        : null;
+
+
+    setFormData((previous) => ({
+
+      ...previous,
+
+      requestBy:
+        currentUser?.name ||
+        currentUser?.empID ||
+        "Admin",
+
+      name:
+        currentUser?.name ||
+        "",
+
+      email:
+        currentUser?.email ||
+        "",
+
+      mobile:
+        currentUser?.mobileNo ||
+        "",
+
+    }));
+
   }, [id]);
 
-  const fetchRfhById = async (rfhId) => {
+
+  // ==========================================================
+  // GET RFH BY ID
+  // ==========================================================
+
+  const fetchRfhById = async (
+    rfhId
+  ) => {
+
     try {
+
       setLoadingData(true);
-      const response = await api.get(`/rfh/${rfhId}`);
+
+
+      const response =
+        await api.get(
+          `/rfh/${rfhId}`
+        );
+
+
+      const rfh =
+        response.data || {};
+
+
       setFormData({
+
         ...initialFormData,
-        ...(response.data || {}),
+
+        ...rfh,
+
+        // Backend response has ticketNumber
+        // but we don't send it during update
+
+        replacementOf:
+          rfh.replacementOf ||
+          "NA",
+
+        approvalHirePath:
+          rfh.approvalHirePath ??
+          0,
+
+        clientName:
+          rfh.clientName ||
+          "STANCO",
+
       });
+
     } catch (error) {
-      console.error("RFH fetch error:", error);
-      showToast("error", error?.response?.data?.message || "Failed to load RFH details");
+
+      console.error(
+        "RFH fetch error:",
+        error
+      );
+
+
+      showToast(
+
+        "error",
+
+        error?.response?.data
+          ?.message ||
+
+        "Failed to load RFH details"
+
+      );
+
     } finally {
+
       setLoadingData(false);
+
     }
+
   };
 
-  const showToast = (type, message) => {
-    setToast({ show: true, type, message });
+
+  // ==========================================================
+  // TOAST
+  // ==========================================================
+
+  const showToast = (
+    type,
+    message
+  ) => {
+
+    setToast({
+
+      show: true,
+
+      type,
+
+      message,
+
+    });
+
+
     setTimeout(() => {
-      setToast({ show: false, type: "", message: "" });
+
+      setToast({
+
+        show: false,
+
+        type: "",
+
+        message: "",
+
+      });
+
     }, 3500);
+
   };
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
+
+  // ==========================================================
+  // NORMAL INPUT CHANGE
+  // ==========================================================
+
+  const handleChange = (
+    event
+  ) => {
+
+    const {
+      name,
+      value,
+    } = event.target;
+
+
+    setFormData(
+      (previous) => ({
+
+        ...previous,
+
+        [name]: value,
+
+      })
+    );
+
+
+    // ========================================================
+    // If Request Type = NEW
+    // replacementOf is not required from user
+    // ========================================================
+
+    if (
+      name === "requestType"
+    ) {
+
+      setFormData(
+        (previous) => ({
+
+          ...previous,
+
+          requestType:
+            value,
+
+          replacementOf:
+            value === "NEW"
+              ? "NA"
+              : previous.replacementOf,
+
+        })
+      );
+
+    }
+
+  };
+
+
+  // ==========================================================
+  // DEPARTMENT CHANGE
+  // ==========================================================
+
+  const handleDepartmentChange = (event) => {
+    const departmentName = event.target.value;
+
+    const selectedDepartment = departmentData.find((department) =>
+      String(department?.name || department?.departmentName || "")
+        .trim()
+        .toLowerCase() ===
+      String(departmentName || "")
+        .trim()
+        .toLowerCase()
+    );
+
+    console.log("Selected Department:", selectedDepartment);
+
+    let mappedVertical = "";
+
+    if (selectedDepartment) {
+      // 1. Department API returns verticalName
+      if (selectedDepartment.verticalName) {
+        mappedVertical = String(selectedDepartment.verticalName).trim();
+      }
+
+      // 2. Department API returns vertical / vertical object
+      else if (selectedDepartment.vertical) {
+        if (typeof selectedDepartment.vertical === "object") {
+          mappedVertical = String(
+            selectedDepartment.vertical?.name ||
+            selectedDepartment.vertical?.verticalName ||
+            selectedDepartment.vertical?.value ||
+            ""
+          ).trim();
+        } else {
+          mappedVertical = String(selectedDepartment.vertical).trim();
+        }
+      }
+
+      // 3. Department API returns verticalId
+      else if (
+        selectedDepartment.verticalId !== undefined &&
+        selectedDepartment.verticalId !== null
+      ) {
+        const matchedVertical = verticalList.find(
+          (vertical) =>
+            String(vertical?.id) === String(selectedDepartment.verticalId)
+        );
+
+        mappedVertical = String(matchedVertical?.value || "").trim();
+      }
+
+      // 4. Department API returns vertical_id
+      else if (
+        selectedDepartment.vertical_id !== undefined &&
+        selectedDepartment.vertical_id !== null
+      ) {
+        const matchedVertical = verticalList.find(
+          (vertical) =>
+            String(vertical?.id) === String(selectedDepartment.vertical_id)
+        );
+
+        mappedVertical = String(matchedVertical?.value || "").trim();
+      }
+    }
+
+    console.log("Auto Selected Vertical:", mappedVertical);
+
     setFormData((previous) => ({
       ...previous,
-      [name]: value,
+      department: departmentName,
+      vertical: mappedVertical,
     }));
   };
 
+  // ==========================================================
+  // CANCEL
+  // ==========================================================
+
   const handleCancel = () => {
-    const confirmed = window.confirm("Are you sure you want to cancel?");
+
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to cancel?"
+      );
+
+
     if (confirmed) {
+
       navigate("/rfh");
+
     }
+
   };
+
+
+  // ==========================================================
+  // VALIDATION
+  // ==========================================================
 
   const validateForm = () => {
-    if (!formData.ticketNumber?.trim()) {
-      showToast("error", "RFH Number is required");
+
+    if (
+      !formData.requestDate?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "RFH Date is required"
+      );
+
       return false;
+
     }
-    if (!formData.requestDate?.trim()) {
-      showToast("error", "RFH Date is required");
+
+
+    if (
+      !formData.business?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "Business Unit is required"
+      );
+
       return false;
+
     }
-    if (!formData.requestBy?.trim()) {
-      showToast("error", "Requested By is required");
+
+
+    if (
+      !formData.department?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "Department is required"
+      );
+
       return false;
+
     }
-    if (!formData.business?.trim()) {
-      showToast("error", "Business Unit is required");
+
+
+    if (
+      !formData.rollsOption?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "Team / Role option is required"
+      );
+
       return false;
+
     }
-    if (!formData.department?.trim()) {
-      showToast("error", "Department is required");
+
+
+    if (
+      !formData.positionTitle?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "Job Title is required"
+      );
+
       return false;
+
     }
-    if (!formData.rollsOption?.trim()) {
-      showToast("error", "Team is required");
+
+
+    if (
+      !formData.noOfPositions ||
+      !String(
+        formData.noOfPositions
+      ).trim()
+    ) {
+
+      showToast(
+        "error",
+        "Positions count is required"
+      );
+
       return false;
+
     }
-    if (!formData.positionTitle?.trim()) {
-      showToast("error", "Job Title is required");
+
+
+    if (
+      !formData.experience?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "Experience is required"
+      );
+
       return false;
+
     }
-    if (!formData.type?.trim()) {
-      showToast("error", "Job Type is required");
+
+
+    if (
+      !formData.qualification?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "Qualification is required"
+      );
+
       return false;
+
     }
-    if (!formData.noOfPositions || !String(formData.noOfPositions).trim()) {
-      showToast("error", "Positions count is required");
+
+
+    if (
+      !formData.locationPreferred?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "Location is required"
+      );
+
       return false;
+
     }
-    if (!formData.experience?.trim()) {
-      showToast("error", "Experience is required");
+
+
+    if (
+      !formData.attendanceFormat?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "Work Mode is required"
+      );
+
       return false;
+
     }
-    if (!formData.qualification?.trim()) {
-      showToast("error", "Qualification is required");
+
+
+    if (
+      !formData.band?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "Priority / Grade is required"
+      );
+
       return false;
+
     }
-    if (!formData.locationPreferred?.trim()) {
-      showToast("error", "Location is required");
+
+
+    if (
+      !formData.requestType?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "Request Type is required"
+      );
+
       return false;
+
     }
-    if (!formData.attendanceFormat?.trim()) {
-      showToast("error", "Work Mode is required");
+
+
+    // Backend has @NotBlank replacementOf
+    if (
+      !formData.replacementOf?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "Replacement Of is required"
+      );
+
       return false;
+
     }
-    if (!formData.band?.trim()) {
-      showToast("error", "Priority is required");
+
+
+    if (
+      !formData.clientName?.trim()
+    ) {
+
+      showToast(
+        "error",
+        "Client Name is required"
+      );
+
       return false;
+
     }
+
+
     return true;
+
   };
 
-  const handleSubmit = async (event) => {
+
+  // ==========================================================
+  // SUBMIT
+  // ==========================================================
+
+  const handleSubmit = async (
+    event
+  ) => {
+
     event.preventDefault();
-    if (!validateForm()) return;
+
+
+    // ------------------------------------------
+    // Validate
+    // ------------------------------------------
+
+    if (
+      !validateForm()
+    ) {
+
+      return;
+
+    }
+
 
     try {
+
       setLoading(true);
+
+
+      // ====================================================
+      // IMPORTANT
+      //
+      // Do NOT send ticketNumber.
+      //
+      // Backend generates:
+      //
+      // RFH-000001
+      // RFH-000002
+      // RFH-000003
+      //
+      // after saving the record.
+      // ====================================================
+
       const payload = {
-        ...formData,
-        approvalHirePath: formData.approvalHirePath === "" ? 0 : Number(formData.approvalHirePath),
+
+        resId:
+          formData.resId?.trim() ||
+          null,
+
+        rollsOption:
+          formData.rollsOption?.trim() ||
+          "",
+
+        name:
+          formData.name?.trim() ||
+          "",
+
+        mobile:
+          formData.mobile?.trim() ||
+          "",
+
+        email:
+          formData.email?.trim() ||
+          "",
+
+        positionReports:
+          formData.positionReports?.trim() ||
+          "",
+
+        reportEmail:
+          formData.reportEmail?.trim() ||
+          "",
+
+        costCenter:
+          formData.costCenter?.trim() ||
+          "",
+
+        approvedBy:
+          formData.approvedBy?.trim() ||
+          "",
+
+        requestType:
+          formData.requestType?.trim() ||
+          "NEW",
+
+        replacementOf:
+          formData.requestType === "NEW"
+            ? "NA"
+            : (
+                formData.replacementOf?.trim() ||
+                ""
+              ),
+
+        approvalHire:
+          formData.approvalHire?.trim() ||
+          "YES",
+
+        positionTitle:
+          formData.positionTitle?.trim() ||
+          "",
+
+        location:
+          formData.location?.trim() ||
+          "",
+
+        locationPreferred:
+          formData.locationPreferred?.trim() ||
+          "",
+
+        business:
+          formData.business?.trim() ||
+          "",
+
+        band:
+          formData.band?.trim() ||
+          "",
+
+        division:
+          formData.division?.trim() ||
+          "",
+
+        function:
+          formData.function?.trim() ||
+          "",
+
+        noOfPositions:
+          String(
+            formData.noOfPositions || ""
+          ).trim(),
+
+        jdRoles:
+          formData.jdRoles?.trim() ||
+          "",
+
+        qualification:
+          formData.qualification?.trim() ||
+          "",
+
+        essentialSkill:
+          formData.essentialSkill?.trim() ||
+          "",
+
+        goodSkill:
+          formData.goodSkill?.trim() ||
+          "",
+
+        experience:
+          formData.experience?.trim() ||
+          "",
+
+        salaryRange:
+          formData.salaryRange?.trim() ||
+          "",
+
+        salaryRangeAnnual:
+          formData.salaryRangeAnnual?.trim() ||
+          "",
+
+        anySpecific:
+          formData.anySpecific?.trim() ||
+          "",
+
+        deleteRemark:
+          formData.deleteRemark?.trim() ||
+          "",
+
+        approvalHirePath:
+          formData.approvalHirePath ===
+            "" ||
+          formData.approvalHirePath ===
+            null ||
+          formData.approvalHirePath ===
+            undefined
+
+            ? 0
+
+            : Number(
+                formData.approvalHirePath
+              ),
+
+        requestDate:
+          formData.requestDate?.trim() ||
+          "",
+
+        approveDate:
+          formData.approveDate?.trim() ||
+          "",
+
+        department:
+          formData.department?.trim() ||
+          "",
+
+        designation:
+          formData.designation?.trim() ||
+          "",
+
+        vertical:
+          formData.vertical?.trim() ||
+          "",
+
+        tenDoj:
+          formData.tenDoj?.trim() ||
+          "",
+
+        empCategory:
+          formData.empCategory?.trim() ||
+          "",
+
+        type:
+          formData.type?.trim() ||
+          "",
+
+        attendanceFormat:
+          formData.attendanceFormat?.trim() ||
+          "",
+
+        weekOff:
+          formData.weekOff?.trim() ||
+          "",
+
+        ckSupervisior:
+          formData.ckSupervisior?.trim() ||
+          "",
+
+        ckMail:
+          formData.ckMail?.trim() ||
+          "",
+
+        approverId:
+          formData.approverId?.trim() ||
+          "",
+
+        reporterId:
+          formData.reporterId?.trim() ||
+          "",
+
+        clientName:
+          formData.clientName?.trim() ||
+          "STANCO",
+
       };
 
+
+      // ====================================================
+      // DEBUG
+      // ====================================================
+
+      console.log(
+        "================================"
+      );
+
+      console.log(
+        id
+          ? "RFH UPDATE PAYLOAD"
+          : "RFH CREATE PAYLOAD"
+      );
+
+      console.log(
+        payload
+      );
+
+      console.log(
+        "================================"
+      );
+
+
       let response;
+
+
+      // ====================================================
+      // UPDATE
+      // ====================================================
+
       if (id) {
-        response = await api.put(`/rfh/${id}`, payload);
-      } else {
-        response = await api.post("/rfh", payload);
+
+        response =
+          await api.put(
+            `/rfh/${id}`,
+            payload
+          );
+
       }
 
-      showToast("success", id ? "RFH updated successfully" : "RFH created successfully");
+      // ====================================================
+      // CREATE
+      // ====================================================
+
+      else {
+
+        response =
+          await api.post(
+            "/rfh",
+            payload
+          );
+
+      }
+
+
+      console.log(
+        "RFH SUCCESS:",
+        response.data
+      );
+
+
+      // ====================================================
+      // SUCCESS MESSAGE
+      // ====================================================
+
+      const ticketNumber =
+        response?.data?.ticketNumber;
+
+
+      showToast(
+
+        "success",
+
+        id
+
+          ? `RFH ${
+              ticketNumber || ""
+            } updated successfully`
+
+          : `RFH ${
+              ticketNumber || ""
+            } created successfully`
+
+      );
+
+
+      // ====================================================
+      // NAVIGATE
+      // ====================================================
+
       setTimeout(() => {
+
         navigate("/rfh");
+
       }, 1200);
+
+
     } catch (error) {
-      console.error("RFH save error:", error);
-      showToast("error", error?.response?.data?.message || error?.response?.data?.error || "Failed to save RFH");
+
+      console.error(
+        "================================"
+      );
+
+      console.error(
+        "RFH SAVE ERROR"
+      );
+
+      console.error(
+        error
+      );
+
+      console.error(
+        "STATUS:",
+        error?.response?.status
+      );
+
+      console.error(
+        "DATA:",
+        error?.response?.data
+      );
+
+      console.error(
+        "================================"
+      );
+
+
+      // ====================================================
+      // SHOW ACTUAL BACKEND ERROR
+      // ====================================================
+
+      const backendData =
+        error?.response?.data;
+
+
+      let message =
+        "Failed to save RFH";
+
+
+      if (
+        typeof backendData ===
+        "string"
+      ) {
+
+        message =
+          backendData;
+
+      }
+
+      else if (
+        backendData?.message
+      ) {
+
+        message =
+          backendData.message;
+
+      }
+
+      else if (
+        backendData?.error
+      ) {
+
+        message =
+          backendData.error;
+
+      }
+
+      else if (
+        backendData?.errors
+      ) {
+
+        message =
+          Object.values(
+            backendData.errors
+          )
+            .join(", ");
+
+      }
+
+
+      showToast(
+        "error",
+        message
+      );
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
+
+  // ==========================================================
+  // LOADING EDIT DATA
+  // ==========================================================
+
   if (loadingData) {
+
     return (
+
       <div className="rfh-layout">
+
         <Sidebar />
-        <main className="rfh-content" style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <div>Loading RFH Form details...</div>
-        </main>
-      </div>
-    );
-  }
 
-  return (
-    <div className="rfh-layout">
-      <Sidebar />
+        <main
+          className="rfh-content"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
 
-      {toast.show && (
-        <div className={`toast-notification ${toast.type}`}>
-          {toast.message}
-        </div>
-      )}
+          <div>
 
-      <main className="rfh-content">
-        <div className="rfh-card-container">
-          
-          {/* HEADER TITLE BAR */}
-          <div className="rfh-card-header-bar">
-            <FaFileAlt className="header-bar-icon" />
-            <h2>{id ? "Update RFH" : "Create RFH"}</h2>
+            Loading RFH Form
+            details...
+
           </div>
 
-          <form onSubmit={handleSubmit} className="rfh-single-form">
-            
-            {/* 1. RFH DETAILS */}
-            <div className="rfh-form-card">
-              <div className="rfh-form-card-title">
-                <FaFileAlt className="card-title-icon" />
-                <h3>RFH DETAILS</h3>
-              </div>
-              <div className="rfh-form-grid-3col">
-                <InputField
-                  label="RFH Number"
-                  name="ticketNumber"
-                  value={formData.ticketNumber}
-                  onChange={handleChange}
-                  placeholder="RFH-2026-0001"
-                  required
-                  icon={FaFileAlt}
-                />
-                <InputField
-                  label="RFH Date"
-                  name="requestDate"
-                  value={formData.requestDate}
-                  onChange={handleChange}
-                  type="date"
-                  required
-                  icon={FaCalendarAlt}
-                />
-                <SelectField
-                  label="Requested By"
-                  name="requestBy"
-                  value={formData.requestBy}
-                  onChange={handleChange}
-                  options={[
-                    { label: formData.requestBy || "Admin", value: formData.requestBy || "Admin" },
-                    { label: "Admin", value: "Admin" },
-                    { label: "Hiring Manager", value: "Hiring Manager" },
-                    { label: "Recruiter", value: "Recruiter" }
-                  ]}
-                  icon={FaUser}
-                />
-                <SelectField
-                  label="Business Unit"
-                  name="business"
-                  value={formData.business}
-                  onChange={handleChange}
-                  options={businessList}
-                  required
-                  icon={FaBuilding}
-                />
-                <SelectField
-                  label="Department"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  options={departmentList}
-                  required
-                  icon={FaBriefcase}
-                />
-                <InputField
-                  label="Vertical"
-                  name="vertical"
-                  value={formData.vertical}
-                  onChange={handleChange}
-                  placeholder="Enter vertical"
-                  icon={FaBuilding}
-                />
-                <SelectField
-                  label="Team"
-                  name="rollsOption"
-                  value={formData.rollsOption}
-                  onChange={handleChange}
-                  options={teamList}
-                  required
-                  icon={FaUsers}
-                />
-              </div>
-            </div>
+        </main>
 
-            {/* 2. JOB DETAILS */}
-            <div className="rfh-form-card">
-              <div className="rfh-form-card-title">
-                <FaBriefcase className="card-title-icon" />
-                <h3>JOB DETAILS</h3>
-              </div>
-              <div className="rfh-form-grid-3col">
-                <InputField
-                  label="Job Title"
-                  name="positionTitle"
-                  value={formData.positionTitle}
-                  onChange={handleChange}
-                  placeholder="Enter job title"
-                  required
-                />
-                <SelectField
-                  label="Job Type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  options={[
-                    { label: "Full Time", value: "Full Time" },
-                    { label: "Contract", value: "Contract" },
-                    { label: "Part Time", value: "Part Time" }
-                  ]}
-                  required
-                />
-                <InputField
-                  label="Positions"
-                  name="noOfPositions"
-                  value={formData.noOfPositions}
-                  onChange={handleChange}
-                  placeholder="Enter number of positions"
-                  required
-                />
-                <InputField
-                  label="Experience"
-                  name="experience"
-                  value={formData.experience}
-                  onChange={handleChange}
-                  placeholder="Enter experience (e.g., 2-5 years)"
-                  required
-                />
-                <InputField
-                  label="Qualification"
-                  name="qualification"
-                  value={formData.qualification}
-                  onChange={handleChange}
-                  placeholder="Enter qualification"
-                  required
-                />
-                <InputField
-                  label="Location"
-                  name="locationPreferred"
-                  value={formData.locationPreferred}
-                  onChange={handleChange}
-                  placeholder="Enter location"
-                  required
-                />
-                <SelectField
-                  label="Work Mode"
-                  name="attendanceFormat"
-                  value={formData.attendanceFormat}
-                  onChange={handleChange}
-                  options={[
-                    { label: "Hybrid", value: "HYBRID" },
-                    { label: "Work From Office", value: "OFFICE" },
-                    { label: "Work From Home", value: "REMOTE" }
-                  ]}
-                  required
-                />
-                <SelectField
-                  label="Priority"
-                  name="band"
-                  value={formData.band}
-                  onChange={handleChange}
-                  options={[
-                    { label: "High", value: "High" },
-                    { label: "Medium", value: "Medium" },
-                    { label: "Low", value: "Low" }
-                  ]}
-                  required
-                />
-                <InputField
-                  label="Joining Date"
-                  name="tenDoj"
-                  value={formData.tenDoj}
-                  onChange={handleChange}
-                  type="date"
-                  icon={FaCalendarAlt}
-                />
-              </div>
-            </div>
+      </div>
 
-            {/* 3. SKILLS */}
-            <div className="rfh-form-card">
-              <div className="rfh-form-card-title">
-                <FaUsers className="card-title-icon" />
-                <h3>SKILLS</h3>
-              </div>
-              <TextAreaField
-                label="Required Skills"
-                name="essentialSkill"
-                value={formData.essentialSkill}
-                onChange={handleChange}
-                placeholder="Enter required skills (e.g., Java, React, SQL, ...)"
-                helperText="Separate skills with comma"
-              />
-            </div>
+    );
 
-            {/* 4. JOB DESCRIPTION */}
-            <div className="rfh-form-card">
-              <div className="rfh-form-card-title">
-                <FaFileAlt className="card-title-icon" />
-                <h3>JOB DESCRIPTION</h3>
-              </div>
-              
-              {/* Rich Text Editor Mockup / Styled Area */}
-              <div className="rfh-field rfh-full-field">
-                <label>Job Description</label>
-                <div className="rfh-editor-wrapper">
-                  <div className="rfh-editor-toolbar">
-                    <button type="button" className="toolbar-btn"><FaBold /></button>
-                    <button type="button" className="toolbar-btn"><FaItalic /></button>
-                    <button type="button" className="toolbar-btn"><FaUnderline /></button>
-                    <span className="toolbar-separator">|</span>
-                    <button type="button" className="toolbar-btn"><FaListUl /></button>
-                    <button type="button" className="toolbar-btn"><FaListOl /></button>
-                  </div>
-                  <textarea
-                    name="jdRoles"
-                    value={formData.jdRoles ?? ""}
-                    onChange={handleChange}
-                    placeholder="Enter job description..."
-                    maxLength={2000}
-                    className="rfh-editor-textarea"
+  }
+
+
+  // ==========================================================
+  // UI
+  // ==========================================================
+
+  return (
+
+    <div className="rfh-layout">
+
+      <Sidebar />
+
+
+      {/* ====================================================
+          TOAST
+      ==================================================== */}
+
+      {toast.show && (
+
+        <div
+          className={`toast-notification ${toast.type}`}
+        >
+
+          {toast.message}
+
+        </div>
+
+      )}
+
+
+      <main className="rfh-content">
+
+        <div className="rfh-card-container">
+
+
+          {/* ==================================================
+              HEADER
+          ================================================== */}
+
+          <div
+            className="rfh-card-header-bar"
+            style={{
+              justifyContent: "center",
+            }}
+          >
+
+            <h2
+              style={{
+                textTransform:
+                  "uppercase",
+
+                color:
+                  "#134e4a",
+              }}
+            >
+
+              REQUEST FOR HIRE
+              {" "}
+              (RFH - HEPL)
+
+            </h2>
+
+          </div>
+
+
+          {/* ==================================================
+              FORM
+          ================================================== */}
+
+          <form
+            onSubmit={handleSubmit}
+            className="rfh-single-form"
+            style={{
+              padding: "0",
+              background:
+                "transparent",
+            }}
+          >
+
+
+            {/* =================================================
+                BUSINESS / ROLE
+            ================================================= */}
+
+            <div
+              className="rfh-form-card"
+              style={{
+                marginBottom:
+                  "20px",
+              }}
+            >
+
+              <div className="rfh-grid-container">
+
+
+                <div className="col-span-3">
+
+                  <SelectField
+                    label="Business"
+                    name="business"
+                    value={
+                      formData.business
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    options={
+                      businessList
+                    }
+                    required
                   />
-                  <div className="rfh-editor-footer">
-                    <span className="rfh-char-counter">
-                      {(formData.jdRoles || "").length} / 2000
-                    </span>
-                  </div>
+
                 </div>
+
+
+                <div className="col-span-9">
+                </div>
+
+
+                <div className="col-span-12">
+
+                  <div className="rfh-field">
+
+                    <label>
+
+                      Request for hire:
+
+                      <br />
+
+                      <span
+                        style={{
+                          fontWeight:
+                            "normal",
+
+                          fontSize:
+                            "11.5px",
+
+                          color:
+                            "#64748b",
+                        }}
+                      >
+
+                        Please select
+                        On Role option.
+                        If this RFH is
+                        for hiring on
+                        your roles
+
+                      </span>
+
+                    </label>
+
+
+                    <div className="rfh-radio-group">
+
+
+                      {/* Activity Outsourcing */}
+
+                      <label className="rfh-radio-item">
+
+                        <input
+                          type="radio"
+                          name="rollsOption"
+                          value="Activity Outsourcing to HEPL"
+                          checked={
+                            formData.rollsOption ===
+                            "Activity Outsourcing to HEPL"
+                          }
+                          onChange={
+                            handleChange
+                          }
+                        />
+
+                        Activity
+                        Outsourcing to
+                        HEPL
+
+                      </label>
+
+
+                      {/* Manpower Outsourcing */}
+
+                      <label className="rfh-radio-item">
+
+                        <input
+                          type="radio"
+                          name="rollsOption"
+                          value="Manpower Outsourcing to HEPL"
+                          checked={
+                            formData.rollsOption ===
+                            "Manpower Outsourcing to HEPL"
+                          }
+                          onChange={
+                            handleChange
+                          }
+                        />
+
+                        Manpower
+                        Outsourcing to
+                        HEPL
+
+                      </label>
+
+
+                      {/* On Client Roll */}
+
+                      <label className="rfh-radio-item">
+
+                        <input
+                          type="radio"
+                          name="rollsOption"
+                          value="On Client Roll"
+                          checked={
+                            formData.rollsOption ===
+                            "On Client Roll"
+                          }
+                          onChange={
+                            handleChange
+                          }
+                        />
+
+                        On Client
+                        Roll
+
+                      </label>
+
+
+                    </div>
+
+                  </div>
+
+                </div>
+
               </div>
 
-              <TextAreaField
-                label="Additional Notes (Optional)"
-                name="anySpecific"
-                value={formData.anySpecific}
-                onChange={handleChange}
-                placeholder="Enter any additional notes..."
-              />
             </div>
 
-            {/* BOTTOM ACTIONS BAR */}
-            <div className="rfh-single-form-actions">
+
+            {/* =================================================
+                REQUEST RAISED BY
+            ================================================= */}
+
+            <div className="rfh-form-card">
+
+              <div className="rfh-grid-container">
+
+
+                <div className="col-span-12">
+
+                  <label
+                    style={{
+                      fontSize:
+                        "12.5px",
+
+                      fontWeight:
+                        "600",
+
+                      color:
+                        "#475569",
+
+                      borderBottom:
+                        "1px solid #e2e8f0",
+
+                      paddingBottom:
+                        "8px",
+
+                      display:
+                        "block",
+                    }}
+                  >
+
+                    Request raised
+                    by:
+
+                    <span className="required-star">
+                      *
+                    </span>
+
+                  </label>
+
+                </div>
+
+
+                {/* NAME */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="Name"
+                    name="name"
+                    value={
+                      formData.name
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  />
+
+                </div>
+
+
+                {/* MOBILE */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="Mobile number"
+                    name="mobile"
+                    value={
+                      formData.mobile
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  />
+
+                </div>
+
+
+                {/* EMAIL */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="Email address"
+                    name="email"
+                    value={
+                      formData.email
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  />
+
+                </div>
+
+
+                {/* REPORTS TO */}
+
+                <div className="col-span-3">
+
+                  <SelectField
+                    label="Position reports to"
+                    name="positionReports"
+                    value={
+                      formData.positionReports
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    options={
+                      teamList
+                    }
+                  />
+
+                </div>
+
+
+                {/* REPORT EMAIL */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="Position reports Email"
+                    name="reportEmail"
+                    value={
+                      formData.reportEmail
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  />
+
+                </div>
+
+
+                {/* REQUEST DATE */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="Request Date"
+                    name="requestDate"
+                    value={
+                      formData.requestDate
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    type="date"
+                    required
+                  />
+
+                </div>
+
+
+                {/* REQUEST TYPE */}
+
+                <div className="col-span-3">
+
+                  <SelectField
+                    label="Request Type"
+                    name="requestType"
+                    value={
+                      formData.requestType
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    options={[
+                      {
+                        label: "NEW",
+                        value: "NEW",
+                      },
+                      {
+                        label:
+                          "REPLACEMENT",
+                        value:
+                          "REPLACEMENT",
+                      },
+                    ]}
+                    required
+                  />
+
+                </div>
+
+
+                {/* APPROVAL DATE */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="Approval Date"
+                    name="approveDate"
+                    value={
+                      formData.approveDate
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    type="date"
+                  />
+
+                </div>
+
+
+                {/* APPROVED BY */}
+
+                <div className="col-span-3">
+
+                  <SelectField
+                    label="Approved by"
+                    name="approvedBy"
+                    value={
+                      formData.approvedBy
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    options={
+                      teamList
+                    }
+                    required
+                  />
+
+                </div>
+
+
+                {/* APPROVAL TYPE */}
+
+                <div className="col-span-3">
+
+                  <SelectField
+                    label="Approval Type"
+                    name="approvalHire"
+                    value={
+                      formData.approvalHire
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    options={[
+                      {
+                        label:
+                          "YES",
+                        value:
+                          "YES",
+                      },
+                      {
+                        label:
+                          "NO",
+                        value:
+                          "NO",
+                      },
+                    ]}
+                    required
+                  />
+
+                </div>
+
+
+                {/* POSITION TITLE */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="Position Title"
+                    name="positionTitle"
+                    value={
+                      formData.positionTitle
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    required
+                  />
+
+                </div>
+
+
+                {/* LOCATION */}
+
+                <div className="col-span-3">
+
+                  <SelectField
+                    label="Work Location"
+                    name="location"
+                    value={
+                      formData.location
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    options={[
+                      {
+                        label:
+                          "Remote",
+                        value:
+                          "Remote",
+                      },
+                      {
+                        label:
+                          "Onsite",
+                        value:
+                          "Onsite",
+                      },
+                      {
+                        label:
+                          "Hybrid",
+                        value:
+                          "Hybrid",
+                      },
+                    ]}
+                    required
+                  />
+
+                </div>
+
+
+                {/* LOCATION PREFERRED */}
+
+                <div className="col-span-3">
+
+                  <TextAreaField
+                    label="Please mention location / Onsite Location preferred"
+                    name="locationPreferred"
+                    value={
+                      formData.locationPreferred
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  />
+
+                </div>
+
+
+                {/* BAND */}
+
+                <div className="col-span-3">
+
+                  <SelectField
+                    label="Grade/Band"
+                    name="band"
+                    value={
+                      formData.band
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    options={[
+                      {
+                        label: "A",
+                        value: "A",
+                      },
+                      {
+                        label: "B",
+                        value: "B",
+                      },
+                      {
+                        label: "C",
+                        value: "C",
+                      },
+                    ]}
+                    required
+                  />
+
+                </div>
+
+
+                {/* DEPARTMENT */}
+
+                <div className="col-span-3">
+
+                  <SelectField
+                    label="Department"
+                    name="department"
+                    value={
+                      formData.department
+                    }
+                    onChange={
+                      handleDepartmentChange
+                    }
+                    options={
+                      departmentList
+                    }
+                    required
+                  />
+
+                </div>
+
+
+                {/* VERTICAL */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="Vertical"
+                    name="vertical"
+                    value={
+                      formData.vertical
+                    }
+                    onChange={() => {}}
+                    readOnly
+                    required
+                  />
+
+                </div>
+
+
+                {/* FUNCTION */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="Function"
+                    name="function"
+                    value={
+                      formData.function
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    required
+                  />
+
+                </div>
+
+
+                {/* POSITIONS */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="No. of Positions"
+                    name="noOfPositions"
+                    value={
+                      formData.noOfPositions
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    required
+                  />
+
+                </div>
+
+
+                {/* JD */}
+
+                <div className="col-span-3">
+
+                  <TextAreaField
+                    label="JD / Roles & Responsibilities"
+                    name="jdRoles"
+                    value={
+                      formData.jdRoles
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    helperText="(Please list as bullet points)"
+                    required
+                  />
+
+                </div>
+
+
+                {/* QUALIFICATION */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="Qualification"
+                    name="qualification"
+                    value={
+                      formData.qualification
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    required
+                  />
+
+                </div>
+
+
+                {/* ESSENTIAL SKILLS */}
+
+                <div className="col-span-3">
+
+                  <TextAreaField
+                    label="Essential Skill sets"
+                    name="essentialSkill"
+                    value={
+                      formData.essentialSkill
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    required
+                  />
+
+                </div>
+
+
+                {/* GOOD SKILLS */}
+
+                <div className="col-span-3">
+
+                  <TextAreaField
+                    label="Good to have Skill sets(If any)"
+                    name="goodSkill"
+                    value={
+                      formData.goodSkill
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  />
+
+                </div>
+
+
+                {/* EMP CATEGORY */}
+
+                <div className="col-span-3">
+
+                  <SelectField
+                    label="Employment Category"
+                    name="empCategory"
+                    value={
+                      formData.empCategory
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    options={[
+                      {
+                        label:
+                          "Full Time",
+                        value:
+                          "Full Time",
+                      },
+                      {
+                        label:
+                          "Contract",
+                        value:
+                          "Contract",
+                      },
+                    ]}
+                  />
+
+                </div>
+
+
+                {/* ATTENDANCE */}
+
+                <div className="col-span-3">
+
+                  <SelectField
+                    label="Attendance Format"
+                    name="attendanceFormat"
+                    value={
+                      formData.attendanceFormat
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    options={[
+                      {
+                        label:
+                          "Biometric",
+                        value:
+                          "Biometric",
+                      },
+                      {
+                        label:
+                          "Manual",
+                        value:
+                          "Manual",
+                      },
+                      {
+                        label:
+                          "App Based",
+                        value:
+                          "App Based",
+                      },
+                    ]}
+                  />
+
+                </div>
+
+
+                {/* WEEK OFF */}
+
+                <div className="col-span-3">
+
+                  <SelectField
+                    label="Week Off"
+                    name="weekOff"
+                    value={
+                      formData.weekOff
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    options={[
+                      {
+                        label:
+                          "Saturday/Sunday",
+                        value:
+                          "Saturday/Sunday",
+                      },
+                      {
+                        label:
+                          "Sunday",
+                        value:
+                          "Sunday",
+                      },
+                    ]}
+                  />
+
+                </div>
+
+
+                {/* EXPERIENCE */}
+
+                <div className="col-span-3">
+
+                  <SelectField
+                    label="Experience (in yrs)"
+                    name="experience"
+                    value={
+                      formData.experience
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    options={[
+                      {
+                        label:
+                          "0-2",
+                        value:
+                          "0-2",
+                      },
+                      {
+                        label:
+                          "3-5",
+                        value:
+                          "3-5",
+                      },
+                      {
+                        label:
+                          "6-10",
+                        value:
+                          "6-10",
+                      },
+                      {
+                        label:
+                          "10+",
+                        value:
+                          "10+",
+                      },
+                    ]}
+                    required
+                  />
+
+                </div>
+
+
+                {/* MONTHLY CTC */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="Budgeted CTC (per month)"
+                    name="salaryRange"
+                    value={
+                      formData.salaryRange
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    placeholder="Enter Month & CTC"
+                    required
+                  />
+
+                </div>
+
+
+                {/* ANNUAL CTC */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="Budgeted CTC (per annum)"
+                    name="salaryRangeAnnual"
+                    value={
+                      formData.salaryRangeAnnual
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    placeholder="Enter Annual CTC"
+                    required
+                  />
+
+                </div>
+
+
+                {/* OTHER */}
+
+                <div className="col-span-3">
+
+                  <TextAreaField
+                    label="Any other specific considerations/Add-on Share list"
+                    name="anySpecific"
+                    value={
+                      formData.anySpecific
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  />
+
+                </div>
+
+
+                {/* SUPERVISOR */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="CKPL Reporting Manager (only for people outsourcing)"
+                    name="ckSupervisior"
+                    value={
+                      formData.ckSupervisior
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  />
+
+                </div>
+
+
+                {/* SUPERVISOR EMAIL */}
+
+                <div className="col-span-3">
+
+                  <InputField
+                    label="CKPL Reporting Manager's Email ID"
+                    name="ckMail"
+                    value={
+                      formData.ckMail
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  />
+
+                </div>
+
+
+              </div>
+
+            </div>
+
+
+            {/* =================================================
+                BUTTONS
+            ================================================= */}
+
+            <div
+              className="rfh-single-form-actions"
+              style={{
+                justifyContent:
+                  "center",
+
+                marginTop:
+                  "30px",
+              }}
+            >
+
+
               <button
                 type="button"
-                className="btn-rfh-cancel"
-                onClick={handleCancel}
+                onClick={
+                  handleCancel
+                }
+                style={{
+                  padding:
+                    "0 30px",
+
+                  marginRight:
+                    "10px",
+                }}
               >
-                <FaTimes />
+
                 Cancel
+
               </button>
+
+
               <button
                 type="submit"
                 className="btn-rfh-submit"
+                style={{
+                  padding:
+                    "0 40px",
+
+                  background:
+                    "#3b82f6",
+
+                  borderRadius:
+                    "4px",
+                }}
                 disabled={loading}
               >
-                <FaPaperPlane />
-                {loading ? "Submitting..." : id ? "Update RFH" : "Submit RFH"}
+
+                {loading
+
+                  ? "Submitting..."
+
+                  : id
+
+                  ? "Update"
+
+                  : "Submit"}
+
               </button>
+
+
             </div>
+
 
           </form>
 
         </div>
+
       </main>
+
     </div>
+
   );
+
 }
+
 
 export default RFHForm;
