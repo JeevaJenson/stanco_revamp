@@ -271,14 +271,27 @@ function UserManagement({ initialTab = "users" }) {
   }, [routeTab, creatorRole]);
 
   const visibleUsers = useMemo(() => {
-    if (isSuperAdmin) return users;
-    if (!currentUserTeam) return [];
-    return users.filter(
-      (user) =>
-        String(user?.team || "").trim().toLowerCase() ===
-        currentUserTeam.toLowerCase()
-    );
-  }, [users, isSuperAdmin, currentUserTeam]);
+    // Super Admin can see every user.
+    if (isSuperAdmin) {
+      return users;
+    }
+
+    // Hiring Manager can see only users from the logged-in manager's team.
+    if (isHiringManager) {
+      if (!currentUserTeam) {
+        return [];
+      }
+
+      return users.filter(
+        (user) =>
+          String(user?.team || "").trim().toLowerCase() ===
+          currentUserTeam.toLowerCase()
+      );
+    }
+
+    // Admin and Recruiter have no User Management access.
+    return [];
+  }, [users, isSuperAdmin, isHiringManager, currentUserTeam]);
 
   /* =========================
      ROLE OPTIONS
@@ -287,12 +300,16 @@ function UserManagement({ initialTab = "users" }) {
   const roleOptions =
     ROLE_OPTIONS[creatorRole] || [];
 
+  // Admin and Recruiter must not see User Management at all.
+  // Sidebar/menu should also hide this route for these roles.
   if (isAdmin || isRecruiter) {
     return <Navigate to="/" replace />;
   }
 
   const safeActiveTab =
-    isHiringManager ? "users" : activeTab;
+    isSuperAdmin
+      ? activeTab
+      : "users";
 
   /* =========================
      LOAD USERS
@@ -352,12 +369,18 @@ function UserManagement({ initialTab = "users" }) {
 
   useEffect(() => {
     fetchCurrentUser();
-    fetchUsers();
 
+    // Only Super Admin and Hiring Manager can access User Management.
+    // Admin and Recruiter must not load User Management data.
+    if (isSuperAdmin || isHiringManager) {
+      fetchUsers();
+    }
+
+    // Teams are Super Admin only.
     if (isSuperAdmin) {
       fetchTeams();
     }
-  }, [isSuperAdmin]);
+  }, [isSuperAdmin, isHiringManager]);
 
   /* =========================
      USER FORM CHANGE
@@ -625,6 +648,21 @@ function UserManagement({ initialTab = "users" }) {
   const handleDeleteUser = async (
     user
   ) => {
+    if (!canCreateUsers) {
+      showToast("error", "You are not authorized to manage users");
+      return;
+    }
+
+    // Hiring Manager can delete only users from the manager's own team.
+    if (
+      isHiringManager &&
+      String(user?.team || "").trim().toLowerCase() !==
+        currentUserTeam.toLowerCase()
+    ) {
+      showToast("error", "You can manage users only from your own team");
+      return;
+    }
+
     const confirmed = window.confirm(
       `Are you sure you want to delete "${user.name}"?`
     );
@@ -716,6 +754,11 @@ function UserManagement({ initialTab = "users" }) {
   const handleAddTeam = async (event) => {
     event.preventDefault();
 
+    if (!isSuperAdmin) {
+      showToast("error", "Only Super Admin can manage teams");
+      return;
+    }
+
     const name = newTeam.name.trim();
 
     if (!name) {
@@ -762,6 +805,11 @@ function UserManagement({ initialTab = "users" }) {
 
   const handleUpdateTeam = async (event) => {
     event.preventDefault();
+
+    if (!isSuperAdmin) {
+      showToast("error", "Only Super Admin can manage teams");
+      return;
+    }
 
     if (!editingTeam?.id) {
       showToast("error", "Team ID is missing");
@@ -819,6 +867,11 @@ function UserManagement({ initialTab = "users" }) {
   };
 
   const handleDeleteTeam = async (team) => {
+    if (!isSuperAdmin) {
+      showToast("error", "Only Super Admin can manage teams");
+      return;
+    }
+
     const confirmed = window.confirm(
       `Are you sure you want to delete team "${team.name}"?`
     );

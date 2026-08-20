@@ -30,6 +30,34 @@ function Sidebar() {
 
   const location = useLocation();
 
+  // =====================================================
+  // CURRENT USER / ROLE ACCESS
+  // =====================================================
+  const [currentUser, setCurrentUser] = useState({});
+
+  useEffect(() => {
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      setCurrentUser(storedUser);
+    } catch {
+      setCurrentUser({});
+    }
+  }, []);
+
+  const roleType = String(currentUser?.roleType || "")
+    .trim()
+    .toLowerCase();
+
+  // The application maps delivery_lead to Hiring Manager.
+  const userRole =
+    roleType === "delivery_lead" ? "hiring_manager" : roleType;
+
+  const isSuperAdmin = userRole === "super_admin";
+  const isHiringManager = userRole === "hiring_manager";
+  const canAccessUserManagement =
+    isSuperAdmin || isHiringManager;
+
+
 
   // =====================================================
   // USER MANAGEMENT ROUTES
@@ -56,15 +84,18 @@ function Sidebar() {
   // CHECK USER MANAGEMENT ACTIVE
   // =====================================================
 
+  const allowedUserManagementRoutes = isSuperAdmin
+    ? userManagementRoutes
+    : isHiringManager
+      ? ["/users", "/user-management"]
+      : [];
+
   const isUserMgmtActive =
-    userManagementRoutes.some(
+    canAccessUserManagement &&
+    allowedUserManagementRoutes.some(
       (route) =>
-
         location.pathname === route ||
-
-        location.pathname.startsWith(
-          `${route}/`
-        )
+        location.pathname.startsWith(`${route}/`)
     );
 
 
@@ -167,6 +198,35 @@ function Sidebar() {
       "/verticals/"
     );
 
+
+  // =====================================================
+  // ROUTE SAFETY
+  // =====================================================
+  // Admin / Recruiter: User Management is completely blocked.
+  if (
+    !canAccessUserManagement &&
+    userManagementRoutes.some(
+      (route) =>
+        location.pathname === route ||
+        location.pathname.startsWith(`${route}/`)
+    )
+  ) {
+    navigate("/dashboard", { replace: true });
+    return null;
+  }
+
+  // Hiring Manager: only /users is allowed from User Management.
+  if (
+    isHiringManager &&
+    ["/teams", "/business-units", "/departments", "/verticals"].some(
+      (route) =>
+        location.pathname === route ||
+        location.pathname.startsWith(`${route}/`)
+    )
+  ) {
+    navigate("/users", { replace: true });
+    return null;
+  }
 
   // =====================================================
   // COMPONENT
@@ -341,181 +401,88 @@ function Sidebar() {
                 USER MANAGEMENT
             ================================================= */}
 
-            <div className="sidebar-accordion-group">
+            {canAccessUserManagement && (
+              <div className="sidebar-accordion-group">
 
+                {/* USER MANAGEMENT HEADER */}
+                <div
+                  className={`sidebar-menu-item has-submenu ${
+                    isUserMgmtActive ? "active" : ""
+                  }`}
+                  onClick={() => setUserMgmtOpen((previous) => !previous)}
+                >
+                  <div className="item-label-content">
+                    <FaUsers className="nav-icon" />
+                    <span>User Management</span>
+                  </div>
 
-              {/* USER MANAGEMENT HEADER */}
-
-              <div
-                className={`sidebar-menu-item has-submenu ${
-                  isUserMgmtActive
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() =>
-                  setUserMgmtOpen(
-                    (previous) =>
-                      !previous
-                  )
-                }
-              >
-
-                <div className="item-label-content">
-
-                  <FaUsers className="nav-icon" />
-
-                  <span>
-                    User Management
+                  <span className="accordion-chevron">
+                    {userMgmtOpen ? (
+                      <FaChevronDown size={11} />
+                    ) : (
+                      <FaChevronRight size={11} />
+                    )}
                   </span>
-
                 </div>
 
+                {/* USER MANAGEMENT SUBMENU */}
+                {userMgmtOpen && (
+                  <div className="sidebar-submenu-list">
 
-                <span className="accordion-chevron">
+                    {/* USERS - Super Admin + Hiring Manager */}
+                    <div
+                      className={`sidebar-submenu-item ${
+                        isActive("/users") ||
+                        isActive("/user-management")
+                          ? "sub-active"
+                          : ""
+                      }`}
+                      onClick={() => handleNavigate("/users")}
+                    >
+                      <FaUser className="sub-nav-icon" />
+                      <span>Users</span>
+                    </div>
 
-                  {userMgmtOpen ? (
+                    {/* Super Admin only */}
+                    {isSuperAdmin && (
+                      <>
+                        <div
+                          className={`sidebar-submenu-item ${
+                            isActive("/teams") ? "sub-active" : ""
+                          }`}
+                          onClick={() => handleNavigate("/teams")}
+                        >
+                          <FaUserFriends className="sub-nav-icon" />
+                          <span>Teams</span>
+                        </div>
 
-                    <FaChevronDown
-                      size={11}
-                    />
+                        <div
+                          className={`sidebar-submenu-item ${
+                            isActive("/business-units")
+                              ? "sub-active"
+                              : ""
+                          }`}
+                          onClick={() => handleNavigate("/business-units")}
+                        >
+                          <FaBuilding className="sub-nav-icon" />
+                          <span>Business Unit</span>
+                        </div>
 
-                  ) : (
-
-                    <FaChevronRight
-                      size={11}
-                    />
-
-                  )}
-
-                </span>
-
+                        <div
+                          className={`sidebar-submenu-item ${
+                            isDepartmentActive ? "sub-active" : ""
+                          }`}
+                          onClick={() => handleNavigate("/departments")}
+                        >
+                          <FaSitemap className="sub-nav-icon" />
+                          <span>Department</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
-
-
-              {/* =================================================
-                  USER MANAGEMENT SUBMENU
-              ================================================= */}
-
-              {userMgmtOpen && (
-
-                <div className="sidebar-submenu-list">
-
-
-                  {/* =================================================
-                      USERS
-                  ================================================= */}
-
-                  <div
-                    className={`sidebar-submenu-item ${
-                      isActive("/users") ||
-                      isActive(
-                        "/user-management"
-                      )
-                        ? "sub-active"
-                        : ""
-                    }`}
-                    onClick={() =>
-                      handleNavigate(
-                        "/users"
-                      )
-                    }
-                  >
-
-                    <FaUser className="sub-nav-icon" />
-
-                    <span>
-                      Users
-                    </span>
-
-                  </div>
-
-
-                  {/* =================================================
-                      TEAMS
-                  ================================================= */}
-
-                  <div
-                    className={`sidebar-submenu-item ${
-                      isActive("/teams")
-                        ? "sub-active"
-                        : ""
-                    }`}
-                    onClick={() =>
-                      handleNavigate(
-                        "/teams"
-                      )
-                    }
-                  >
-
-                    <FaUserFriends className="sub-nav-icon" />
-
-                    <span>
-                      Teams
-                    </span>
-
-                  </div>
-
-
-                  {/* =================================================
-                      BUSINESS UNIT
-                  ================================================= */}
-
-                  <div
-                    className={`sidebar-submenu-item ${
-                      isActive(
-                        "/business-units"
-                      )
-                        ? "sub-active"
-                        : ""
-                    }`}
-                    onClick={() =>
-                      handleNavigate(
-                        "/business-units"
-                      )
-                    }
-                  >
-
-                    <FaBuilding className="sub-nav-icon" />
-
-                    <span>
-                      Business Unit
-                    </span>
-
-                  </div>
-
-
-                  {/* =================================================
-                      DEPARTMENT
-                  ================================================= */}
-
-                  <div
-                    className={`sidebar-submenu-item ${
-                      isDepartmentActive
-                        ? "sub-active"
-                        : ""
-                    }`}
-                    onClick={() =>
-                      handleNavigate(
-                        "/departments"
-                      )
-                    }
-                  >
-
-                    <FaSitemap className="sub-nav-icon" />
-
-                    <span>
-                      Department
-                    </span>
-
-                  </div>
-
-
-                </div>
-
-              )}
-
-            </div>
-
+            )}
 
             {/* =================================================
                 ALLOCATION LIST
