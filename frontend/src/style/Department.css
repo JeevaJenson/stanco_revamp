@@ -38,8 +38,8 @@
 
 .add-department-btn {
   border: none;
-  background: #134e4a;
-  color: #5eead4;
+  background: var(--primary-lavender-violet-dark);
+  color: #ffffff;
   padding: 12px 18px;
   border-radius: 8px;
   display: flex;
@@ -49,14 +49,14 @@
   font-size: 14px;
   font-weight: 600;
   transition: 0.2s;
-  box-shadow: 0 2px 6px rgba(19, 78, 74, 0.2);
+  box-shadow: 0 2px 6px rgba(153, 103, 206, 0.2);
 }
 
 .add-department-btn:hover {
-  background: #0d9488;
+  background: var(--primary-lavender-violet);
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.25);
+  box-shadow: 0 4px 10px rgba(153, 103, 206, 0.25);
 }
 
 /* ==========================================
@@ -199,14 +199,14 @@
 
 .edit-btn {
   background: #f0fdfa;
-  color: #0D9488;
+  color: var(--primary-lavender-violet);
   border-color: #99f6e4 !important;
 }
 
 .edit-btn:hover {
-  background: #0D9488;
+  background: var(--primary-lavender-violet);
   color: #ffffff;
-  border-color: #0D9488 !important;
+  border-color: var(--primary-lavender-violet) !important;
   transform: translateY(-1px);
 }
 
@@ -359,8 +359,8 @@
 
 .form-field input:focus,
 .form-field select:focus {
-  border-color: #0D9488;
-  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+  border-color: var(--primary-lavender-violet);
+  box-shadow: 0 0 0 3px rgba(153, 103, 206, 0.15);
 }
 
 /* ==========================================
@@ -396,14 +396,14 @@
 }
 
 .save-btn {
-  background: #0D9488;
+  background: var(--primary-lavender-violet);
   color: white;
-  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);
+  box-shadow: 0 2px 8px rgba(153, 103, 206, 0.25);
 }
 
 .save-btn:hover {
-  background: #0B7A70;
-  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);
+  background: var(--primary-lavender-violet-hover);
+  box-shadow: 0 4px 12px rgba(153, 103, 206, 0.35);
   transform: translateY(-1px);
 }
 
@@ -662,11 +662,11 @@
 }
 
 .department-status-filter:focus {
-  border-color: #0D9488;
+  border-color: var(--primary-lavender-violet);
 
   box-shadow:
     0 0 0 3px
-    rgba(13, 148, 136, 0.15);
+    rgba(153, 103, 206, 0.15);
 }
 
 /* Table Card Toolbar Controls */
@@ -729,8 +729,8 @@
 }
 
 .search-wrapper input:focus {
-  border-color: #0d9488;
-  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
+  border-color: var(--primary-lavender-violet);
+  box-shadow: 0 0 0 2px rgba(153, 103, 206, 0.15);
 }
 
 .sort-select-dropdown {
@@ -758,8 +758,8 @@
 }
 
 .sort-select-dropdown:focus {
-  border-color: #0d9488;
-  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
+  border-color: var(--primary-lavender-violet);
+  box-shadow: 0 0 0 2px rgba(153, 103, 206, 0.15);
 }
 
 .clear-search-btn {
@@ -826,7 +826,7 @@
 }
 
 .department-name-link:hover {
-  color: #0d9488;
+  color: var(--primary-lavender-violet);
   text-decoration: underline;
 }
 
@@ -853,7 +853,7 @@
 }
 
 .department-name-link:hover {
-  color: #0d9488;
+  color: var(--primary-lavender-violet);
   text-decoration: underline;
 }
 
@@ -918,7 +918,7 @@
 }
 
 .back-department-btn:hover {
-  color: #0d9488;
+  color: var(--primary-lavender-violet);
 
   transform: translateX(-2px);
 }

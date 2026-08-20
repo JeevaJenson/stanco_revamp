@@ -105,8 +105,8 @@
 .kpi-card.blue .kpi-icon { background: #eff6ff; color: #1d4ed8; }
 .kpi-card.blue { border-left: 4px solid #3b82f6; }
 
-.kpi-card.teal .kpi-icon { background: #f0fdfa; color: #0d9488; }
-.kpi-card.teal { border-left: 4px solid #0d9488; }
+.kpi-card.teal .kpi-icon { background: #f0fdfa; color: var(--primary-lavender-violet); }
+.kpi-card.teal { border-left: 4px solid var(--primary-lavender-violet); }
 
 .kpi-card.purple .kpi-icon { background: #f3e8ff; color: #7e22ce; }
 .kpi-card.purple { border-left: 4px solid #8b5cf6; }

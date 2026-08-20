@@ -35,8 +35,8 @@
 
 .logout-btn {
   background: transparent;
-  color: #0D9488;
-  border: 1.5px solid #0D9488;
+  color: var(--primary-lavender-violet);
+  border: 1.5px solid var(--primary-lavender-violet);
   padding: 8px 16px;
   border-radius: 6px;
   font-weight: 600;
@@ -46,7 +46,7 @@
 }
 
 .logout-btn:hover {
-  background: #0D9488;
+  background: var(--primary-lavender-violet);
   color: #ffffff;
 }
 
@@ -65,7 +65,7 @@
 }
 
 .create-rfh {
-  background: #0D9488;
+  background: var(--primary-lavender-violet);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -73,7 +73,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+  box-shadow: 0 4px 12px rgba(153, 103, 206, 0.3);
   transition: all 0.2s;
   display: flex;
   align-items: center;
@@ -81,8 +81,8 @@
 }
 
 .create-rfh:hover {
-  background: #0B7A70;
-  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.4);
+  background: var(--primary-lavender-violet-hover);
+  box-shadow: 0 6px 16px rgba(153, 103, 206, 0.4);
   transform: translateY(-1px);
 }
 
@@ -95,7 +95,7 @@
 }
 
 .last-rfh strong {
-  color: #0D9488;
+  color: var(--primary-lavender-violet);
   font-size: 15px;
 }
 
@@ -134,8 +134,8 @@
 
 .metric-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px -6px rgba(13, 148, 136, 0.2), 0 2px 4px -1px rgba(13, 148, 136, 0.08);
-  border-color: #0D9488;
+  box-shadow: 0 8px 16px -6px rgba(153, 103, 206, 0.2), 0 2px 4px -1px rgba(153, 103, 206, 0.08);
+  border-color: var(--primary-lavender-violet);
 }
 
 .metric-title {
@@ -154,11 +154,11 @@
 }
 
 .metric-card:hover .metric-title {
-  color: #0D9488;
+  color: var(--primary-lavender-violet);
 }
 
 .metric-card:hover .metric-value {
-  color: #0D9488;
+  color: var(--primary-lavender-violet);
 }
 
 /* Table Section */
@@ -205,8 +205,8 @@
 }
 
 .table-search-box input:focus {
-  border-color: #0D9488;
-  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+  border-color: var(--primary-lavender-violet);
+  box-shadow: 0 0 0 3px rgba(153, 103, 206, 0.15);
 }
 
 .search-icon-absolute {

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FaUser, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
-import loginHeroImg from "../assets/login-hero.png";
+import loginHeroImg from "../assets/login-hero-lavender.jpg";
 import "../style/login.css";
 
 function Login() {
