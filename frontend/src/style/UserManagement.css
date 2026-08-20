@@ -131,8 +131,8 @@
 
 .form-control-input:focus,
 .form-control-select:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+  border-color: #0D9488;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.18);
 }
 
 .form-control-select {
@@ -153,7 +153,7 @@
 }
 
 .btn-form-submit {
-  background: #2563eb;
+  background: #0D9488;
   color: #ffffff;
   border: none;
   border-radius: 6px;
@@ -161,14 +161,14 @@
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.3);
   transition: all 0.15s ease;
 }
 
 .btn-form-submit:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: #0B7A70;
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.4);
 }
 
 .btn-form-submit:disabled {
@@ -240,9 +240,9 @@
 }
 
 .user-box-card.selected {
-  border-color: #2563eb;
-  background: #f8faff;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+  border-color: #0D9488;
+  background: #f0fdfa;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2);
 }
 
 .user-box-card:hover {
@@ -290,8 +290,8 @@
 
 .user-box-card.selected .card-custom-check,
 .card-select-checkbox input:checked + .card-custom-check {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: #0D9488;
+  border-color: #0D9488;
 }
 
 .user-box-avatar {
@@ -409,16 +409,16 @@
 }
 
 .team-value {
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: #f0fdfa;
+  color: #0D9488;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 11px;
-  border: 1px solid #dbeafe;
+  border: 1px solid #99f6e4;
 }
 
 .email-value {
-  color: #2563eb;
+  color: #0D9488;
   text-decoration: none;
   max-width: 160px;
   overflow: hidden;
@@ -429,7 +429,7 @@
 
 .email-value:hover {
   text-decoration: underline;
-  color: #1d4ed8;
+  color: #0B7A70;
 }
 
 /* =========================================================
@@ -596,8 +596,8 @@
 }
 
 .search-wrapper input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: #0D9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
 }
 
 .clear-search-btn {
@@ -817,7 +817,7 @@
   width: 16px;
   height: 16px;
   cursor: pointer;
-  accent-color: #2563eb;
+  accent-color: #0D9488;
 }
 
 /* Index Tag */
@@ -877,12 +877,12 @@
 .team-badge-pill {
   display: inline-block;
   padding: 4px 12px;
-  background-color: #eff6ff;
-  color: #2563eb;
+  background-color: #f0fdfa;
+  color: #0D9488;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 700;
-  border: 1px solid #bfdbfe;
+  border: 1px solid #99f6e4;
 }
 
 /* Email & Phone Links */
@@ -890,7 +890,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #2563eb;
+  color: #0D9488;
   text-decoration: none;
   font-weight: 500;
 }
@@ -1010,7 +1010,7 @@
 }
 
 .action-menu-item.edit-item:hover {
-  color: #2563eb;
+  color: #0D9488;
 }
 
 .action-menu-item.delete-item {
@@ -1079,7 +1079,7 @@
 
 .modal-title-icon {
   font-size: 18px;
-  color: #2563eb;
+  color: #0D9488;
 }
 
 .mgmt-modal-close {
@@ -1142,7 +1142,7 @@
 }
 
 .btn-modal-save {
-  background: #2563eb;
+  background: #0D9488;
   color: #ffffff;
   border: none;
   border-radius: 6px;
@@ -1150,7 +1150,7 @@
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.2);
   transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
@@ -1158,9 +1158,9 @@
 }
 
 .btn-modal-save:hover {
-  background: #1d4ed8;
+  background: #0B7A70;
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);
 }
 
 @media (max-width: 900px) {
@@ -1326,15 +1326,15 @@
 }
 
 .icon-edit-btn {
-  background: #eff6ff;
-  color: #2563eb;
-  border-color: #bfdbfe;
+  background: #f0fdfa;
+  color: #0D9488;
+  border-color: #99f6e4;
 }
 
 .icon-edit-btn:hover {
-  background: #2563eb;
+  background: #0D9488;
   color: #ffffff;
-  border-color: #2563eb;
+  border-color: #0D9488;
   transform: translateY(-1px);
 }
 

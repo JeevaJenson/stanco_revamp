@@ -198,15 +198,15 @@
 }
 
 .edit-btn {
-  background: #eff6ff;
-  color: #2563eb;
-  border-color: #bfdbfe !important;
+  background: #f0fdfa;
+  color: #0D9488;
+  border-color: #99f6e4 !important;
 }
 
 .edit-btn:hover {
-  background: #2563eb;
+  background: #0D9488;
   color: #ffffff;
-  border-color: #2563eb !important;
+  border-color: #0D9488 !important;
   transform: translateY(-1px);
 }
 
@@ -224,7 +224,7 @@
 }
 
 .edit-btn:hover {
-  background: #dbeafe;
+  background: #f0fdfa;
 }
 
 .delete-btn {
@@ -359,8 +359,8 @@
 
 .form-field input:focus,
 .form-field select:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: #0D9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
 }
 
 /* ==========================================
@@ -396,12 +396,15 @@
 }
 
 .save-btn {
-  background: #2563eb;
+  background: #0D9488;
   color: white;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);
 }
 
 .save-btn:hover {
-  background: #1d4ed8;
+  background: #0B7A70;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);
+  transform: translateY(-1px);
 }
 
 /* ==========================================
@@ -659,11 +662,11 @@
 }
 
 .department-status-filter:focus {
-  border-color: #2563eb;
+  border-color: #0D9488;
 
   box-shadow:
     0 0 0 3px
-    rgba(37, 99, 235, 0.1);
+    rgba(13, 148, 136, 0.15);
 }
 
 /* Table Card Toolbar Controls */

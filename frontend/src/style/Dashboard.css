@@ -34,9 +34,9 @@
 }
 
 .logout-btn {
-  background: #fee2e2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+  background: transparent;
+  color: #0D9488;
+  border: 1.5px solid #0D9488;
   padding: 8px 16px;
   border-radius: 6px;
   font-weight: 600;
@@ -46,7 +46,8 @@
 }
 
 .logout-btn:hover {
-  background: #fecaca;
+  background: #0D9488;
+  color: #ffffff;
 }
 
 .dashboard-body {
@@ -64,7 +65,7 @@
 }
 
 .create-rfh {
-  background: #2563EB; /* Primary Button (Blue) */
+  background: #0D9488;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -72,12 +73,17 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .create-rfh:hover {
-  background: #173B67; /* Hover (Navy) */
+  background: #0B7A70;
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.4);
+  transform: translateY(-1px);
 }
 
 .last-rfh {
@@ -89,7 +95,7 @@
 }
 
 .last-rfh strong {
-  color: #2563EB;
+  color: #0D9488;
   font-size: 15px;
 }
 
@@ -128,8 +134,8 @@
 
 .metric-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px -6px rgba(37, 99, 235, 0.15), 0 2px 4px -1px rgba(37, 99, 235, 0.05);
-  border-color: #2563EB;
+  box-shadow: 0 8px 16px -6px rgba(13, 148, 136, 0.2), 0 2px 4px -1px rgba(13, 148, 136, 0.08);
+  border-color: #0D9488;
 }
 
 .metric-title {
@@ -148,11 +154,11 @@
 }
 
 .metric-card:hover .metric-title {
-  color: #2563EB;
+  color: #0D9488;
 }
 
 .metric-card:hover .metric-value {
-  color: #2563EB;
+  color: #0D9488;
 }
 
 /* Table Section */
@@ -199,8 +205,8 @@
 }
 
 .table-search-box input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  border-color: #0D9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
 }
 
 .search-icon-absolute {

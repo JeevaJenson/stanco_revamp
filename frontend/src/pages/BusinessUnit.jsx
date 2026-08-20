@@ -529,39 +529,25 @@ function BusinessUnit() {
       <div className="business-content">
 
 
-        {/* =================================================
-            HEADER
-        ================================================= */}
+        {/* HEADER */}
+        <header className="page-header">
 
-        <div className="business-header">
-
-          <div>
-
-            <h2>
-              Business Unit
-            </h2>
-
-            <p>
-              Manage your business units
-            </p>
-
+          <div className="header-title">
+            <h2>Business Unit</h2>
+            <p>Manage your business units</p>
           </div>
 
+          <div className="header-actions">
+            <button
+              className="add-business-btn"
+              onClick={openAddModal}
+            >
+              <FaPlus />
+              <span>Add Business Unit</span>
+            </button>
+          </div>
 
-          <button
-            className="add-business-btn"
-            onClick={openAddModal}
-          >
-
-            <FaPlus />
-
-            <span>
-              Add Business Unit
-            </span>
-
-          </button>
-
-        </div>
+        </header>
 
 
         {/* =================================================

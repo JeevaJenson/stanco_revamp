@@ -533,36 +533,24 @@ function Department() {
       <div className="department-content">
 
         {/* HEADER */}
+        <header className="page-header">
 
-        <div className="department-header">
-
-          <div>
-
-            <h1>
-              Department Management
-            </h1>
-
-            <p>
-              Manage departments and
-              department information
-            </p>
-
+          <div className="header-title">
+            <h2>Department Management</h2>
+            <p>Manage departments and department information</p>
           </div>
 
-          <button
-            className="add-department-btn"
-            onClick={openAddModal}
-          >
+          <div className="header-actions">
+            <button
+              className="add-department-btn"
+              onClick={openAddModal}
+            >
+              <FaPlus />
+              <span>Add Department</span>
+            </button>
+          </div>
 
-            <FaPlus />
-
-            <span>
-              Add Department
-            </span>
-
-          </button>
-
-        </div>
+        </header>
 
         {/* TABLE CARD */}
 

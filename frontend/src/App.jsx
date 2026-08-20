@@ -8,6 +8,9 @@ import UserManagement from "./pages/UserManagement";
 import BusinessUnit from "./pages/BusinessUnit";
 import Department from "./pages/Department";
 import DepartmentVertical from "./pages/DepartmentVertical";
+import CandidateDatabase from "./pages/CandidateDatabase";
+import AllocationReport from "./pages/AllocationReport";
+import RecruiterReport from "./pages/RecruiterReport";
 
 function App() {
   return (
@@ -23,11 +26,13 @@ function App() {
         <Route path="/users" element={<UserManagement initialTab="users" />} />
         <Route path="/user-management" element={<UserManagement initialTab="users" />} />
         <Route path="/teams" element={<UserManagement initialTab="teams" />} />
-       <Route  path="/business-units" element={<BusinessUnit />} />
+        <Route path="/business-units" element={<BusinessUnit />} />
         <Route path="/departments" element={<Department />} />
-        <Route path="/departments/vertical" element={<DepartmentVertical />}/>
-
-     </Routes>
+        <Route path="/departments/vertical" element={<DepartmentVertical />} />
+        <Route path="/candidate-database" element={<CandidateDatabase />} />
+        <Route path="/allocation-report" element={<AllocationReport />} />
+        <Route path="/recruiter-report" element={<RecruiterReport />} />
+      </Routes>
     </BrowserRouter>
   );
 }
