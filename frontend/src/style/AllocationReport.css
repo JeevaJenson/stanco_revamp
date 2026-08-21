@@ -95,8 +95,8 @@
 .stat-card.blue .stat-icon { background: #eff6ff; color: #3b82f6; }
 .stat-card.blue { border-top: 4px solid #3b82f6; }
 
-.stat-card.teal .stat-icon { background: #f0fdfa; color: #0d9488; }
-.stat-card.teal { border-top: 4px solid #0d9488; }
+.stat-card.teal .stat-icon { background: #f0fdfa; color: var(--primary-lavender-violet); }
+.stat-card.teal { border-top: 4px solid var(--primary-lavender-violet); }
 
 .stat-card.green .stat-icon { background: #ecfdf5; color: #10b981; }
 .stat-card.green { border-top: 4px solid #10b981; }
@@ -168,7 +168,7 @@
 }
 
 .progress-bar-fill.blue { background: #3b82f6; }
-.progress-bar-fill.teal { background: #0d9488; }
+.progress-bar-fill.teal { background: var(--primary-lavender-violet); }
 .progress-bar-fill.orange { background: #f97316; }
 
 /* Data Tables */
@@ -201,18 +201,24 @@
 
 .report-table th {
   background: #f8fafc;
-  padding: 14px 18px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #475569;
+  color: #002060;
+  font-family: Georgia, serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 14px 20px;
   border-bottom: 1px solid #e2e8f0;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .report-table td {
-  padding: 14px 18px;
-  font-size: 14px;
-  color: #334155;
+  padding: 14px 20px;
   border-bottom: 1px solid #f1f5f9;
+  font-size: 13.5px;
+  color: #334155;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .rfh-code {

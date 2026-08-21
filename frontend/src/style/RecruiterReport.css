@@ -105,8 +105,8 @@
 .kpi-card.blue .kpi-icon { background: #eff6ff; color: #1d4ed8; }
 .kpi-card.blue { border-left: 4px solid #3b82f6; }
 
-.kpi-card.teal .kpi-icon { background: #f0fdfa; color: #0d9488; }
-.kpi-card.teal { border-left: 4px solid #0d9488; }
+.kpi-card.teal .kpi-icon { background: #f0fdfa; color: var(--primary-lavender-violet); }
+.kpi-card.teal { border-left: 4px solid var(--primary-lavender-violet); }
 
 .kpi-card.purple .kpi-icon { background: #f3e8ff; color: #7e22ce; }
 .kpi-card.purple { border-left: 4px solid #8b5cf6; }
@@ -141,18 +141,24 @@
 
 .leaderboard-table th {
   background: #f8fafc;
-  padding: 14px 18px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #475569;
+  color: #002060;
+  font-family: Georgia, serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 14px 20px;
   border-bottom: 1px solid #e2e8f0;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .leaderboard-table td {
-  padding: 14px 18px;
-  font-size: 14px;
-  color: #334155;
+  padding: 14px 20px;
   border-bottom: 1px solid #f1f5f9;
+  font-size: 13.5px;
+  color: #334155;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 /* Rank Badges */

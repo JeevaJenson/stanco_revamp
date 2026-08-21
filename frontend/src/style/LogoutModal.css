@@ -33,7 +33,7 @@
 .logout-exclamation-circle {
   width: 58px;
   height: 58px;
-  color: #8cc34a; /* Lime green/olive color from screenshot */
+  color: var(--primary-lavender-violet); /* Lavender violet color from request */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -84,7 +84,7 @@
 }
 
 .logout-btn-confirm {
-  background-color: #0D9488;
+  background-color: var(--primary-lavender-violet);
   color: #ffffff;
   border: none;
   border-radius: 6px;
@@ -92,7 +92,7 @@
   font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);
+  box-shadow: 0 4px 12px rgba(153, 103, 206, 0.35);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -100,8 +100,8 @@
 }
 
 .logout-btn-confirm:hover {
-  background-color: #0B7A70;
-  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.45);
+  background-color: var(--primary-lavender-violet-hover);
+  box-shadow: 0 6px 16px rgba(153, 103, 206, 0.45);
   transform: translateY(-1px);
 }
 

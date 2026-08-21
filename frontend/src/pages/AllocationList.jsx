@@ -6,6 +6,7 @@ import {
   FaTrash,
   FaSearch,
   FaFileAlt,
+  FaEllipsisV,
 } from "react-icons/fa";
 
 import Sidebar from "./Sidebar";
@@ -20,6 +21,7 @@ function AllocationList() {
   const [rfhList, setRfhList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [actionDropdown, setActionDropdown] = useState(null);
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -356,35 +358,39 @@ function AllocationList() {
                     </th>
 
                     <th>
-                      Ticket Number
-                    </th>
-
-                    <th>
-                      Job Title
-                    </th>
-
-                    <th>
-                      Business Unit
-                    </th>
-
-                    <th>
-                      Department
-                    </th>
-
-                    <th>
                       Team
                     </th>
 
                     <th>
-                      Positions
+                      Position Title
                     </th>
 
                     <th>
-                      Requested By
+                      History
+                    </th>
+
+                    <th>
+                      No of Positions
+                    </th>
+
+                    <th>
+                      Position Ageing
+                    </th>
+
+                    <th>
+                      Opening Date
+                    </th>
+
+                    <th>
+                      Location
                     </th>
 
                     <th className="text-center">
                       Actions
+                    </th>
+
+                    <th>
+                      Request Date
                     </th>
 
                   </tr>
@@ -429,91 +435,89 @@ function AllocationList() {
 
                         </td>
 
-                        {/* ==================================================
-                            TICKET NUMBER
-
-                            ONLY ticketNumber
-
-                            Example:
-                            ticketNumber = TICKET001
-
-                            Display:
-                            TICKET001
-                        ================================================== */}
-
-                        <td>
-
-                          <span className="ticket-number">
-
-                            {getTicketNumber(rfh)}
-
-                          </span>
-
-                        </td>
-
-                        {/* JOB TITLE */}
-                        <td className="text-capitalize">
-                          {rfh.positionTitle || "-"}
-                        </td>
-
-                        {/* BUSINESS */}
-                        <td>
-                          {rfh.business || "-"}
-                        </td>
-
-                        {/* DEPARTMENT */}
-                        <td>
-                          {rfh.department || "-"}
-                        </td>
-
                         {/* TEAM */}
                         <td>
                           {rfh.rollsOption || "-"}
                         </td>
 
-                        {/* POSITIONS */}
+                        {/* POSITION TITLE */}
+                        <td className="text-capitalize">
+                          {rfh.positionTitle || "-"}
+                        </td>
+
+                        {/* HISTORY */}
+                        <td>
+                          {rfh.history || "-"}
+                        </td>
+
+                        {/* NO OF POSITIONS */}
                         <td>
                           {rfh.noOfPositions || "-"}
                         </td>
 
-                        {/* REQUESTED BY */}
+                        {/* POSITION AGEING */}
                         <td>
-                          {rfh.requestBy || "Admin"}
+                          {rfh.positionAgeing || "-"}
+                        </td>
+
+                        {/* OPENING DATE */}
+                        <td>
+                          {rfh.openingDate || "-"}
+                        </td>
+
+                        {/* LOCATION */}
+                        <td>
+                          {rfh.location || "-"}
                         </td>
 
                         {/* ACTIONS */}
                         <td>
-
                           <div className="alloc-actions">
-
-                            {/* EDIT */}
                             <button
-                              className="btn-action-edit"
+                              className="btn-action-dots"
                               onClick={() =>
-                                navigate(
-                                  `/rfh/edit/${rfh.id}`
+                                setActionDropdown(
+                                  actionDropdown === rfh.id ? null : rfh.id
                                 )
                               }
-                              title="Edit RFH"
                             >
-                              <FaEdit />
+                              <FaEllipsisV />
                             </button>
 
-                            {/* DELETE */}
-                            <button
-                              className="btn-action-delete"
-                              onClick={() =>
-                                handleDelete(
-                                  rfh.id
-                                )
-                              }
-                              title="Delete RFH"
-                            >
-                              <FaTrash />
-                            </button>
-
+                            {actionDropdown === rfh.id && (
+                              <>
+                                <div
+                                  className="dropdown-overlay"
+                                  onClick={() => setActionDropdown(null)}
+                                ></div>
+                                <div className="action-dropdown-menu">
+                                  <button
+                                    className="action-dropdown-item"
+                                    onClick={() => {
+                                      setActionDropdown(null);
+                                      navigate(`/rfh/edit/${rfh.id}`);
+                                    }}
+                                  >
+                                    <FaEdit /> Edit
+                                  </button>
+                                  <button
+                                    className="action-dropdown-item delete"
+                                    onClick={() => {
+                                      setActionDropdown(null);
+                                      handleDelete(rfh.id);
+                                    }}
+                                  >
+                                    <FaTrash /> Delete
+                                  </button>
+                                </div>
+                              </>
+                            )}
                           </div>
+                        </td>
 
+                        {/* REQUEST DATE */}
+                        <td>
+                          {rfh.requestDate || "-"}
                         </td>
 
                       </tr>

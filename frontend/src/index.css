@@ -1,3 +1,11 @@
+:root {
+  --bg-lavender-white: #F7F7FF;
+  --primary-lavender-violet: #9967CE;
+  --primary-lavender-violet-hover: #8352BA;
+  --primary-lavender-violet-light: #B48BE3;
+  --primary-lavender-violet-dark: #6B4896;
+}
+
 html,
 body,
 #root {
@@ -78,8 +86,8 @@ body,
 .rfh-field input:focus,
 .rfh-field select:focus,
 .rfh-field textarea:focus {
-  border-color: #134e4a; /* Teal Focus */
-  box-shadow: 0 0 0 2px rgba(19, 78, 74, 0.15);
+  border-color: var(--primary-lavender-violet-dark); /* Teal Focus */
+  box-shadow: 0 0 0 2px rgba(153, 103, 206, 0.15);
 }
 
 .rfh-field input::placeholder,
@@ -140,4 +148,11 @@ body,
     transform: translate3d(0, 0, 0);
     opacity: 1;
   }
+}
+
+/* =========================================================
+   GLOBAL TABLE ALIGNMENT FIX
+========================================================= */
+table th, table td {
+  text-align: left;
 }

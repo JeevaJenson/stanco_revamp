@@ -98,8 +98,8 @@
 
 .filter-group select:focus,
 .candidate-search:focus-within {
-  border-color: #0d9488;
-  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+  border-color: var(--primary-lavender-violet);
+  box-shadow: 0 0 0 3px rgba(153, 103, 206, 0.15);
 }
 
 /* Grid splits */
@@ -137,18 +137,24 @@
 
 .candidate-table th {
   background: #f8fafc;
-  padding: 14px 18px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #475569;
+  color: #002060;
+  font-family: Georgia, serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 14px 20px;
   border-bottom: 1px solid #e2e8f0;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .candidate-table td {
-  padding: 14px 18px;
-  font-size: 14px;
-  color: #334155;
+  padding: 14px 20px;
   border-bottom: 1px solid #f1f5f9;
+  font-size: 13.5px;
+  color: #334155;
+  vertical-align: middle;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -298,7 +304,7 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #0d9488;
+  background: var(--primary-lavender-violet);
   color: white;
   display: flex;
   align-items: center;
@@ -306,7 +312,7 @@
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 12px;
-  box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(153, 103, 206, 0.2);
 }
 
 .detail-profile h4 {
@@ -384,7 +390,7 @@
   background: #f8fafc;
   padding: 14px;
   border-radius: 8px;
-  border-left: 4px solid #0d9488;
+  border-left: 4px solid var(--primary-lavender-violet);
 }
 
 .remarks-box p {

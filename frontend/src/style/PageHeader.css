@@ -22,18 +22,16 @@
 .page-header .header-title h2,
 .page-header .header-title h1 {
   margin: 0;
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 700;
   color: #172033;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  letter-spacing: -0.3px;
+  font-family: 'Playfair Display', Georgia, serif;
 }
 
 .page-header .header-title p {
-  margin: 4px 0 0 0;
-  font-size: 13px;
-  color: #64748b;
-  font-weight: 400;
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #7b8497;
 }
 
 /* Right-side action area — can contain a button or any element */
