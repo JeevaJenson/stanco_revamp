@@ -5,7 +5,7 @@
 .rfh-layout {
   min-height: 100vh;
   display: flex;
-  background: #dbccbc;
+  background: #f1f5f9;
 }
 
 .rfh-content {
@@ -22,7 +22,7 @@
   width: 100%;
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(46, 106, 6, 0.749);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   border: 1px solid #e2e8f0;
   overflow: hidden;
 }
@@ -43,10 +43,9 @@
 
 .rfh-card-header-bar h2 {
   margin: 0;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   color: #172033 !important;
-  font-family: 'Playfair Display', Georgia, serif;
 }
 
 /* =========================================================
@@ -65,10 +64,11 @@
 .rfh-form-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border-left: 4px solid #8964c0;
+  border-radius: 8px;
   padding: 25px;
   margin-bottom: 25px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .rfh-form-card-title {
@@ -211,6 +211,13 @@
 .rfh-field select {
   height: 44px;
   padding: 0 14px;
+}
+
+.rfh-field input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
 }
 
 .rfh-field textarea {

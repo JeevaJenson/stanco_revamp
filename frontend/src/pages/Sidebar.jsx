@@ -17,6 +17,12 @@ import {
   FaChevronRight,
   FaBars,
   FaTimes,
+  FaClock,
+  FaClipboardCheck,
+  FaPaperPlane,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaUserTie,
 } from "react-icons/fa";
 
 import LogoutModal from "./LogoutModal";
@@ -154,6 +160,8 @@ function Sidebar() {
       isUserMgmtActive
     );
 
+  const isAllocationListActive = location.pathname.startsWith("/allocation-list");
+  const [allocListOpen, setAllocListOpen] = useState(isAllocationListActive);
 
   const [mobileOpen, setMobileOpen] =
     useState(false);
@@ -177,6 +185,12 @@ function Sidebar() {
     }
 
   }, [isUserMgmtActive]);
+
+  useEffect(() => {
+    if (isAllocationListActive) {
+      setAllocListOpen(true);
+    }
+  }, [isAllocationListActive]);
 
 
 
@@ -255,21 +269,6 @@ function Sidebar() {
     );
 
 
-
-  // =====================================================
-  // RECRUITMENT REQUEST ACTIVE
-  // =====================================================
-
-  const isRecruitmentRequestActive =
-
-    location.pathname ===
-      "/recruitment-requests"
-
-    ||
-
-    location.pathname.startsWith(
-      "/recruitment-requests/"
-    );
 
 
 
@@ -776,64 +775,90 @@ function Sidebar() {
 
 
 
-            {/* =================================================
-                RECRUITMENT REQUESTS
-            ================================================= */}
-
-            <div
-
-              className={`sidebar-menu-item ${
-                isRecruitmentRequestActive
-                  ? "active"
-                  : ""
-              }`}
-
-              onClick={() =>
-                handleNavigate(
-                  "/recruitment-requests"
-                )
-              }
-
-            >
-
-              <FaListAlt className="nav-icon" />
-
-              <span>
-                Recruitment Requests
-              </span>
-
-            </div>
-
 
 
             {/* =================================================
                 ALLOCATION LIST
             ================================================= */}
 
-            <div
+            <div className="sidebar-accordion-group">
+              <div
+                className={`sidebar-menu-item has-submenu ${
+                  isAllocationListActive ? "active" : ""
+                }`}
+                onClick={() => setAllocListOpen((previous) => !previous)}
+              >
+                <div className="item-label-content">
+                  <FaListAlt className="nav-icon" />
+                  <span>Allocation List</span>
+                </div>
+                <span className="accordion-chevron">
+                  {allocListOpen ? (
+                    <FaChevronDown size={11} />
+                  ) : (
+                    <FaChevronRight size={11} />
+                  )}
+                </span>
+              </div>
 
-              className={`sidebar-menu-item ${
-                isActive(
-                  "/allocation-list"
-                )
-                  ? "active"
-                  : ""
-              }`}
-
-              onClick={() =>
-                handleNavigate(
-                  "/allocation-list"
-                )
-              }
-
-            >
-
-              <FaListAlt className="nav-icon" />
-
-              <span>
-                Allocation List
-              </span>
-
+              {allocListOpen && (
+                <div className="sidebar-submenu-list">
+                  <div
+                    className={`sidebar-submenu-item ${
+                      isActive("/allocation-list/yet-to-allocate") ? "sub-active" : ""
+                    }`}
+                    onClick={() => handleNavigate("/allocation-list/yet-to-allocate")}
+                  >
+                    <FaClock className="sub-nav-icon" />
+                    <span>Yet to Allocate</span>
+                  </div>
+                  <div
+                    className={`sidebar-submenu-item ${
+                      isActive("/allocation-list/allocated") ? "sub-active" : ""
+                    }`}
+                    onClick={() => handleNavigate("/allocation-list/allocated")}
+                  >
+                    <FaClipboardCheck className="sub-nav-icon" />
+                    <span>Allocated List</span>
+                  </div>
+                  <div
+                    className={`sidebar-submenu-item ${
+                      isActive("/allocation-list/offer-released") ? "sub-active" : ""
+                    }`}
+                    onClick={() => handleNavigate("/allocation-list/offer-released")}
+                  >
+                    <FaPaperPlane className="sub-nav-icon" />
+                    <span>Offer Released</span>
+                  </div>
+                  <div
+                    className={`sidebar-submenu-item ${
+                      isActive("/allocation-list/offer-accepted") ? "sub-active" : ""
+                    }`}
+                    onClick={() => handleNavigate("/allocation-list/offer-accepted")}
+                  >
+                    <FaCheckCircle className="sub-nav-icon" />
+                    <span>Offer Accepted</span>
+                  </div>
+                  <div
+                    className={`sidebar-submenu-item ${
+                      isActive("/allocation-list/offer-rejected") ? "sub-active" : ""
+                    }`}
+                    onClick={() => handleNavigate("/allocation-list/offer-rejected")}
+                  >
+                    <FaTimesCircle className="sub-nav-icon" />
+                    <span>Offer Rejected</span>
+                  </div>
+                  <div
+                    className={`sidebar-submenu-item ${
+                      isActive("/allocation-list/on-board") ? "sub-active" : ""
+                    }`}
+                    onClick={() => handleNavigate("/allocation-list/on-board")}
+                  >
+                    <FaUserTie className="sub-nav-icon" />
+                    <span>On Board</span>
+                  </div>
+                </div>
+              )}
             </div>
 
 
