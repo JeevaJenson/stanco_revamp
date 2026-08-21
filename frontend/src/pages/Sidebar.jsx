@@ -1,6 +1,5 @@
-import { useEffect, useState} from "react";
-
-import { useNavigate,useLocation} from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import {
   FaHome,
@@ -17,7 +16,8 @@ import {
   FaChevronDown,
   FaChevronRight,
   FaBars,
-  FaTimes} from "react-icons/fa";
+  FaTimes,
+} from "react-icons/fa";
 
 import LogoutModal from "./LogoutModal";
 
@@ -27,35 +27,63 @@ import "../style/Sidebar.css";
 function Sidebar() {
 
   const navigate = useNavigate();
-
   const location = useLocation();
+
 
   // =====================================================
   // CURRENT USER / ROLE ACCESS
   // =====================================================
-  const [currentUser, setCurrentUser] = useState({});
+
+  const [currentUser, setCurrentUser] =
+    useState({});
+
 
   useEffect(() => {
+
     try {
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+      const storedUser =
+        JSON.parse(
+          localStorage.getItem("user") || "{}"
+        );
+
       setCurrentUser(storedUser);
+
     } catch {
+
       setCurrentUser({});
+
     }
+
   }, []);
 
-  const roleType = String(currentUser?.roleType || "")
-    .trim()
-    .toLowerCase();
 
-  // The application maps delivery_lead to Hiring Manager.
+  const roleType =
+    String(
+      currentUser?.roleType || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  // delivery_lead = hiring_manager
   const userRole =
-    roleType === "delivery_lead" ? "hiring_manager" : roleType;
+    roleType === "delivery_lead"
+      ? "hiring_manager"
+      : roleType;
 
-  const isSuperAdmin = userRole === "super_admin";
-  const isHiringManager = userRole === "hiring_manager";
+
+  const isSuperAdmin =
+    userRole === "super_admin";
+
+
+  const isHiringManager =
+    userRole === "hiring_manager";
+
+
   const canAccessUserManagement =
-    isSuperAdmin || isHiringManager;
+    isSuperAdmin ||
+    isHiringManager;
 
 
 
@@ -75,28 +103,46 @@ function Sidebar() {
 
     "/user-management",
 
-    "/verticals"
+    "/verticals",
 
   ];
 
 
+
   // =====================================================
-  // CHECK USER MANAGEMENT ACTIVE
+  // ALLOWED USER MANAGEMENT ROUTES
   // =====================================================
 
-  const allowedUserManagementRoutes = isSuperAdmin
-    ? userManagementRoutes
-    : isHiringManager
-      ? ["/users", "/user-management"]
-      : [];
+  const allowedUserManagementRoutes =
+    isSuperAdmin
+
+      ? userManagementRoutes
+
+      : isHiringManager
+
+        ? [
+            "/users",
+            "/user-management",
+          ]
+
+        : [];
+
+
+
+  // =====================================================
+  // USER MANAGEMENT ACTIVE
+  // =====================================================
 
   const isUserMgmtActive =
     canAccessUserManagement &&
     allowedUserManagementRoutes.some(
       (route) =>
         location.pathname === route ||
-        location.pathname.startsWith(`${route}/`)
+        location.pathname.startsWith(
+          `${route}/`
+        )
     );
+
 
 
   // =====================================================
@@ -104,7 +150,9 @@ function Sidebar() {
   // =====================================================
 
   const [userMgmtOpen, setUserMgmtOpen] =
-    useState(isUserMgmtActive);
+    useState(
+      isUserMgmtActive
+    );
 
 
   const [mobileOpen, setMobileOpen] =
@@ -113,6 +161,7 @@ function Sidebar() {
 
   const [showLogoutModal, setShowLogoutModal] =
     useState(false);
+
 
 
   // =====================================================
@@ -130,6 +179,7 @@ function Sidebar() {
   }, [isUserMgmtActive]);
 
 
+
   // =====================================================
   // NAVIGATION
   // =====================================================
@@ -141,6 +191,7 @@ function Sidebar() {
     setMobileOpen(false);
 
   };
+
 
 
   // =====================================================
@@ -167,15 +218,19 @@ function Sidebar() {
   };
 
 
+
   // =====================================================
   // EXACT ACTIVE ROUTE
   // =====================================================
 
   const isActive = (path) => {
 
-    return location.pathname === path;
+    return (
+      location.pathname === path
+    );
 
   };
+
 
 
   // =====================================================
@@ -184,7 +239,8 @@ function Sidebar() {
 
   const isDepartmentActive =
 
-    location.pathname === "/departments"
+    location.pathname ===
+      "/departments"
 
     ||
 
@@ -199,34 +255,93 @@ function Sidebar() {
     );
 
 
+
+  // =====================================================
+  // RECRUITMENT REQUEST ACTIVE
+  // =====================================================
+
+  const isRecruitmentRequestActive =
+
+    location.pathname ===
+      "/recruitment-requests"
+
+    ||
+
+    location.pathname.startsWith(
+      "/recruitment-requests/"
+    );
+
+
+
   // =====================================================
   // ROUTE SAFETY
   // =====================================================
-  // Admin / Recruiter: User Management is completely blocked.
+
+  // Admin / Recruiter:
+  // User Management completely blocked.
+
   if (
+
     !canAccessUserManagement &&
+
     userManagementRoutes.some(
       (route) =>
         location.pathname === route ||
-        location.pathname.startsWith(`${route}/`)
+        location.pathname.startsWith(
+          `${route}/`
+        )
     )
+
   ) {
-    navigate("/dashboard", { replace: true });
+
+    navigate(
+      "/dashboard",
+      {
+        replace: true,
+      }
+    );
+
     return null;
+
   }
 
-  // Hiring Manager: only /users is allowed from User Management.
+
+
+  // =====================================================
+  // HIRING MANAGER ROUTE SAFETY
+  // =====================================================
+
   if (
+
     isHiringManager &&
-    ["/teams", "/business-units", "/departments", "/verticals"].some(
+
+    [
+      "/teams",
+      "/business-units",
+      "/departments",
+      "/verticals",
+    ].some(
       (route) =>
         location.pathname === route ||
-        location.pathname.startsWith(`${route}/`)
+        location.pathname.startsWith(
+          `${route}/`
+        )
     )
+
   ) {
-    navigate("/users", { replace: true });
+
+    navigate(
+      "/users",
+      {
+        replace: true,
+      }
+    );
+
     return null;
+
   }
+
+
 
   // =====================================================
   // COMPONENT
@@ -241,14 +356,20 @@ function Sidebar() {
       ================================================= */}
 
       <button
+
         type="button"
+
         className="sidebar-mobile-toggle"
+
         onClick={() =>
           setMobileOpen(
-            (previous) => !previous
+            (previous) =>
+              !previous
           )
         }
+
         aria-label="Toggle Sidebar Navigation"
+
       >
 
         {mobileOpen ? (
@@ -264,6 +385,7 @@ function Sidebar() {
       </button>
 
 
+
       {/* =================================================
           MOBILE OVERLAY
       ================================================= */}
@@ -271,13 +393,17 @@ function Sidebar() {
       {mobileOpen && (
 
         <div
+
           className="sidebar-mobile-overlay"
+
           onClick={() =>
             setMobileOpen(false)
           }
+
         />
 
       )}
+
 
 
       {/* =================================================
@@ -285,11 +411,13 @@ function Sidebar() {
       ================================================= */}
 
       <aside
+
         className={`dm-sidebar ${
           mobileOpen
             ? "mobile-open"
             : ""
         }`}
+
       >
 
 
@@ -305,45 +433,75 @@ function Sidebar() {
           ================================================= */}
 
           <div
+
             className="sidebar-brand-header"
+
             onClick={() =>
-              handleNavigate("/dashboard")
+              handleNavigate(
+                "/dashboard"
+              )
             }
+
             title="proHire"
+
           >
 
             <div className="brand-logo-icon">
 
               <svg
+
                 width="26"
+
                 height="26"
+
                 viewBox="0 0 24 24"
+
                 fill="none"
+
                 xmlns="http://www.w3.org/2000/svg"
+
               >
 
                 <rect
+
                   x="3"
+
                   y="6"
+
                   width="18"
+
                   height="15"
+
                   rx="3"
+
                   stroke="#ffffff"
+
                   strokeWidth="2.2"
+
                 />
 
                 <path
+
                   d="M8 6V4.5C8 3.67157 8.67157 3 9.5 3H14.5C15.3284 3 16 3.67157 16 4.5V6"
+
                   stroke="#ffffff"
+
                   strokeWidth="2.2"
+
                 />
 
                 <path
+
                   d="M8 13.5L10.5 16L16 10"
+
                   stroke="#ffffff"
+
                   strokeWidth="2.2"
+
                   strokeLinecap="round"
+
                   strokeLinejoin="round"
+
                 />
 
               </svg>
@@ -366,6 +524,7 @@ function Sidebar() {
           </div>
 
 
+
           {/* =================================================
               NAVIGATION
           ================================================= */}
@@ -378,14 +537,19 @@ function Sidebar() {
             ================================================= */}
 
             <div
+
               className={`sidebar-menu-item ${
                 isActive("/dashboard")
                   ? "active"
                   : ""
               }`}
+
               onClick={() =>
-                handleNavigate("/dashboard")
+                handleNavigate(
+                  "/dashboard"
+                )
               }
+
             >
 
               <FaHome className="nav-icon" />
@@ -397,98 +561,257 @@ function Sidebar() {
             </div>
 
 
+
             {/* =================================================
                 USER MANAGEMENT
             ================================================= */}
 
             {canAccessUserManagement && (
+
               <div className="sidebar-accordion-group">
 
+
                 {/* USER MANAGEMENT HEADER */}
+
                 <div
+
                   className={`sidebar-menu-item has-submenu ${
-                    isUserMgmtActive ? "active" : ""
+                    isUserMgmtActive
+                      ? "active"
+                      : ""
                   }`}
-                  onClick={() => setUserMgmtOpen((previous) => !previous)}
+
+                  onClick={() =>
+                    setUserMgmtOpen(
+                      (previous) =>
+                        !previous
+                    )
+                  }
+
                 >
+
                   <div className="item-label-content">
+
                     <FaUsers className="nav-icon" />
-                    <span>User Management</span>
+
+                    <span>
+                      User Management
+                    </span>
+
                   </div>
 
+
                   <span className="accordion-chevron">
+
                     {userMgmtOpen ? (
-                      <FaChevronDown size={11} />
+
+                      <FaChevronDown
+                        size={11}
+                      />
+
                     ) : (
-                      <FaChevronRight size={11} />
+
+                      <FaChevronRight
+                        size={11}
+                      />
+
                     )}
+
                   </span>
+
                 </div>
 
+
+
                 {/* USER MANAGEMENT SUBMENU */}
+
                 {userMgmtOpen && (
+
                   <div className="sidebar-submenu-list">
 
-                    {/* USERS - Super Admin + Hiring Manager */}
+
+                    {/* USERS */}
+
                     <div
+
                       className={`sidebar-submenu-item ${
-                        isActive("/users") ||
-                        isActive("/user-management")
+                        isActive(
+                          "/users"
+                        ) ||
+                        isActive(
+                          "/user-management"
+                        )
                           ? "sub-active"
                           : ""
                       }`}
-                      onClick={() => handleNavigate("/users")}
+
+                      onClick={() =>
+                        handleNavigate(
+                          "/users"
+                        )
+                      }
+
                     >
+
                       <FaUser className="sub-nav-icon" />
-                      <span>Users</span>
+
+                      <span>
+                        Users
+                      </span>
+
                     </div>
 
-                    {/* Super Admin only */}
+
+
+                    {/* SUPER ADMIN ONLY */}
+
                     {isSuperAdmin && (
+
                       <>
-                        <div
-                          className={`sidebar-submenu-item ${
-                            isActive("/teams") ? "sub-active" : ""
-                          }`}
-                          onClick={() => handleNavigate("/teams")}
-                        >
-                          <FaUserFriends className="sub-nav-icon" />
-                          <span>Teams</span>
-                        </div>
+
+
+                        {/* TEAMS */}
 
                         <div
+
                           className={`sidebar-submenu-item ${
-                            isActive("/business-units")
+                            isActive(
+                              "/teams"
+                            )
                               ? "sub-active"
                               : ""
                           }`}
-                          onClick={() => handleNavigate("/business-units")}
+
+                          onClick={() =>
+                            handleNavigate(
+                              "/teams"
+                            )
+                          }
+
                         >
-                          <FaBuilding className="sub-nav-icon" />
-                          <span>Business Unit</span>
+
+                          <FaUserFriends
+                            className="sub-nav-icon"
+                          />
+
+                          <span>
+                            Teams
+                          </span>
+
                         </div>
 
+
+
+                        {/* BUSINESS UNIT */}
+
                         <div
+
                           className={`sidebar-submenu-item ${
-                            isDepartmentActive ? "sub-active" : ""
+                            isActive(
+                              "/business-units"
+                            )
+                              ? "sub-active"
+                              : ""
                           }`}
-                          onClick={() => handleNavigate("/departments")}
+
+                          onClick={() =>
+                            handleNavigate(
+                              "/business-units"
+                            )
+                          }
+
                         >
-                          <FaSitemap className="sub-nav-icon" />
-                          <span>Department</span>
+
+                          <FaBuilding
+                            className="sub-nav-icon"
+                          />
+
+                          <span>
+                            Business Unit
+                          </span>
+
                         </div>
+
+
+
+                        {/* DEPARTMENT */}
+
+                        <div
+
+                          className={`sidebar-submenu-item ${
+                            isDepartmentActive
+                              ? "sub-active"
+                              : ""
+                          }`}
+
+                          onClick={() =>
+                            handleNavigate(
+                              "/departments"
+                            )
+                          }
+
+                        >
+
+                          <FaSitemap
+                            className="sub-nav-icon"
+                          />
+
+                          <span>
+                            Department
+                          </span>
+
+                        </div>
+
                       </>
+
                     )}
+
                   </div>
+
                 )}
+
               </div>
+
             )}
+
+
+
+            {/* =================================================
+                RECRUITMENT REQUESTS
+            ================================================= */}
+
+            <div
+
+              className={`sidebar-menu-item ${
+                isRecruitmentRequestActive
+                  ? "active"
+                  : ""
+              }`}
+
+              onClick={() =>
+                handleNavigate(
+                  "/recruitment-requests"
+                )
+              }
+
+            >
+
+              <FaListAlt className="nav-icon" />
+
+              <span>
+                Recruitment Requests
+              </span>
+
+            </div>
+
+
 
             {/* =================================================
                 ALLOCATION LIST
             ================================================= */}
 
             <div
+
               className={`sidebar-menu-item ${
                 isActive(
                   "/allocation-list"
@@ -496,11 +819,13 @@ function Sidebar() {
                   ? "active"
                   : ""
               }`}
+
               onClick={() =>
                 handleNavigate(
                   "/allocation-list"
                 )
               }
+
             >
 
               <FaListAlt className="nav-icon" />
@@ -512,11 +837,13 @@ function Sidebar() {
             </div>
 
 
+
             {/* =================================================
                 CANDIDATE DATABASE
             ================================================= */}
 
             <div
+
               className={`sidebar-menu-item ${
                 isActive(
                   "/candidate-database"
@@ -524,11 +851,13 @@ function Sidebar() {
                   ? "active"
                   : ""
               }`}
+
               onClick={() =>
                 handleNavigate(
                   "/candidate-database"
                 )
               }
+
             >
 
               <FaDatabase className="nav-icon" />
@@ -540,11 +869,13 @@ function Sidebar() {
             </div>
 
 
+
             {/* =================================================
                 ALLOCATION REPORT
             ================================================= */}
 
             <div
+
               className={`sidebar-menu-item ${
                 isActive(
                   "/allocation-report"
@@ -552,11 +883,13 @@ function Sidebar() {
                   ? "active"
                   : ""
               }`}
+
               onClick={() =>
                 handleNavigate(
                   "/allocation-report"
                 )
               }
+
             >
 
               <FaChartPie className="nav-icon" />
@@ -568,11 +901,13 @@ function Sidebar() {
             </div>
 
 
+
             {/* =================================================
                 RECRUITER REPORT
             ================================================= */}
 
             <div
+
               className={`sidebar-menu-item ${
                 isActive(
                   "/recruiter-report"
@@ -580,11 +915,13 @@ function Sidebar() {
                   ? "active"
                   : ""
               }`}
+
               onClick={() =>
                 handleNavigate(
                   "/recruiter-report"
                 )
               }
+
             >
 
               <FaChartLine className="nav-icon" />
@@ -601,6 +938,7 @@ function Sidebar() {
         </div>
 
 
+
         {/* =================================================
             SIGN OUT
         ================================================= */}
@@ -608,10 +946,13 @@ function Sidebar() {
         <div className="sidebar-bottom-section">
 
           <div
+
             className="sidebar-menu-item signout-item"
+
             onClick={
               handleSignOut
             }
+
           >
 
             <FaSignOutAlt className="nav-icon" />
@@ -628,22 +969,27 @@ function Sidebar() {
       </aside>
 
 
+
       {/* =================================================
           LOGOUT MODAL
       ================================================= */}
 
       <LogoutModal
+
         isOpen={
           showLogoutModal
         }
+
         onClose={() =>
           setShowLogoutModal(
             false
           )
         }
+
         onConfirm={
           handleLogoutConfirm
         }
+
       />
 
     </>

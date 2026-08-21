@@ -11,6 +11,7 @@ import DepartmentVertical from "./pages/DepartmentVertical";
 import CandidateDatabase from "./pages/CandidateDatabase";
 import AllocationReport from "./pages/AllocationReport";
 import RecruiterReport from "./pages/RecruiterReport";
+import RecruitmentRequestList from "./pages/RecruitmentRequestList";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
         <Route path="/candidate-database" element={<CandidateDatabase />} />
         <Route path="/allocation-report" element={<AllocationReport />} />
         <Route path="/recruiter-report" element={<RecruiterReport />} />
+        <Route path="/recruitment-requests" element={<RecruitmentRequestList />}/>
       </Routes>
     </BrowserRouter>
   );
