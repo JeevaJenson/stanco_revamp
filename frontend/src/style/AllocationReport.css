@@ -201,18 +201,24 @@
 
 .report-table th {
   background: #f8fafc;
-  padding: 14px 18px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #475569;
+  color: #002060;
+  font-family: Georgia, serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 14px 20px;
   border-bottom: 1px solid #e2e8f0;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .report-table td {
-  padding: 14px 18px;
-  font-size: 14px;
-  color: #334155;
+  padding: 14px 20px;
   border-bottom: 1px solid #f1f5f9;
+  font-size: 13.5px;
+  color: #334155;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .rfh-code {

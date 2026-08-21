@@ -132,20 +132,24 @@
 
 .alloc-table th {
   background: #f8fafc;
-  color: #002060; /* Navy Blue table headers */
-  font-size: 13px;
+  color: #002060;
+  font-family: Georgia, serif;
+  font-size: 13.5px;
   font-weight: 700;
   letter-spacing: 0.5px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #e2e8f0;
   text-transform: uppercase;
-  padding: 16px 20px;
-  border-bottom: 2px solid #edf2f7;
+  white-space: nowrap;
 }
 
 .alloc-table td {
   padding: 14px 20px;
-  border-bottom: 1px solid #edf2f7;
-  color: #475569;
-  font-size: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13.5px;
+  color: #334155;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .alloc-table tr:hover td {
